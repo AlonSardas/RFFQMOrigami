@@ -1,5 +1,9 @@
 import matplotlib.axes
 import numpy as np
+import logging
+
+logger = logging.getLogger('origami')
+logger.setLevel(logging.DEBUG)
 
 
 class SimpleMiuraOri(object):
@@ -63,6 +67,8 @@ class SimpleMiuraOri(object):
         omega1 = omega
         omega2 = self._calc_omega2(sigma, omega1)
 
+        logger.debug('omega1: {}, omega2: {}'.format(omega1, omega2))
+
         c1 = np.cos(omega1)
         s1 = np.sin(omega1)
 
@@ -86,7 +92,7 @@ class SimpleMiuraOri(object):
         # """
         for c in range(self.columns, 1, -1):
             dots_indices = self._indexes[-1:, c:].flat
-            # print('Changing manually cols indices {}'.format(np.array(dots_indices)))
+            logger.debug('Changing last row. cols indices {}'.format(np.array(dots_indices)))
 
             base_x = dots[0, self._indexes[-1, c - 1]]
             dots[0, dots_indices] -= base_x
@@ -102,7 +108,7 @@ class SimpleMiuraOri(object):
 
             for c in range(self.columns, 1, -1):
                 dots_indices = self._indexes[r, c:]
-                # print('Changing cols indices {}'.format(np.array(dots_indices)))
+                logger.debug('Changing cols indices {}'.format(np.array(dots_indices)))
 
                 base_x = dots[0, self._indexes[r, c - 1]]
                 dots[0, dots_indices] -= base_x
@@ -114,17 +120,20 @@ class SimpleMiuraOri(object):
             if r == 0:
                 # It is "ok" but not necessary ro fold the last row, since
                 # it translates to a rigid rotation
+
                 R2_alternating = self._create_R2(+omega2 / 2)
                 # R2_alternating = R2_alternating.transpose()
 
             dots_indices = self._indexes[r:, :].flat
-            # print('Changing row indices {}'.format(np.array(dots_indices)))
+            logger.debug('Changing row indices {}'.format(np.array(dots_indices)))
             base_y = dots[1, self._indexes[r, 0]]
             dots[1, dots_indices] -= base_y
             dots[:, dots_indices] = R2_alternating @ dots[:, dots_indices]
             dots[1, dots_indices] += base_y
 
             R2_alternating = R2_alternating.transpose()
+
+            # break
 
     def _create_R2(self, omega2):
         c2 = np.cos(omega2)
@@ -134,15 +143,16 @@ class SimpleMiuraOri(object):
             [c2, 0, s2],
             [0, 1, 0],
             [-s2, 0, c2]])
+        angle = np.pi / 2 - self.angle
         R_xy = np.array([
-            [np.cos(self.angle), -np.sin(self.angle), 0],
-            [np.sin(self.angle), np.cos(self.angle), 0],
+            [np.cos(angle), -np.sin(angle), 0],
+            [np.sin(angle), np.cos(angle), 0],
             [0, 0, 1]])
         R2 = R_xy @ R2_t @ R_xy.transpose()
         return R2
 
     def _calc_omega2(self, s, o):
-        a = self.angle
+        a = np.pi / 2 - self.angle
         b = np.pi - a
         cos_a = np.cos(a)
         sin_a = np.sin(a)

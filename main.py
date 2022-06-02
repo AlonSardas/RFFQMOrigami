@@ -1,3 +1,5 @@
+import logging
+
 import matplotlib.axes
 import matplotlib.pyplot as plt
 import matplotlib.widgets
@@ -8,8 +10,13 @@ from miuraori import SimpleMiuraOri
 
 def create_cylinder():
     ls_y = create_circular_ls()
-    print(ls_y)
     origami = SimpleMiuraOri(np.ones(30) * 0.1, ls_y)
+    return origami
+
+
+def create_cylinder_large_sector():
+    ls_y = create_circular_ls(zigzag_angle=np.pi / 10, sector=4 / 5 * np.pi)
+    origami = SimpleMiuraOri(np.ones(10) * 0.05, ls_y, np.pi / 10)
     return origami
 
 
@@ -23,7 +30,7 @@ def create_sphere():
 def create_sphere_with_lag():
     ls_y = create_circular_ls()
     # ls_x = np.append(ls_y[1:], ls_y[0])
-    origami = SimpleMiuraOri(np.ones(20) * 0.1, np.append(np.ones(20)*0.1, ls_y))
+    origami = SimpleMiuraOri(np.ones(20) * 0.1, np.append(np.ones(20) * 0.1, ls_y))
     return origami
 
 
@@ -33,11 +40,10 @@ def create_saddle():
     return origami
 
 
-def create_circular_ls(num_of_angles=20):
-    base_angle = np.pi / 8
-    tan = np.tan(base_angle)
+def create_circular_ls(num_of_angles=20, zigzag_angle=np.pi / 8, sector=np.pi / 2):
+    tan = np.tan(zigzag_angle)
 
-    angles = np.linspace(np.pi + np.pi / 4, np.pi + 3 * np.pi / 4, num_of_angles)
+    angles = np.linspace(np.pi + sector / 2, 2 * np.pi - sector / 2, num_of_angles)
     xs = np.cos(angles)
     ys = np.sin(angles)
 
@@ -59,10 +65,9 @@ def create_circular_ls(num_of_angles=20):
     return ls
 
 
-def main():
-    # TODO: the angle parameter doesn't seem to work...
-
-    # origami = SimpleMiuraOri([1, 2, 3, 1, 1, 1, 1, 1], [1, 3, 1, 1, 1, 1, 1], angle=np.pi / 10)
+def create_test_origami():
+    origami = SimpleMiuraOri([1, 1], [1, 1], angle=np.pi / 10)
+    # origami = SimpleMiuraOri([1, 1], [1, 1], angle=np.pi / 4)
     # origami = SimpleMiuraOri([1, 2, 3, 1], [1, 3, 1])
     # origami = SimpleMiuraOri([1, 1, 1, 1], [1])
     # origami = SimpleMiuraOri([1], [1, 1, 1, 1])
@@ -72,11 +77,23 @@ def main():
     # origami.set_omega(np.pi/40)
     # origami.set_omega(np.pi / 4)
 
+    formatter = logging.Formatter('%(asctime)s-%(name)s-%(levelname)s: %(message)s', datefmt='%H:%M:%S')
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.DEBUG)
+    logger = logging.getLogger('origami')
+    logger.addHandler(stream_handler)
 
+    return origami
+
+
+def main():
     # origami = create_cylinder()
     # origami = create_saddle()
-    origami = create_sphere_with_lag()
+    # origami = create_sphere_with_lag()
     # origami = create_sphere()
+    # origami = create_test_origami()
+    origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 
