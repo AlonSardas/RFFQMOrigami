@@ -41,7 +41,7 @@ class SimpleMiuraOri(object):
             self.initial_dots[1, self._indexes[:, c]] = ys
             sign *= -1
 
-    def plot(self, ax: matplotlib.axes.Axes, should_rotate=True):
+    def plot(self, ax: matplotlib.axes.Axes, should_rotate=True, should_center=True):
         # print('zs: {}'.format(dots[2, :].reshape(self._d_rows, self._d_cols)))
 
         # ax.scatter3D(self.dots[0, :], self.dots[1, :], self.dots[2, :])
@@ -49,11 +49,15 @@ class SimpleMiuraOri(object):
 
         plot_dots = self.dots.copy()
         if should_rotate:
+            angle = self.angle/2
             R_xy = np.array([
-                [np.cos(self.angle), -np.sin(self.angle), 0],
-                [np.sin(self.angle), np.cos(self.angle), 0],
+                [np.cos(angle), -np.sin(angle), 0],
+                [np.sin(angle), np.cos(angle), 0],
                 [0, 0, 1]])
             plot_dots = R_xy.transpose() @ plot_dots
+
+        if should_center:
+            plot_dots -= plot_dots.mean(axis=1)[:, None]
 
         ax.plot_surface(plot_dots[0, :].reshape((self._d_rows, self._d_cols)),
                         plot_dots[1, :].reshape((self._d_rows, self._d_cols)),
@@ -78,7 +82,11 @@ class SimpleMiuraOri(object):
             [-s1, 0, c1]])
         R2 = self._create_R2(omega2)
 
-        start_sign_x = 1
+        # Not sure why, but this condition works
+        if self._d_cols % 2 == 1:
+            start_sign_x = 1
+        else:
+            start_sign_x = -1
         start_sign_y = -1
 
         R2_alternating = R2.copy()
@@ -118,9 +126,8 @@ class SimpleMiuraOri(object):
             # """
             # """
             if r == 0:
-                # It is "ok" but not necessary ro fold the last row, since
+                # It is "ok" but not necessary to fold the last row, since
                 # it translates to a rigid rotation
-
                 R2_alternating = self._create_R2(+omega2 / 2)
                 # R2_alternating = R2_alternating.transpose()
 
@@ -132,8 +139,6 @@ class SimpleMiuraOri(object):
             dots[1, dots_indices] += base_y
 
             R2_alternating = R2_alternating.transpose()
-
-            # break
 
     def _create_R2(self, omega2):
         c2 = np.cos(omega2)

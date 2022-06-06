@@ -20,17 +20,23 @@ def create_cylinder_large_sector():
     return origami
 
 
-def create_sphere():
-    ls_y = create_circular_ls()
+def create_sphere_bad():
+    ls = create_circular_ls()
     # ls_x = np.append(ls_y[1:], ls_y[0])
-    origami = SimpleMiuraOri(np.ones(20) * 0.1, ls_y)
+    ls_y = np.concatenate((ls, ls*1.5, ls*2, ls*1.5, ls))
+    origami = SimpleMiuraOri(np.array([0.1, 1, 0.1, 1, 0.1, 1]), ls_y)
     return origami
 
 
-def create_sphere_with_lag():
+def create_cylinder_with_lag():
     ls_y = create_circular_ls()
     # ls_x = np.append(ls_y[1:], ls_y[0])
     origami = SimpleMiuraOri(np.ones(20) * 0.1, np.append(np.ones(20) * 0.1, ls_y))
+    return origami
+
+
+def create_planar():
+    origami = SimpleMiuraOri(np.ones(20) * 0.1, np.ones(20) * 0.1)
     return origami
 
 
@@ -66,8 +72,11 @@ def create_circular_ls(num_of_angles=20, zigzag_angle=np.pi / 8, sector=np.pi / 
 
 
 def create_test_origami():
-    origami = SimpleMiuraOri([1, 1], [1, 1], angle=np.pi / 10)
-    # origami = SimpleMiuraOri([1, 1], [1, 1], angle=np.pi / 4)
+    # origami = SimpleMiuraOri([1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], angle=np.pi / 10)
+    origami = SimpleMiuraOri([1, 1, 1, 1, 1], [1, 1], angle=np.pi / 4)
+    # origami = SimpleMiuraOri([1, 1, 1], [1], angle=np.pi / 4)
+    # origami = SimpleMiuraOri(np.array([1, 1, 1]), np.array([1, 1, 1, 1, 1]), angle=np.pi / 4)
+    # origami = SimpleMiuraOri([1, 1], [1, 1, 1, 1], angle=np.pi / 4)
     # origami = SimpleMiuraOri([1, 2, 3, 1], [1, 3, 1])
     # origami = SimpleMiuraOri([1, 1, 1, 1], [1])
     # origami = SimpleMiuraOri([1], [1, 1, 1, 1])
@@ -90,17 +99,18 @@ def create_test_origami():
 def main():
     # origami = create_cylinder()
     # origami = create_saddle()
-    # origami = create_sphere_with_lag()
-    # origami = create_sphere()
+    # origami = create_cylinder_with_lag()
+    # origami = create_sphere_bad()
     # origami = create_test_origami()
-    origami = create_cylinder_large_sector()
+    origami = create_planar()
+    # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 
-    ax = fig.add_subplot(111, projection='3d')
+    ax:matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
     origami.plot(ax)
 
-    lim = np.max([sum(origami.ls_x), sum(origami.ls_y)])
+    lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
 
     # Make a horizontal slider to control the frequency.
     omega_slider_ax = plt.axes([0.25, 0.1, 0.65, 0.03])
@@ -117,9 +127,9 @@ def main():
         origami.set_omega(omega)
         origami.plot(ax)
         # ax.set_autoscale_on(False)
-        ax.set_xlim([0, lim])
-        ax.set_ylim([0, lim])
-        ax.set_zlim([-lim / 2, lim / 2])
+        ax.set_xlim(-lim, lim)
+        ax.set_ylim(-lim, lim)
+        ax.set_zlim(-lim/2, lim/2)
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
