@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets
 import numpy as np
 
+import plots
+from formsanalyzer import SimpleMiuraOriFormAnalyzer
 from miuraori import SimpleMiuraOri
 
 
@@ -23,7 +25,7 @@ def create_cylinder_large_sector():
 def create_sphere_bad():
     ls = create_circular_ls()
     # ls_x = np.append(ls_y[1:], ls_y[0])
-    ls_y = np.concatenate((ls, ls*1.5, ls*2, ls*1.5, ls))
+    ls_y = np.concatenate((ls, ls * 1.5, ls * 2, ls * 1.5, ls))
     origami = SimpleMiuraOri(np.array([0.1, 1, 0.1, 1, 0.1, 1]), ls_y)
     return origami
 
@@ -96,21 +98,50 @@ def create_test_origami():
     return origami
 
 
-def main():
+def plot_origami():
+    origami = SimpleMiuraOri([1, 1], [1, 1, 1, 1], angle=np.pi / 10)
     # origami = create_cylinder()
     # origami = create_saddle()
     # origami = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
-    origami = create_planar()
+    # origami = create_planar()
     # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 
-    ax:matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
+    ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
     origami.plot(ax)
+    slider = add_slider(ax, origami)
 
+    plt.show()
+
+
+def analyze_forms():
+    form_analyzer = SimpleMiuraOriFormAnalyzer([1, 5], [1, 4, 10, 2])
+
+    form_analyzer.set_omega(2)
+    form_analyzer.compare_to_theory()
+
+    fig = plt.figure()
+
+    ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
+    form_analyzer.plot(ax)
+    slider = add_slider(ax, form_analyzer)
+
+    form_analyzer.compare_to_theory()
+
+    plt.show()
+
+
+def main():
+    analyze_forms()
+
+
+def add_slider(ax, origami):
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
+
+    init_omega = 1
 
     # Make a horizontal slider to control the frequency.
     omega_slider_ax = plt.axes([0.25, 0.1, 0.65, 0.03])
@@ -119,7 +150,7 @@ def main():
         label='Omega',
         valmin=0,
         valmax=np.pi,
-        valinit=0,
+        valinit=init_omega,
     )
 
     def update_omega(omega):
@@ -129,7 +160,7 @@ def main():
         # ax.set_autoscale_on(False)
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
-        ax.set_zlim(-lim/2, lim/2)
+        ax.set_zlim(-lim / 2, lim / 2)
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
@@ -137,9 +168,8 @@ def main():
 
     omega_slider.on_changed(update_omega)
     # update_omega(np.pi/2)
-    update_omega(1)
-
-    plt.show()
+    update_omega(init_omega)
+    return omega_slider
 
 
 if __name__ == '__main__':
