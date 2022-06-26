@@ -48,6 +48,36 @@ def create_saddle():
     return origami
 
 
+def create_curved_cylinder():
+    ls_y = create_circular_ls(zigzag_angle=np.pi / 10, sector=4 / 5 * np.pi)
+    ls_x = ls_y
+    origami = SimpleMiuraOri(ls_x, ls_y, np.pi / 10)
+    return origami
+
+
+def create_positive_K():
+    origami = SimpleMiuraOri([14, 1, 13, 2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7],
+                             [14, 1, 13, 2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7],
+                             angle=4 / 5 * np.pi)
+    return origami
+
+
+def create_negative_K():
+    origami = SimpleMiuraOri([14, 1, 13, 2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7],
+                             [7, 8, 6, 9, 5, 10, 4, 11, 3, 12, 2, 13, 1, 14],
+                             angle=4 / 5 * np.pi)
+    return origami
+
+
+def create_changing_K():
+    ls = [14, 1, 13, 2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7] + \
+         [7, 8, 6, 9, 5, 10, 4, 11, 3, 12, 2, 13, 1, 14]
+    origami = SimpleMiuraOri([14, 1, 13, 2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7],
+                             ls,
+                             angle=4 / 5 * np.pi)
+    return origami
+
+
 def create_circular_ls(num_of_angles=20, zigzag_angle=np.pi / 8, sector=np.pi / 2):
     tan = np.tan(zigzag_angle)
 
@@ -99,20 +129,26 @@ def create_test_origami():
 
 
 def plot_origami():
-    origami = SimpleMiuraOri([1, 1], [1, 1, 1, 1], angle=np.pi / 10)
+    # origami = SimpleMiuraOri([1, 3, 1, 3, 1, 1, 3, 1, 3], [1, 2, 1, 2, 1, 2], angle=np.pi / 10)
+    # origami = SimpleMiuraOri([1, 3, 1, 3, 1, 1, 3, 1, 3], [1, 1, 1, 1, 1, 1], angle=np.pi / 10)
+    # origami = SimpleMiuraOri([1, 3, 1, 1], [1, 2, 1, 1], angle=np.pi / 4)
+    # origami = SimpleMiuraOri([1, 2, 1, 1] * 6, [1, 2, 1, 1] * 3 + [2, 1, 1, 1] * 3, angle=np.pi / 4)
+    # origami = create_positive_K()
+    # origami = create_changing_K()
     # origami = create_cylinder()
     # origami = create_saddle()
+    # origami = create_curved_cylinder()
     # origami = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
     # origami = create_planar()
-    # origami = create_cylinder_large_sector()
+    origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 
-    ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
     origami.plot(ax)
-    slider = add_slider(ax, origami)
+    slider = add_slider(ax, origami, should_plot_normals=False)
 
     plt.show()
 
@@ -134,11 +170,7 @@ def analyze_forms():
     plt.show()
 
 
-def main():
-    analyze_forms()
-
-
-def add_slider(ax, origami):
+def add_slider(ax, origami, should_plot_normals=False):
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
 
     init_omega = 1
@@ -156,7 +188,11 @@ def add_slider(ax, origami):
     def update_omega(omega):
         ax.clear()
         origami.set_omega(omega)
-        origami.plot(ax)
+        if should_plot_normals:
+            origami.plot_normals(ax)
+            origami.plot(ax, alpha=0.3)
+        else:
+            origami.plot(ax, alpha=1)
         # ax.set_autoscale_on(False)
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
@@ -170,6 +206,11 @@ def add_slider(ax, origami):
     # update_omega(np.pi/2)
     update_omega(init_omega)
     return omega_slider
+
+
+def main():
+    # analyze_forms()
+    plot_origami()
 
 
 if __name__ == '__main__':

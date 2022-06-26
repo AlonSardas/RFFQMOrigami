@@ -1,6 +1,8 @@
-import matplotlib.axes
-import numpy as np
 import logging
+
+import numpy as np
+import numpy.linalg as la
+from mpl_toolkits.mplot3d import Axes3D
 
 logger = logging.getLogger('origami')
 logger.setLevel(logging.DEBUG)
@@ -45,29 +47,52 @@ class SimpleMiuraOri(object):
             self.initial_dots[1, self.indexes[:, c]] = ys
             sign *= -1
 
-    def plot(self, ax: matplotlib.axes.Axes, should_rotate=True, should_center=True, alpha=1):
-        # print('zs: {}'.format(dots[2, :].reshape(self._d_rows, self._d_cols)))
+    def plot(self, ax: Axes3D, alpha=1):
+        dots = self.dots
 
-        # ax.scatter3D(self.dots[0, :], self.dots[1, :], self.dots[2, :])
-        # ax.scatter3D(self.dots[0, 4:], self.dots[1, 4:], self.dots[2, 4:])
+        ax.plot_surface(dots[0, :].reshape((self._d_rows, self._d_cols)),
+                        dots[1, :].reshape((self._d_rows, self._d_cols)),
+                        dots[2, :].reshape((self._d_rows, self._d_cols)), alpha=alpha, linewidth=100)
+        ax.plot_wireframe(dots[0, :].reshape((self._d_rows, self._d_cols)),
+                          dots[1, :].reshape((self._d_rows, self._d_cols)),
+                          dots[2, :].reshape((self._d_rows, self._d_cols)),
+                          alpha=alpha, color='g', linewidth=2)
 
-        plot_dots = self.dots.copy()
-        if should_rotate:
-            angle = self.angle / 2
-            R_xy = np.array([
-                [np.cos(angle), -np.sin(angle), 0],
-                [np.sin(angle), np.cos(angle), 0],
-                [0, 0, 1]])
-            plot_dots = R_xy.transpose() @ plot_dots
+    def plot_normals(self, ax: Axes3D):
+        dots = self.dots
+        indexes = self.indexes
+        for i in range(1, self.rows, 2):
+            for j in range(1, self.columns, 2):
+                dot = dots[:, indexes[i, j]]
+                dx = dots[:, indexes[i, j + 1]] - dots[:, indexes[i, j - 1]]
+                dy = dots[:, indexes[i + 1, j]] - dots[:, indexes[i - 1, j]]
+                n = np.cross(dx, dy)
+                n = n / np.linalg.norm(n)
+                n /= 1
+                ax.plot([dot[0], dot[0] + n[0]], [dot[1], dot[1] + n[1]], [dot[2], dot[2] + n[2]])
 
-        if should_center:
-            plot_dots -= plot_dots.mean(axis=1)[:, None]
+    def center_dots(self):
+        dots = self.dots
+        indexes = self.indexes
 
-        ax.plot_surface(plot_dots[0, :].reshape((self._d_rows, self._d_cols)),
-                        plot_dots[1, :].reshape((self._d_rows, self._d_cols)),
-                        plot_dots[2, :].reshape((self._d_rows, self._d_cols)), alpha=alpha)
+        vec = dots[:, indexes[0, 0]] - dots[:, indexes[1, 0]]
+        logger.debug('vector before rotation {}'.format(vec))
+        vec[2] = 0  # cast on XY plane
+        vec = vec / la.norm(vec)
 
-    def set_omega(self, omega):
+        angle_xy = np.pi / 2 - np.arccos(np.inner([1, 0, 0], vec))
+        R_xy = np.array([
+            [np.cos(angle_xy), -np.sin(angle_xy), 0],
+            [np.sin(angle_xy), np.cos(angle_xy), 0],
+            [0, 0, 1]])
+        self.dots = R_xy.transpose() @ dots
+        logger.debug('vector after rotation XY {}'.format(dots[:, indexes[0, 0]] - dots[:, indexes[1, 0]]))
+
+        logger.debug('dots mean position {}'.format(dots.mean(axis=1)))
+
+        self.dots -= self.dots.mean(axis=1)[:, None]
+
+    def set_omega(self, omega, should_center=True):
         self._omega = omega
         self.dots = self.initial_dots.copy()
         dots = self.dots
@@ -145,6 +170,9 @@ class SimpleMiuraOri(object):
             dots[1, dots_indices] += base_y
 
             R2_alternating = R2_alternating.transpose()
+
+        if should_center:
+            self.center_dots()
 
     def get_omega(self):
         return self._omega

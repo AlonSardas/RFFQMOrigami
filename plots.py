@@ -1,4 +1,7 @@
+import fractions
+
 import matplotlib.axes
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.widgets
 import numpy as np
@@ -10,8 +13,8 @@ def plot_simple_crease_pattern():
     origami = SimpleMiuraOri(np.ones(6), np.ones(6))
     fig = plt.figure()
 
-    ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
-    origami.plot(ax, should_rotate=False, should_center=False)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
+    origami.plot(ax)
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -22,13 +25,57 @@ def plot_simple_crease_pattern():
     plt.show()
 
 
-def set_pi_ticks(ax, axis):
+def plot_FFF_unit():
+    origami = SimpleMiuraOri([1, 1.5], [1.5, 0.8])
+    fig = plt.figure()
+
+    # ax: Axes3D = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-110, elev=40)
+
+    origami.set_omega(0.9)
+    origami.plot(ax, alpha=0.4)
+
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    ax.set_zlim(-1, 1)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    edge_points = origami.dots[:,
+                  [origami.indexes[0, 0],
+                   origami.indexes[0, -1],
+                   origami.indexes[-1, 0],
+                   origami.indexes[-1, -1]]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
+
+    plt.savefig('../RFFQM/Figures/FFF_unit.png')
+
+    plt.show()
+
+
+def set_pi_ticks(ax, axis, pi_range=(0, 1), divisions=4):
+    ticks = np.linspace(pi_range[0], pi_range[1], divisions + 1) * np.pi
+    values = [pi_range[0] +
+              fractions.Fraction((pi_range[1] - pi_range[0]) * i, divisions) for i in range(divisions + 1)]
+
+    def fraction_to_latex(frac: fractions.Fraction):
+        if frac == 1:
+            return ''
+        if frac.denominator == 1:
+            return str(frac.numerator)
+        return r'\frac{' + str(frac.numerator) + '}{' + str(frac.denominator) + '}'
+
+    latexs = [fraction_to_latex(f) for f in values]
+    labels = ['$ ' + l + r'\pi $' if l != '0' else '0' for l in latexs]
+
     if 'x' in axis:
-        ax.set_xticks([0, np.pi/4, np.pi/2, 3/4*np.pi, np.pi])
-        ax.set_xticklabels(['0', r'$\frac{1}{4}\pi$', r'$\frac{1}{2}\pi$', r'$\frac{3}{4}\pi$', r'$\pi$'])
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(labels)
     if 'y' in axis:
-        ax.set_yticks([0, np.pi / 4, np.pi / 2, 3 / 4 * np.pi, np.pi])
-        ax.set_yticklabels(['0', r'$\frac{1}{4}\pi$', r'$\frac{1}{2}\pi$', r'$\frac{3}{4}\pi$', r'$\pi$'])
+        ax.set_yticks(ticks)
+        ax.set_yticklabels(labels)
 
 
 def plot_gamma_vs_activation_angle():
@@ -70,6 +117,28 @@ def plot_phi_vs_activation_angle():
     plt.show()
 
 
+def plot_theta_vs_activation_angle():
+    fig, ax = plt.subplots()
+    ax: matplotlib.axes.Axes = ax
+    xs = np.linspace(0, np.pi, 200)
+
+    gammas = np.arccos((3 * np.cos(xs) - 1) / (3 - np.cos(xs)))
+    beta = np.pi / 4
+    ys = 1 / 2 * np.arccos(-np.sin(beta) ** 2 * np.cos(gammas) - np.cos(beta) ** 2)
+
+    ax.plot(xs, ys)
+    ax.set_xlabel(r'$ \omega $')
+    ax.set_ylabel(r'$ \theta\left(\omega;\beta=\pi/4\right) $')
+    set_pi_ticks(ax, 'x')
+    set_pi_ticks(ax, 'y', pi_range=(0, fractions.Fraction(1, 2)), divisions=4)
+
+    fig.savefig('../RFFQM/Figures/theta_vs_activation_angle.png')
+
+    plt.show()
+
+
 if __name__ == '__main__':
-    plot_gamma_vs_activation_angle()
-    plot_phi_vs_activation_angle()
+    # plot_gamma_vs_activation_angle()
+    # plot_phi_vs_activation_angle()
+    plot_theta_vs_activation_angle()
+    # plot_FFF_unit()

@@ -55,7 +55,7 @@ class SimpleMiuraOriFormAnalyzer(object):
         return n
 
     def plot_pattern(self, ax):
-        self.origami.plot(ax, should_center=False, should_rotate=False, alpha=0.3)
+        self.origami.plot(ax, alpha=0.3)
 
     def plot_forms_patches(self, ax: Axes3D):
         ps = self.ps
