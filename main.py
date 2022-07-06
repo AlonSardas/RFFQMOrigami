@@ -4,8 +4,8 @@ import matplotlib.axes
 import matplotlib.pyplot as plt
 import matplotlib.widgets
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
-import plots
 from formsanalyzer import SimpleMiuraOriFormAnalyzer
 from miuraori import SimpleMiuraOri
 
@@ -38,7 +38,9 @@ def create_cylinder_with_lag():
 
 
 def create_planar():
-    origami = SimpleMiuraOri(np.ones(20) * 0.1, np.ones(20) * 0.1)
+    # origami = SimpleMiuraOri(np.ones(20) * 0.1, np.ones(20) * 0.1)
+    origami = SimpleMiuraOri(np.ones(6) * 0.1, np.ones(6) * 0.1)
+    # origami = SimpleMiuraOri(np.ones(6) * 0.1, np.ones(6) * 0.1, angle=0.01)
     return origami
 
 
@@ -141,8 +143,8 @@ def plot_origami():
     # origami = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
-    # origami = create_planar()
-    origami = create_cylinder_large_sector()
+    origami = create_planar()
+    # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 

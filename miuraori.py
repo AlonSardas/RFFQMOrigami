@@ -4,6 +4,8 @@ import numpy as np
 import numpy.linalg as la
 from mpl_toolkits.mplot3d import Axes3D
 
+import linalgutils
+
 logger = logging.getLogger('origami')
 logger.setLevel(logging.DEBUG)
 
@@ -81,10 +83,7 @@ class SimpleMiuraOri(object):
         vec = vec / la.norm(vec)
 
         angle_xy = np.pi / 2 - np.arccos(np.inner([1, 0, 0], vec))
-        R_xy = np.array([
-            [np.cos(angle_xy), -np.sin(angle_xy), 0],
-            [np.sin(angle_xy), np.cos(angle_xy), 0],
-            [0, 0, 1]])
+        R_xy = linalgutils.create_XY_rotation_matrix(angle_xy)
         self.dots = R_xy.transpose() @ dots
         logger.debug('vector after rotation XY {}'.format(dots[:, indexes[0, 0]] - dots[:, indexes[1, 0]]))
 
