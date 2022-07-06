@@ -3,6 +3,7 @@ Plots helical origami based on the paper:
 https://doi.org/10.1103/PhysRevE.101.033002
 
 """
+import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -101,19 +102,16 @@ def plot_single_parallelogram():
     plt.show()
 
 
-def plot_helical_miura():
+def plot_helical_miura(ax: Axes3D, omega, phi):
     l = 2
     eta = 7 / 8 * PI / 2
     lamda = 0.4
-    omega = -np.pi / 5
+    # omega = -np.pi / 5
     sigma = -1
-
-    fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d')
 
     dots = create_single_parallelogram(l, eta, lamda, omega, sigma)
 
-    g_1, g_2 = _create_isometries(dots, phi=1.0)
+    g_1, g_2 = _create_isometries(dots, phi=phi)
 
     p_max = 9
     q_max = 3
@@ -129,12 +127,57 @@ def plot_helical_miura():
 
         dots = g_1(dots)
 
-
     max_lim = max(ax.get_xlim()[1], ax.get_ylim()[1], ax.get_zlim()[1])
     ax.set_xlim(-max_lim, max_lim)
     ax.set_ylim(-max_lim, max_lim)
     ax.set_zlim(-max_lim, max_lim)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
     # ax.set_aspect('equal', adjustable='box')
+
+
+def plot_interactive():
+    fig = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d')
+
+    # Make a horizontal slider to control the frequency.
+    omega_slider_ax = plt.axes([0.15, 0.0, 0.65, 0.03])
+    phi_slider_ax = plt.axes([0.15, 0.05, 0.65, 0.03])
+    omega_slider = matplotlib.widgets.Slider(
+        ax=omega_slider_ax,
+        label='omega',
+        valmin=-np.pi,
+        valmax=np.pi,
+        valinit=1,
+    )
+    phi_slider = matplotlib.widgets.Slider(
+        ax=phi_slider_ax,
+        label='phi',
+        valmin=-np.pi / 2,
+        valmax=np.pi / 2,
+        valinit=1,
+    )
+
+    class State(object):
+        omega = 1
+        phi = 1
+
+    state = State()
+
+    def update_omega(o):
+        state.omega = o
+        ax.clear()
+        plot_helical_miura(ax, state.omega, state.phi)
+
+    def update_phi(p):
+        state.phi = p
+        ax.clear()
+        plot_helical_miura(ax, state.omega, state.phi)
+
+    omega_slider.on_changed(update_omega)
+    phi_slider.on_changed(update_phi)
 
     plt.show()
 
@@ -212,8 +255,9 @@ def _create_isometries(dots, phi=1.5):
 
 def main():
     # plot_single_parallelogram()
-    plot_helical_miura()
+    # plot_helical_miura(1, 1)
     # _test_folded_parallelogram()
+    plot_interactive()
 
 
 if __name__ == '__main__':
