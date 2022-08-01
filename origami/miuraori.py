@@ -4,7 +4,7 @@ import numpy as np
 import numpy.linalg as la
 from mpl_toolkits.mplot3d import Axes3D
 
-import linalgutils
+from origami.utils import linalgutils
 
 logger = logging.getLogger('origami')
 logger.setLevel(logging.DEBUG)

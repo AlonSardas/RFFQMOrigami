@@ -8,8 +8,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import linalgutils
-from linalgutils import calc_angle
+from origami.utils import linalgutils
+from origami.utils.linalgutils import calc_angle
 
 PI = np.pi
 cos = np.cos
@@ -103,8 +103,9 @@ def plot_single_parallelogram():
 
 
 def plot_helical_miura(ax: Axes3D, omega, phi):
-    l = 2
-    eta = 7 / 8 * PI / 2
+    l = 1.1
+    # eta = 7 / 8 * PI / 2
+    eta = PI / 2
     lamda = 0.4
     # omega = -np.pi / 5
     sigma = -1
@@ -178,6 +179,8 @@ def plot_interactive():
 
     omega_slider.on_changed(update_omega)
     phi_slider.on_changed(update_phi)
+
+    update_phi(1)
 
     plt.show()
 
@@ -253,11 +256,40 @@ def _create_isometries(dots, phi=1.5):
     return g_1, g_2
 
 
+def calc_normals():
+    # l = 1.6
+    # eta = 5 / 6 * PI / 2
+    # lamda = 0.4
+    # omega = 0.1
+    # sigma = +1
+    l = 1.1
+    eta = PI / 2
+    lamda = 0.4
+    omega = 0.155
+    sigma = -1
+
+    dots = create_single_parallelogram(l, eta, lamda, omega, sigma)
+    y0, y1, y2, y3, y4 = dots.transpose()
+
+    phi = 0.5*PI / 2
+    g_1, g_2 = _create_isometries(dots, phi=phi)
+
+    n1 = np.cross(y3 - y0, y4 - y0)
+    n1 /= norm(n1)
+    dots_up = g_1(dots.copy())
+    y0, y1, y2, y3, y4 = dots_up.transpose()
+    n2 = np.cross(y2 - y0, y1 - y0)
+    n2 /= norm(n2)
+
+    print(n1, n2)
+
+
 def main():
     # plot_single_parallelogram()
-    # plot_helical_miura(1, 1)
+    # plot_helical_miura()
     # _test_folded_parallelogram()
     plot_interactive()
+    # calc_normals()
 
 
 if __name__ == '__main__':
