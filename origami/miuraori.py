@@ -193,15 +193,18 @@ class SimpleMiuraOri(object):
         return R2
 
     def _calc_omega2(self, s, o):
-        a = np.pi / 2 - self.angle
-        b = np.pi - a
-        cos_a = np.cos(a)
-        sin_a = np.sin(a)
-        cos_b = np.cos(b)
-        sin_b = np.sin(b)
-        nom = (-s + cos_a * cos_b) * np.cos(o) + sin_a * sin_b
-        deno = -s + cos_a * cos_b + sin_a * sin_b * np.cos(o)
-        return np.arccos(nom / deno)
+        return calc_gamma(np.pi / 2 - self.angle, s, o)
 
     def get_gamma(self):
         return self._gamma
+
+
+def calc_gamma(a, s, o):
+    b = np.pi - a
+    cos_a = np.cos(a)
+    sin_a = np.sin(a)
+    cos_b = np.cos(b)
+    sin_b = np.sin(b)
+    nom = (-s + cos_a * cos_b) * np.cos(o) + sin_a * sin_b
+    deno = -s + cos_a * cos_b + sin_a * sin_b * np.cos(o)
+    return np.arccos(nom / deno)

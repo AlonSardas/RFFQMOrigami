@@ -22,7 +22,7 @@ def plot_simple_crease_pattern():
 
     set_3D_labels(ax)
 
-    plt.savefig(os.path.join(FIGURES_PATH, '/simple_pattern.png'))
+    plt.savefig(os.path.join(FIGURES_PATH, 'simple_pattern.png'))
 
     plt.show()
 
@@ -49,7 +49,7 @@ def plot_FFF_unit():
                                    origami.indexes[-1, -1]]]
     ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
 
-    plt.savefig(os.path.join(FIGURES_PATH, '/FFF_unit.png'))
+    plt.savefig(os.path.join(FIGURES_PATH, 'FFF_unit.png'))
 
     plt.show()
 
@@ -68,7 +68,7 @@ def plot_gamma_vs_activation_angle():
     ax.set_xlabel(r'$ \omega $')
     ax.set_ylabel(r'$ \gamma\left(\omega;\beta=\pi/4\right) $')
 
-    fig.savefig(os.path.join(FIGURES_PATH, '/gamma_vs_activation_angle.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'gamma_vs_activation_angle.png'))
 
     plt.show()
 
@@ -88,7 +88,7 @@ def plot_phi_vs_activation_angle():
     ax.set_yticks([0, np.pi / 8, np.pi / 4])
     ax.set_yticklabels(['0', r'$\frac{1}{8}\pi$', r'$\frac{1}{4}\pi$'])
 
-    fig.savefig(os.path.join(FIGURES_PATH, '/phi_vs_activation_angle.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'phi_vs_activation_angle.png'))
 
     plt.show()
 
@@ -108,7 +108,7 @@ def plot_theta_vs_activation_angle():
     set_pi_ticks(ax, 'x')
     set_pi_ticks(ax, 'y', pi_range=(0, fractions.Fraction(1, 2)), divisions=4)
 
-    fig.savefig(os.path.join(FIGURES_PATH, '/theta_vs_activation_angle.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'theta_vs_activation_angle.png'))
 
     plt.show()
 

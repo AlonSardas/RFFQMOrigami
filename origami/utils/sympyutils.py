@@ -50,3 +50,13 @@ def parse_matrix(tex):
 def read_latex():
     text = input('Write latex: ')
     return from_latex(text)
+
+
+def np_matrix_to_latex(mat):
+    import numpy as np
+    precision = np.get_printoptions()['precision']
+    s = "\\\\\n".join([" & ".join(
+        map(lambda x: np.format_float_positional(x, precision=precision), line))
+        for line in mat])
+    s = r'\begin{bmatrix}' + s + '\n' + r'\end{bmatrix}'
+    return s
