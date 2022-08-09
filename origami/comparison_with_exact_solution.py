@@ -7,55 +7,10 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami import miuraori
+from origami.continuousorigami import follow_curve, plot_zigzag
 from origami.utils import plotutils, sympyutils
 
 FIGURES_PATH = '../../RFFQM/Figures'
-
-
-def follow_curve(xs, ys, zigzag_angle):
-    ls = np.zeros((len(xs) - 1) * 2)
-    middle_points_xs = np.zeros((len(xs) - 1))
-    middle_points_ys = np.zeros((len(xs) - 1))
-
-    phi = zigzag_angle
-    for i in range(len(xs) - 1):
-        a_x = xs[i]
-        a_y = ys[i]
-        b_x = xs[i + 1]
-        b_y = ys[i + 1]
-
-        dx = b_x - a_x
-        dy = b_y - a_y
-
-        c1 = dx / (2 * np.sin(phi)) - dy / (2 * np.cos(phi))
-        c2 = dx / (2 * np.sin(phi)) + dy / (2 * np.cos(phi))
-
-        if c1 < 0 or c2 < 0:
-            raise RuntimeError('The given angle is not small enough to make the zigzag')
-
-        # print(c1)
-
-        ls[2 * i] = c1
-        ls[2 * i + 1] = c2
-        middle_points_xs[i] = a_x + c1 * np.sin(phi)
-        middle_points_ys[i] = a_y - c1 * np.cos(phi)
-
-    return ls, middle_points_xs, middle_points_ys
-
-
-def _plot_zigzag(ax: Axes, xs, ys, mid_xs, mid_ys):
-    ax.plot(xs, ys, '.')
-    ax.plot(mid_xs, mid_ys, '.')
-
-    all_ys = np.zeros(len(xs) + len(mid_xs))
-    all_zs = np.zeros(len(all_ys))
-
-    all_ys[::2] = xs
-    all_zs[::2] = ys
-    all_ys[1::2] = mid_xs
-    all_zs[1::2] = mid_ys
-
-    ax.plot(all_ys, all_zs, '-')
 
 
 class DiscreteOrigami(object):
@@ -97,7 +52,7 @@ class DiscreteOrigami(object):
         ax.set_xlabel('Y')
         ax.set_ylabel('Z')
 
-        _plot_zigzag(ax, self.YZ_ys, self.YZ_zs, self.YZ_mid_y, self.YZ_mid_z)
+        plot_zigzag(ax, self.YZ_ys, self.YZ_zs, self.YZ_mid_y, self.YZ_mid_z)
 
         smooth_us = np.arange(0.5, np.pi - 0.5, 0.01)
         smooth_ys = -np.cos(smooth_us)
@@ -108,7 +63,7 @@ class DiscreteOrigami(object):
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
 
-        _plot_zigzag(ax, self.XY_xs, self.XY_ys, self.XY_mid_x, self.XY_mid_y)
+        plot_zigzag(ax, self.XY_xs, self.XY_ys, self.XY_mid_x, self.XY_mid_y)
 
         smooth_vs = np.arange(0, 2 * np.pi, 0.01)
         smooth_xs = smooth_vs
