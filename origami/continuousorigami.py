@@ -67,8 +67,8 @@ def calc_zigzag_points_by_lengths(cs, zigzag_angle, x0=0, y0=0):
 
 
 def plot_zigzag(ax: Axes, xs, ys, mid_xs, mid_ys):
-    ax.plot(xs, ys, '.')
-    ax.plot(mid_xs, mid_ys, '.')
+    points = ax.plot(xs, ys, '.')[0]
+    middles = ax.plot(mid_xs, mid_ys, '.')[0]
 
     all_ys = np.zeros(len(xs) + len(mid_xs))
     all_zs = np.zeros(len(all_ys))
@@ -78,7 +78,9 @@ def plot_zigzag(ax: Axes, xs, ys, mid_xs, mid_ys):
     all_ys[1::2] = mid_xs
     all_zs[1::2] = mid_ys
 
-    ax.plot(all_ys, all_zs, '-')
+    zigzag = ax.plot(all_ys, all_zs, '-')[0]
+
+    return points, middles, zigzag
 
 
 def plot_ratio_field():
@@ -116,12 +118,18 @@ def plot_following_curve():
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
 
-    plot_zigzag(ax, xs, ys, mid_xs, mid_ys)
+    points, middles, _ = plot_zigzag(ax, xs, ys, mid_xs, mid_ys)
+
+    points.set_markersize(12)
+    middles.set_markersize(12)
 
     smooth_xs = np.linspace(0, 2 * PI, 200)
     smooth_ys = np.sin(smooth_xs)
 
     ax.plot(smooth_xs, smooth_ys, '--')
+
+    ax.set_xlabel('x')
+    ax.set_ylabel(r'$ y=\sin(x) $')
 
     fig.savefig(os.path.join(FIGURES_PATH, 'following-sin-curve.png'))
 

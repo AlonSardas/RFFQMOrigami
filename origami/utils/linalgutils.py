@@ -8,6 +8,9 @@ import numpy as np
 def calc_angle(v1, v2):
     dot_product = np.dot(v1, v2)
     dot_product = dot_product / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    # To avoid floating point issues, make sure we are within range
+    dot_product = min(dot_product, 1)
+    dot_product = max(dot_product, -1)
     angle = np.arccos(dot_product)
     return angle
 

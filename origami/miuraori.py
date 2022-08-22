@@ -31,7 +31,6 @@ class SimpleMiuraOri(object):
         self._build_dots()
         self.dots = self.initial_dots.copy()
         self._omega = 0
-        self._omega = 0
 
     def _build_dots(self):
         dxs = np.append(0, self.ls_x)
@@ -50,15 +49,7 @@ class SimpleMiuraOri(object):
             sign *= -1
 
     def plot(self, ax: Axes3D, alpha=1):
-        dots = self.dots
-
-        ax.plot_surface(dots[0, :].reshape((self._d_rows, self._d_cols)),
-                        dots[1, :].reshape((self._d_rows, self._d_cols)),
-                        dots[2, :].reshape((self._d_rows, self._d_cols)), alpha=alpha, linewidth=100)
-        ax.plot_wireframe(dots[0, :].reshape((self._d_rows, self._d_cols)),
-                          dots[1, :].reshape((self._d_rows, self._d_cols)),
-                          dots[2, :].reshape((self._d_rows, self._d_cols)),
-                          alpha=alpha, color='g', linewidth=2)
+        return plot_dots(self.dots, self.indexes, ax, alpha)
 
     def plot_normals(self, ax: Axes3D):
         dots = self.dots
@@ -74,22 +65,7 @@ class SimpleMiuraOri(object):
                 ax.plot([dot[0], dot[0] + n[0]], [dot[1], dot[1] + n[1]], [dot[2], dot[2] + n[2]])
 
     def center_dots(self):
-        dots = self.dots
-        indexes = self.indexes
-
-        vec = dots[:, indexes[0, 0]] - dots[:, indexes[1, 0]]
-        logger.debug('vector before rotation {}'.format(vec))
-        vec[2] = 0  # cast on XY plane
-        vec = vec / la.norm(vec)
-
-        angle_xy = np.pi / 2 - np.arccos(np.inner([1, 0, 0], vec))
-        R_xy = linalgutils.create_XY_rotation_matrix(angle_xy)
-        self.dots = R_xy.transpose() @ dots
-        logger.debug('vector after rotation XY {}'.format(dots[:, indexes[0, 0]] - dots[:, indexes[1, 0]]))
-
-        logger.debug('dots mean position {}'.format(dots.mean(axis=1)))
-
-        self.dots -= self.dots.mean(axis=1)[:, None]
+        self.dots = center_dots(self.dots, self.indexes)
 
     def set_omega(self, omega, should_center=True):
         self._omega = omega
@@ -123,7 +99,7 @@ class SimpleMiuraOri(object):
         if start_sign_y == -1:
             R2_alternating = R2_alternating.transpose()
 
-        # The first row is done externally, beause we don't change signs there
+        # The first row is done externally, because we don't change signs there
         R1_alternating = R1.copy()
         if start_sign_x == -1:
             R1_alternating = R1_alternating.transpose()
@@ -193,7 +169,7 @@ class SimpleMiuraOri(object):
         return R2
 
     def _calc_omega2(self, s, o):
-        return calc_gamma(np.pi / 2 - self.angle, s, o)
+        return -calc_gamma(np.pi / 2 - self.angle, s, o)
 
     def get_gamma(self):
         return self._gamma
@@ -207,4 +183,115 @@ def calc_gamma(a, s, o):
     sin_b = np.sin(b)
     nom = (-s + cos_a * cos_b) * np.cos(o) + sin_a * sin_b
     deno = -s + cos_a * cos_b + sin_a * sin_b * np.cos(o)
-    return np.arccos(nom / deno)
+
+    sgn = np.sign((s * cos_b - cos_a) * o)
+
+    return sgn * np.arccos(nom / deno)
+
+
+def center_dots(dots: np.ndarray, indexes):
+    rows, cols = indexes.shape
+
+    v1: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
+    v2: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[0, -1 - (1-cols % 2)]]
+    n1: np.ndarray = np.cross(v1, v2)
+    logger.debug(f'centering dots. normal before={n1}')
+
+    n = np.array([0, 0, 1])
+
+    angle = linalgutils.calc_angle(n, n1)
+    if np.isclose(angle, 0):
+        pass
+    elif np.isclose(angle, np.pi):
+        R = linalgutils.create_XZ_rotation_matrix(np.pi)
+        dots = R @ dots
+    else:
+        rot_axis = np.cross(n, n1)
+        R = linalgutils.create_rotation_around_axis(rot_axis, -angle)
+        dots = R @ dots
+
+    v1: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
+    v2: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[0, -1 - (1-cols % 2)]]
+    n1: np.ndarray = np.cross(v1, v2)
+    logger.debug(f'normal after rotation={n1}')
+
+    vec = dots[:, indexes[-1, 0]] - dots[:, indexes[0, 0]]
+
+    logger.debug(f'xy vec: {vec}')
+
+    vec[2] = 0  # cast on XY plane
+
+    angle_xy = linalgutils.calc_angle(vec, [0, 1, 0])
+    if vec[0] < 0:  # Small patch to determine the direction of the rotation
+        angle_xy *= -1
+    R_xy = linalgutils.create_XY_rotation_matrix(angle_xy)
+    dots = R_xy @ dots
+
+    vec = dots[:, indexes[-1, 0]] - dots[:, indexes[0, 0]]
+
+    logger.debug(f'xy vec after rotation: {vec}')
+
+    dots -= dots.mean(axis=1)[:, None]
+
+    return dots
+
+
+def center_dots_old(dots, indexes):
+    vec = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
+    logger.debug(f'centering dots. vector before={vec}')
+
+    vec[2] = 0  # cast on XY plane
+
+    angle_xy = linalgutils.calc_angle(vec, [0, 1, 0])
+    R_xy = linalgutils.create_XY_rotation_matrix(angle_xy)
+    dots = R_xy @ dots
+
+    vec = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
+
+    logger.debug(f'vector after XY rotation={vec}')
+
+    vec[0] = 0
+    angle_yz = linalgutils.calc_angle(vec, [0, 0, 1])
+    R_yz = linalgutils.create_YZ_rotation_matrix(np.pi / 2 - angle_yz)
+    dots = R_yz.transpose() @ dots
+
+    vec = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
+    logger.debug(f'vector after YZ rotation={vec}')
+
+    dots -= dots.mean(axis=1)[:, None]
+
+    return dots
+
+
+def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1):
+    rows, cols = indexes.shape
+    surf = ax.plot_surface(dots[0, :].reshape((rows, cols)),
+                           dots[1, :].reshape((rows, cols)),
+                           dots[2, :].reshape((rows, cols)), alpha=alpha, linewidth=100)
+    wire = ax.plot_wireframe(dots[0, :].reshape((rows, cols)),
+                             dots[1, :].reshape((rows, cols)),
+                             dots[2, :].reshape((rows, cols)),
+                             alpha=alpha, color='g', linewidth=2)
+
+    return surf, wire
+
+
+def is_valid(flat_dots, dots, indexes: np.ndarray):
+    # check that all panels are actually quadrangle, i.e. on a single plane
+    rows, cols = indexes.shape
+    for y in range(rows - 1):
+        for x in range(cols - 1):
+            v1 = dots[:, indexes[y, x + 1]] - dots[:, indexes[y, x]]
+            v2 = dots[:, indexes[y + 1, x]] - dots[:, indexes[y, x]]
+
+            n1 = np.cross(v1, v2)
+
+            v3 = dots[:, indexes[y + 1, x + 1]] - dots[:, indexes[y, x + 1]]
+            n2 = np.cross(v1, v3)
+
+            angle = linalgutils.calc_angle(n1, n2)
+            if not np.isclose(linalgutils.calc_angle(n1, n2), 0, atol=1e-5):
+                return False, \
+                       f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
+
+    return True, 'All quadrangle are indeed planar'

@@ -8,6 +8,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from formsanalyzer import SimpleMiuraOriFormAnalyzer
 from miuraori import SimpleMiuraOri
+from origami import miuraori
+from origami.utils import plotutils, logutils
 
 
 def create_cylinder():
@@ -119,13 +121,7 @@ def create_test_origami():
     # origami = SimpleMiuraOri([1, 1], [1, 1])
     # origami.set_omega(np.pi/40)
     # origami.set_omega(np.pi / 4)
-
-    formatter = logging.Formatter('%(asctime)s-%(name)s-%(levelname)s: %(message)s', datefmt='%H:%M:%S')
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    stream_handler.setLevel(logging.DEBUG)
-    logger = logging.getLogger('origami')
-    logger.addHandler(stream_handler)
+    logutils.enable_logger()
 
     return origami
 
@@ -150,6 +146,12 @@ def plot_origami():
 
     ax = fig.add_subplot(111, projection='3d')
     origami.plot(ax)
+
+    origami.set_omega(1)
+    valid, reason = miuraori.is_valid(origami.initial_dots, origami.dots, origami.indexes)
+    if not valid:
+        raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
+
     slider = add_slider(ax, origami, should_plot_normals=False)
 
     plt.show()
@@ -178,7 +180,7 @@ def add_slider(ax, origami, should_plot_normals=False):
     init_omega = 1
 
     # Make a horizontal slider to control the frequency.
-    omega_slider_ax = plt.axes([0.25, 0.1, 0.65, 0.03])
+    omega_slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     omega_slider = matplotlib.widgets.Slider(
         ax=omega_slider_ax,
         label='Omega',
@@ -186,6 +188,8 @@ def add_slider(ax, origami, should_plot_normals=False):
         valmax=np.pi,
         valinit=init_omega,
     )
+
+    origami.plot(ax)
 
     def update_omega(omega):
         ax.clear()
@@ -195,14 +199,13 @@ def add_slider(ax, origami, should_plot_normals=False):
             origami.plot(ax, alpha=0.3)
         else:
             origami.plot(ax, alpha=1)
+            # surf.set_verts(origami.dots.transpose())
         # ax.set_autoscale_on(False)
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
         ax.set_zlim(-lim / 2, lim / 2)
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        plotutils.set_3D_labels(ax)
 
     omega_slider.on_changed(update_omega)
     # update_omega(np.pi/2)
