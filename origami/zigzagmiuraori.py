@@ -11,8 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 
 class ZigzagMiuraOri(object):
-    def __init__(self, crease_dots: np.ndarray, MVs: np.ndarray, d_rows: int, d_cols: int, v0_MV: int):
-        assert len(MVs) == d_rows - 2, 'Number of MV assignments should be as len(rows)-2'
+    def __init__(self, crease_dots: np.ndarray, d_rows: int, d_cols: int):
         assert crease_dots.shape[0] == 2
         assert crease_dots.shape[1] == d_rows * d_cols
 
@@ -23,9 +22,6 @@ class ZigzagMiuraOri(object):
         self.initial_dots[:2, :] = crease_dots
 
         self.dots = self.initial_dots.copy()
-
-        self.MVs = MVs
-        self.v0_MV = v0_MV
 
         self._omega = 0
 
@@ -83,7 +79,7 @@ class ZigzagMiuraOri(object):
 
             h_axis = dots[:, indexes[r, 1]] - dots[:, indexes[r, 0]]
             y_axis = np.array([0, 1, 0])
-            o = omega_sign_factor*start_sign_x*omega
+            o = omega_sign_factor * start_sign_x * omega
             h_angle = miuraori.calc_gamma(linalgutils.calc_angle(h_axis, y_axis), 1, o)
 
             Rh = linalgutils.create_rotation_around_axis(h_axis, h_angle)
@@ -102,3 +98,6 @@ class ZigzagMiuraOri(object):
 
     def plot(self, ax: Axes3D, alpha=1):
         return miuraori.plot_dots(self.dots, self.indexes, ax, alpha)
+
+    def is_valid(self):
+        return miuraori.is_valid(self.initial_dots, self.dots, self.indexes)

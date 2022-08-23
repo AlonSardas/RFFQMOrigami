@@ -4,7 +4,7 @@ import numpy as np
 import numpy.linalg as la
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.utils import linalgutils
+from origami.utils import linalgutils, plotutils
 
 logger = logging.getLogger('origami')
 logger.setLevel(logging.DEBUG)
@@ -31,6 +31,7 @@ class SimpleMiuraOri(object):
         self._build_dots()
         self.dots = self.initial_dots.copy()
         self._omega = 0
+        self._gamma = 0
 
     def _build_dots(self):
         dxs = np.append(0, self.ls_x)
@@ -264,6 +265,8 @@ def center_dots_old(dots, indexes):
 
 
 def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1):
+    plotutils.set_3D_labels(ax)
+
     rows, cols = indexes.shape
     surf = ax.plot_surface(dots[0, :].reshape((rows, cols)),
                            dots[1, :].reshape((rows, cols)),
@@ -290,7 +293,11 @@ def is_valid(flat_dots, dots, indexes: np.ndarray):
             n2 = np.cross(v1, v3)
 
             angle = linalgutils.calc_angle(n1, n2)
-            if not np.isclose(linalgutils.calc_angle(n1, n2), 0, atol=1e-5):
+            if np.isclose(angle, np.pi, atol=1e-5):
+                return False, \
+                       f'Panel {x},{y} has 2 opposite normals. ' \
+                       f'Most likely that 2 creases intersect in the flat configuration'
+            if not np.isclose(angle, 0, atol=1e-5):
                 return False, \
                        f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
 

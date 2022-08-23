@@ -1,5 +1,3 @@
-import logging
-
 import matplotlib.axes
 import matplotlib.pyplot as plt
 import matplotlib.widgets
@@ -144,7 +142,7 @@ def plot_origami():
 
     fig = plt.figure()
 
-    ax = fig.add_subplot(111, projection='3d')
+    ax: Axes3D = fig.add_subplot(111, projection='3d')
     origami.plot(ax)
 
     origami.set_omega(1)
@@ -152,6 +150,7 @@ def plot_origami():
     if not valid:
         raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
 
+    # noinspection PyUnusedLocal
     slider = add_slider(ax, origami, should_plot_normals=False)
 
     plt.show()
@@ -167,6 +166,7 @@ def analyze_forms():
 
     ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
     form_analyzer.plot(ax)
+    # noinspection PyUnusedLocal
     slider = add_slider(ax, form_analyzer)
 
     form_analyzer.compare_to_theory()
@@ -199,7 +199,6 @@ def add_slider(ax, origami, should_plot_normals=False):
             origami.plot(ax, alpha=0.3)
         else:
             origami.plot(ax, alpha=1)
-            # surf.set_verts(origami.dots.transpose())
         # ax.set_autoscale_on(False)
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
