@@ -115,15 +115,30 @@ def create_spiral():
 
 
 def create_changing_cs_example():
-    cols = 20
     rows = 10
-    dxs = np.array([4, 7, 4, 8, 4, 5, 4, 2, 7, 5, 4, 2, 4, 3, 4, 4, 4, 5, 4]) * 0.6
-    ls = 15
+    # dxs = np.array([4, 7, 4, 8, 4, 5, 4, 2, 7, 5, 4, 2, 4, 3, 4, 4, 4, 5, 4]) * 0.6
+    dxs = np.array([1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7]) * 0.6
+    dxs = np.append(dxs, dxs[::-1])
+    cols = len(dxs) + 1
+    ls = 20
+
+    # angles = np.array([0.2, 0.3, 0.7, 0.6, 0.7]) * np.pi
+    angles = np.ones(rows) * 0.3 * np.pi
+    # angles[::2] += 0.1 * np.pi
+    angles[::2] += 0.4 * np.pi
+    dots = create_zigzag_dots(angles, cols, ls, dxs)
+    return dots, rows, cols
+
+
+def create_spiral_changing_cs():
+    rows = 40
+    dxs = np.array([1, 0.5] * 30) * 0.1
+    cols = len(dxs) + 1
+    ls = 4 + np.arange(rows - 1) * 0.15
 
     # angles = np.array([0.2, 0.3, 0.7, 0.6, 0.7]) * np.pi
     angles = np.ones(rows) * 0.1 * np.pi
     angles[::2] += 0.1 * np.pi
-    angles[::3] += 0.2 * np.pi
     dots = create_zigzag_dots(angles, cols, ls, dxs)
     return dots, rows, cols
 
@@ -134,7 +149,8 @@ def plot():
     # dots, rows, cols = create_full_cylinder()
     # dots, rows, cols = create_spiral()
     # dots, rows, cols = create_changing_cs_example()
-    dots, rows, cols = create_cylinder_changing_dxs()
+    dots, rows, cols = create_spiral_changing_cs()
+    # dots, rows, cols = create_cylinder_changing_dxs()
     # dots, rows, cols = create_basic_crease2()
     origami = ZigzagMiuraOri(dots, rows, cols)
 
@@ -251,12 +267,33 @@ def plot_theta_vs_alpha():
     plt.show()
 
 
+def plot_unit_cell():
+    dxs = np.array([1, 1.5])
+    cols = 3
+    rows = 2
+    ls = 1.1
+    angles = [0.6 * np.pi, 0.7 * np.pi]
+    dots = create_zigzag_dots(angles, cols, ls, dxs)
+
+    origami = ZigzagMiuraOri(dots, rows, cols)
+
+    fig, ax = plot_flat_configuration(origami)
+    edge_points = origami.dots[:, [origami.indexes[0, 0],
+                                   origami.indexes[0, -1],
+                                   origami.indexes[-1, 0],
+                                   origami.indexes[-1, -1]]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
+    fig.savefig(os.path.join(FIGURES_PATH, 'zigzag-FFF-unit.png'))
+    plt.show()
+
+
 def main():
-    plot()
+    # plot()
     # plot_spiral()
     # plot_full_cylinder()
     # plot_simple_example()
     # plot_theta_vs_alpha()
+    plot_unit_cell()
 
 
 if __name__ == '__main__':

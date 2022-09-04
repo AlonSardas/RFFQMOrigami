@@ -133,7 +133,7 @@ def build_origami():
     ax.set_xlim(-0.0003, 0.0003)
     fig.tight_layout()
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'origami-cat.png'))
+    # fig.savefig(os.path.join(FIGURES_PATH, 'origami-cat.png'))
 
     plt.show()
 

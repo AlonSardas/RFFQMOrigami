@@ -137,7 +137,7 @@ def plot_origami():
     # origami = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
-    origami = create_planar()
+    # origami = create_planar()
     # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
