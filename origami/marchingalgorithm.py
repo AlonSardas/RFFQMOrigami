@@ -9,7 +9,7 @@ The basic idea behind the algorithm is that given the angles and the lengths of
 the left and bottom boundaries, the entire crease pattern is determined
 step-by-step
 """
-from typing import Optional
+from typing import Optional, List
 
 import numpy as np
 
@@ -110,8 +110,8 @@ class MarchingAlgorithm(object):
                 self._calc_angles(i, j)
 
     def create_dots(self,
-                    ls_left: float | np.ndarray,
-                    cs_bottom: float | np.ndarray) -> (np.ndarray, np.ndarray):
+                    ls_left: float | List[float] | np.ndarray,
+                    cs_bottom: float | List[float] | np.ndarray) -> (np.ndarray, np.ndarray):
         """
         Create the dots that corresponds the crease pattern
         :param ls_left: List of lengths of the left boundary (rows-1 cells)
@@ -178,7 +178,7 @@ class MarchingAlgorithm(object):
 
         if l_cd <= 0:
             raise IncompatibleError(
-                f"Got a non-positive crease line for line cd at index {i}.{j}. "
+                f"Got a non-positive crease line for line cd at index {i},{j}. "
                 f"length got: {l_cd}")
         l_bd = norm(dots[:, indexes[i, j]] - dots[:, indexes[i, j - 1]])
         if l_bd <= 0:
@@ -198,8 +198,6 @@ def mu2(a, b, s):
     """
     Calculate mu1 based on equation 35 in the paper
     """
-    cos = np.cos
-    sin = np.sin
     num = -s + cos(a) * cos(b) + sin(a) * sin(b)
     # noinspection SpellCheckingInspection
     denom = cos(b) - s * cos(a)

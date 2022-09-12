@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami import miuraori, simplemiuraplots
+from origami import simplemiuraplots, quadranglearray
 from origami.utils import plotutils
 from origami.zigzagmiuraori import ZigzagMiuraOri
 
@@ -26,7 +26,7 @@ def create_zigzag(n, dxs, y, angle) -> np.ndarray:
     return dots
 
 
-def create_zigzag_dots(angles: np.ndarray, n, ls: Union[float, Sequence[float]], dxs) -> np.ndarray:
+def create_zigzag_dots(angles: Sequence[float], n, ls: Union[float, Sequence[float]], dxs) -> np.ndarray:
     if hasattr(ls, '__len__'):
         assert len(ls) == len(angles) - 1
     else:
@@ -159,7 +159,7 @@ def plot():
     origami.plot(ax)
 
     origami.set_omega(1)
-    valid, reason = miuraori.is_valid(origami.initial_dots, origami.dots, origami.indexes)
+    valid, reason = quadranglearray.is_valid(origami.initial_dots, origami.dots, origami.indexes)
     if not valid:
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
         print(f'Not a valid folded configuration. Reason: {reason}')

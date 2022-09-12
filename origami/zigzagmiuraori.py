@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami.quadranglearray
 from origami import miuraori
 from origami.utils import linalgutils
 
@@ -91,13 +92,13 @@ class ZigzagMiuraOri(object):
             dots[1, dots_indices] += base_y
 
         if should_center:
-            self.dots = miuraori.center_dots(self.dots, self.indexes)
+            self.dots = origami.quadranglearray.center_dots(self.dots, self.indexes)
 
     def get_omega(self):
         return self._omega
 
     def plot(self, ax: Axes3D, alpha=1):
-        return miuraori.plot_dots(self.dots, self.indexes, ax, alpha)
+        return origami.dotsarray.plot(self.dots, self.indexes, ax, alpha)
 
     def is_valid(self):
-        return miuraori.is_valid(self.initial_dots, self.dots, self.indexes)
+        return origami.quadranglearray.is_valid(self.initial_dots, self.dots, self.indexes)

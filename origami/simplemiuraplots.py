@@ -4,6 +4,7 @@ import matplotlib.widgets
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami.quadranglearray
 from formsanalyzer import SimpleMiuraOriFormAnalyzer
 from miuraori import SimpleMiuraOri
 from origami import miuraori
@@ -146,7 +147,7 @@ def plot_origami():
     origami.plot(ax)
 
     origami.set_omega(1)
-    valid, reason = miuraori.is_valid(origami.initial_dots, origami.dots, origami.indexes)
+    valid, reason = origami.quadranglearray.is_valid(origami.initial_dots, origami.dots, origami.indexes)
     if not valid:
         raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
 

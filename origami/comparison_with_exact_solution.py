@@ -71,7 +71,7 @@ class DiscreteOrigami(object):
         ax.plot(smooth_xs, smooth_ys, '--')
 
     def calc_FFF(self, i, j):
-        # The ith point that touches the surface is actually the 2*i point in the array
+        # The ith point that touches the surface is actually the 2i point in the array
         # This is because of the zigzagging, every 2nd point reflects a point on the surface
         i = i * 2
         j = j * 2
