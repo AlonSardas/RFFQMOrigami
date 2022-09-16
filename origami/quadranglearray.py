@@ -22,8 +22,15 @@ class QuadrangleArray(object):
     def center(self):
         center_dots(self.dots, self.indexes)
 
-    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray']) -> (bool, str):
+    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray']=None) -> (bool, str):
         return is_valid(flat_quadrangles, self.dots, self.indexes)
+
+    def assert_valid(self):
+        valid, reason = self.is_valid()
+        if not valid:
+            raise RuntimeError(f'Not a valid quadrangles array. Reason: {reason}')
+        else:
+            logger.debug('Configuration is valid')
 
     def copy(self):
         new_dots = self.dots.copy()

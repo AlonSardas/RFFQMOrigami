@@ -31,3 +31,11 @@ def set_3D_labels(ax: Axes3D):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+
+
+def set_axis_scaled(ax: Axes3D):
+    max_lim = max(ax.get_xlim()[1], ax.get_ylim()[1], ax.get_zlim()[1])
+    min_lim = min(ax.get_xlim()[0], ax.get_ylim()[0], ax.get_zlim()[0])
+    ax.set_xlim(min_lim, max_lim)
+    ax.set_ylim(min_lim, max_lim)
+    ax.set_zlim(min_lim, max_lim)

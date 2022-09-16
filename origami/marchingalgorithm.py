@@ -167,6 +167,14 @@ class MarchingAlgorithm(object):
                                                  [sin(alpha_a + alpha_c), -sin(alpha_c)]])
 
         l_cd, l_bd = matrix @ np.array([l_ab, l_ac])
+        if l_cd <= 0:
+            raise IncompatibleError(
+                f"Got a non-positive crease line for line cd at index {i},{j}. "
+                f"length got: {l_cd}")
+        if l_bd <= 0:
+            raise IncompatibleError(
+                f"Got a non-positive crease line for line bd at index {i},{j}. "
+                f"length got: {l_bd}")
 
         vec_ca = dots[:, indexes[i - 1, j - 1]] - dots[:, indexes[i - 1, j]]
         vec_ca = vec_ca / norm(vec_ca)
@@ -175,16 +183,6 @@ class MarchingAlgorithm(object):
                                     [sin(angle), cos(angle)]])
         vec_cd = rotation_matrix @ vec_ca
         dots[:, indexes[i, j]] = dots[:, indexes[i - 1, j]] + vec_cd * l_cd
-
-        if l_cd <= 0:
-            raise IncompatibleError(
-                f"Got a non-positive crease line for line cd at index {i},{j}. "
-                f"length got: {l_cd}")
-        l_bd = norm(dots[:, indexes[i, j]] - dots[:, indexes[i, j - 1]])
-        if l_bd <= 0:
-            raise IncompatibleError(
-                f"Got a non-positive crease line for line bd at index {i}.{j}. "
-                f"length got: {l_bd}")
 
 
 def mu1(a, b, s):
