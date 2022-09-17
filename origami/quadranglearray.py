@@ -12,17 +12,21 @@ logger.setLevel(logging.DEBUG)
 
 class QuadrangleArray(object):
     def __init__(self, dots: np.ndarray, rows: int, cols: int):
+        if dots.shape[0] == 2:
+            dots3D = np.zeros((3, dots.shape[1]))
+            dots3D[:2, :] = dots
+            dots = dots3D
         self.dots = dots
         self.rows, self.cols = rows, cols
         self.indexes = np.arange(rows * cols).reshape((rows, cols))
 
-    def plot(self, ax: Axes3D, alpha=1):
+    def plot(self, ax: Axes3D, alpha=1.0):
         return plot_dots(self.dots, self.indexes, ax, alpha)
 
     def center(self):
-        center_dots(self.dots, self.indexes)
+        self.dots = center_dots(self.dots, self.indexes)
 
-    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray']=None) -> (bool, str):
+    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray'] = None) -> (bool, str):
         return is_valid(flat_quadrangles, self.dots, self.indexes)
 
     def assert_valid(self):
@@ -37,7 +41,7 @@ class QuadrangleArray(object):
         return QuadrangleArray(new_dots, self.rows, self.cols)
 
 
-def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1):
+def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
     plotutils.set_3D_labels(ax)
 
     rows, cols = indexes.shape

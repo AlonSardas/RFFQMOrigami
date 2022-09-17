@@ -98,7 +98,7 @@ class ZigzagMiuraOri(object):
         return self._omega
 
     def plot(self, ax: Axes3D, alpha=1):
-        return origami.dotsarray.plot(self.dots, self.indexes, ax, alpha)
+        return origami.quadranglearray.plot_dots(self.dots, self.indexes, ax, alpha)
 
     def is_valid(self):
         return origami.quadranglearray.is_valid(self.initial_dots, self.dots, self.indexes)

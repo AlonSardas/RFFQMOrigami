@@ -204,3 +204,11 @@ def mu2(a, b, s):
 
 class IncompatibleError(Exception):
     pass
+
+
+def create_miura_angles(ls, cs, angle):
+    angles_left = np.ones((2, len(ls) + 1)) * angle
+    angles_bottom = np.ones((2, len(cs))) * angle
+    angles_bottom[:, ::2] = np.pi - angle
+
+    return angles_left, angles_bottom

@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.marchingalgorithm import MarchingAlgorithm
+from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import plotutils
 
@@ -50,14 +50,6 @@ def create_miura_ori():
     ax.scatter(dots[0, :], dots[1, :])
     plt.axis('scaled')
     plt.show()
-
-
-def create_miura_angles(ls, cs, angle):
-    angles_left = np.ones((2, len(ls) + 1)) * angle
-    angles_bottom = np.ones((2, len(cs))) * angle
-    angles_bottom[:, ::2] = np.pi - angle
-
-    return angles_left, angles_bottom
 
 
 def plot_flat_quadrangles(quads) -> (Figure, Axes3D):

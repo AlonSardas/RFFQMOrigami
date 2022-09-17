@@ -149,9 +149,9 @@ def plot():
     # dots, rows, cols = create_full_cylinder()
     # dots, rows, cols = create_spiral()
     # dots, rows, cols = create_changing_cs_example()
-    dots, rows, cols = create_spiral_changing_cs()
+    # dots, rows, cols = create_spiral_changing_cs()
     # dots, rows, cols = create_cylinder_changing_dxs()
-    # dots, rows, cols = create_basic_crease2()
+    dots, rows, cols = create_basic_crease2()
     origami = ZigzagMiuraOri(dots, rows, cols)
 
     fig = plt.figure()
@@ -288,12 +288,12 @@ def plot_unit_cell():
 
 
 def main():
-    # plot()
+    plot()
     # plot_spiral()
     # plot_full_cylinder()
     # plot_simple_example()
     # plot_theta_vs_alpha()
-    plot_unit_cell()
+    # plot_unit_cell()
 
 
 if __name__ == '__main__':
