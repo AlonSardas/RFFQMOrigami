@@ -125,12 +125,13 @@ def plot_all_bottom_perturbed():
     angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
     angles_bottom[:, :] += 0.1
     angles_left[:, 0] += 0.1
+    # angles_left[:, :] += 0.1
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
     quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
-    fig.savefig(os.path.join(FIGURES_PATH, 'all_bottom_perturbed.png'))
+    # fig.savefig(os.path.join(FIGURES_PATH, 'all_bottom_perturbed.png'))
 
 
 def single_angle_perturbation():
@@ -160,8 +161,8 @@ def main():
     # plot_zigzag()
     # plot_radial_creases()
     # plot_same_perturbed_angles()
-    # plot_all_bottom_perturbed()
-    single_angle_perturbation()
+    plot_all_bottom_perturbed()
+    # single_angle_perturbation()
     plt.show()
 
 

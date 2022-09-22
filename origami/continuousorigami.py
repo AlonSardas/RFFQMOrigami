@@ -12,7 +12,7 @@ PI = np.pi
 FIGURES_PATH = '../../RFFQM/Figures/continuous-origami'
 
 
-def follow_curve(xs, ys, zigzag_angle):
+def follow_curve(xs, ys, zigzag_angle) -> (np.ndarray, np.ndarray, np.ndarray):
     ls = np.zeros((len(xs) - 1) * 2)
     middle_points_xs = np.zeros((len(xs) - 1))
     middle_points_ys = np.zeros((len(xs) - 1))

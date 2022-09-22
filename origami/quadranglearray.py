@@ -23,8 +23,11 @@ class QuadrangleArray(object):
     def plot(self, ax: Axes3D, alpha=1.0):
         return plot_dots(self.dots, self.indexes, ax, alpha)
 
-    def center(self):
+    def rotate_and_center(self):
         self.dots = center_dots(self.dots, self.indexes)
+
+    def center(self):
+        self.dots -= self.dots.mean(axis=1)[:, None]
 
     def is_valid(self, flat_quadrangles: Optional['QuadrangleArray'] = None) -> (bool, str):
         return is_valid(flat_quadrangles, self.dots, self.indexes)

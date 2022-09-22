@@ -49,3 +49,13 @@ def create_rotation_around_axis(ax: np.ndarray, angle) -> np.ndarray:
         [u_y * u_x * (1 - c) + u_z * s, c + u_y ** 2 * (1 - c), u_y * u_z * (1 - c) - u_x * s],
         [u_z * u_x * (1 - c) - u_y * s, u_z * u_y * (1 - c) + u_x * s, c + u_z ** 2 * (1 - c)]])
     return R
+
+
+def create_alignment_rotation_matrix(n1, n2) -> np.ndarray:
+    angle = calc_angle(n2, n1)
+    if np.isclose(angle, 0):
+        return np.identity(3)
+    else:
+        rot_axis = np.cross(n2, n1)
+        R = create_rotation_around_axis(rot_axis, -angle)
+        return R

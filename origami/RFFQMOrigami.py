@@ -141,7 +141,7 @@ class RFFQM(object):
             gamma_1 = gamma_3  # This is the seed angle for the next row
 
         if should_center:
-            self.dots.center()
+            self.dots.rotate_and_center()
 
         return self.dots
 
