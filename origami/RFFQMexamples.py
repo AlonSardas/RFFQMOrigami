@@ -177,8 +177,8 @@ def main():
     # logutils.enable_logger()
     # create_basic_crease()
     # create_radial()
-    # create_sphere_interactive()
-    create_sphere()
+    create_sphere_interactive()
+    # create_sphere()
 
 
 if __name__ == '__main__':
