@@ -30,7 +30,7 @@ def create_basic_crease():
 def add_slider(ax, origami: RFFQM):
     init_omega = 0.5
     dots = origami.set_omega(init_omega)
-    dots.assert_valid()
+    # dots.assert_valid()
     dots.plot(ax)  # We plot to find the limits of the axis to use
 
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
@@ -173,12 +173,43 @@ def create_sphere():
     plt.show()
 
 
+# noinspection SpellCheckingInspection
+def create_MARS_Barreto():
+    """
+    For example of MARS_Barreto, see:
+
+    Paulo Taborda Barreto. Lines meeting on a surface: The “Mars” paperfold-
+    ing. In Koryo Miura, editor, Proceedings of the 2nd International Meeting of
+    Origami Science and Scientific Origami, pages 323–331, Otsu, Japan, November–
+    December 1994.
+    """
+    angle = 0.7 * np.pi
+    ls = np.ones(10)
+    cs = np.ones(10)
+
+    angles_left = np.ones((2, len(ls) + 1)) * np.pi / 2
+    angles_bottom = np.ones((2, len(ls))) * np.pi / 2
+
+    angles_left[0, 1::2] = angle
+    angles_left[1, 0::2] = angle
+    angles_bottom[0, 0::2] = np.pi - angle
+    angles_bottom[1, 1::2] = angle
+
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    dots, indexes = marching.create_dots(ls, cs)
+    rows, cols = indexes.shape
+    quads = QuadrangleArray(dots, rows, cols)
+    origami = RFFQM(quads)
+    plot_interactive(origami)
+
+
 def main():
     # logutils.enable_logger()
     # create_basic_crease()
     # create_radial()
-    create_sphere_interactive()
+    # create_sphere_interactive()
     # create_sphere()
+    create_MARS_Barreto()
 
 
 if __name__ == '__main__':

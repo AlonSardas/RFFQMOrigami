@@ -3,14 +3,12 @@ import os.path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
 
+import origami
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
-from origami.quadranglearray import QuadrangleArray
-from origami.utils import plotutils
+from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 
-FIGURES_PATH = '../../RFFQM/Compatibility'
+FIGURES_PATH = os.path.join(origami.BASE_PATH, 'RFFQM/Compatibility/Figures')
 
 
 def create_miura_ori():
@@ -52,21 +50,6 @@ def create_miura_ori():
     plt.show()
 
 
-def plot_flat_quadrangles(quads) -> (Figure, Axes3D):
-    fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
-    quads.plot(ax)
-    plotutils.set_axis_scaled(ax)
-    return fig, ax
-
-
-def _dots_to_quadrangles(dots: np.ndarray, indexes: np.ndarray) -> QuadrangleArray:
-    cols, rows = indexes.shape[0], indexes.shape[1]
-    dots3D = np.zeros((3, dots.shape[1]))
-    dots3D[:2, :] = dots
-    return QuadrangleArray(dots3D, cols, rows)
-
-
 def plot_zigzag():
     angle = 1
     ls = [1] * 8
@@ -77,7 +60,7 @@ def plot_zigzag():
     angles_bottom[1, 0] += -0.3
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
     fig.savefig(os.path.join(FIGURES_PATH, 'perturbation_zigzag.png'))
@@ -94,7 +77,7 @@ def plot_same_perturbed_angles():
     # angles_bottom[1, 0] += 0.2
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
     fig.savefig(os.path.join(FIGURES_PATH, 'same_perturbed_angles.png'))
@@ -111,7 +94,7 @@ def plot_radial_creases():
     # angles_bottom[1, 0] += 0.2
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
     fig.savefig(os.path.join(FIGURES_PATH, 'radial_creases.png'))
@@ -119,7 +102,7 @@ def plot_radial_creases():
 
 def plot_all_bottom_perturbed():
     angle = 1
-    ls = np.ones(5)*2
+    ls = np.ones(5) * 2
     cs = np.ones(6)
 
     angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
@@ -128,7 +111,7 @@ def plot_all_bottom_perturbed():
     # angles_left[:, :] += 0.1
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
     # fig.savefig(os.path.join(FIGURES_PATH, 'all_bottom_perturbed.png'))
@@ -143,14 +126,14 @@ def single_angle_perturbation():
     # angles_left[0, 0] += 0.4
     # angles_left[0, 0] += 0.2    # delta_11
     # angles_left[1, 1] += 0.2    # eta_21
-    angles_bottom[1, 0] += 0.2    # eta_12
+    angles_bottom[1, 0] += 0.2  # eta_12
 
     # angles_left[0, 1] += 0.4    # delta_21
     # angles_bottom[0, 0] += 0.4    # delta_12
     # angles_left[1, 0] += 0.1    # eta_11
 
     marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = _dots_to_quadrangles(*marching.create_dots(ls, cs))
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
 
     fig, _ = plot_flat_quadrangles(quads)
     # fig.savefig(os.path.join(FIGURES_PATH, 'all_bottom_perturbed.png'))
@@ -161,8 +144,9 @@ def main():
     # plot_zigzag()
     # plot_radial_creases()
     # plot_same_perturbed_angles()
-    plot_all_bottom_perturbed()
+    # plot_all_bottom_perturbed()
     # single_angle_perturbation()
+
     plt.show()
 
 

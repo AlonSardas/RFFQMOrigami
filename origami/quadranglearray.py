@@ -2,6 +2,8 @@ import logging
 from typing import Optional
 
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami.utils import plotutils, linalgutils
@@ -131,3 +133,16 @@ def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> (bool, str):
                        f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
 
     return True, 'All quadrangle are indeed planar'
+
+
+def dots_to_quadrangles(dots: np.ndarray, indexes: np.ndarray) -> QuadrangleArray:
+    cols, rows = indexes.shape[0], indexes.shape[1]
+    return QuadrangleArray(dots, cols, rows)
+
+
+def plot_flat_quadrangles(quads: QuadrangleArray) -> (Figure, Axes3D):
+    fig: Figure = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
+    quads.plot(ax)
+    plotutils.set_axis_scaled(ax)
+    return fig, ax

@@ -1,3 +1,4 @@
+# noinspection SpellCheckingInspection
 """
 This file implements the marching algorithm for RFFQM as appears in the paper:
 

@@ -1,3 +1,4 @@
+# noinspection SpellCheckingInspection
 """
 This file implements the kinematics of a general RFFQM. For further reading, see:
 
@@ -69,21 +70,17 @@ class RFFQM(object):
         """
         self.omega = omega
         self.dots = self.initial_dots.copy()  # Each time we start from a flat configuration
-        dots = self.dots.dots
         indexes = self.indexes
         sigmas = self.sigmas
         rows, cols = self.rows, self.cols
 
         i, j = 1, 1
         alpha, beta = self.angles[:, indexes[i, j]]
-        gamma_1 = omega
-        gamma_3 = gamma_1
-        gamma_1 = -sigmas[i, j] * gamma_3
-        gamma_2 = calc_gamma2(sigmas[i, j], gamma_1, alpha, beta)
-        gamma_4 = sigmas[i, j] * gamma_2
+        gamma_1, gamma_2, gamma_3, gamma_4 = self._calc_angles_right(
+            alpha, beta, sigmas[i, j], omega)
 
         # This is used as the seed for the angles for the next rows
-        igamma2 = gamma_2
+        initial_gamma2 = gamma_2
 
         gamma_1 = omega
 
@@ -91,12 +88,8 @@ class RFFQM(object):
         # We fold first the bottom row
         for j in range(1, cols - 1):
             alpha, beta = self.angles[:, indexes[i, j]]
-
-            # See eq. 75 for the angles one step right
-            gamma_3 = gamma_1
-            gamma_1 = -sigmas[i, j] * gamma_3
-            gamma_2 = calc_gamma2(sigmas[i, j], gamma_1, alpha, beta)
-            gamma_4 = sigmas[i, j] * gamma_2
+            gamma_1, gamma_2, gamma_3, gamma_4 = self._calc_angles_right(
+                alpha, beta, sigmas[i, j], gamma_1)
 
             dots_indices = indexes[:2, :j].flat
             logger.debug(
@@ -109,11 +102,8 @@ class RFFQM(object):
         for i in range(1, self.rows - 1):
             for j in range(1, self.cols - 1):
                 alpha, beta = self.angles[:, indexes[i, j]]
-                # See eq. 75 for the angles one step right
-                gamma_3 = gamma_1
-                gamma_1 = -sigmas[i, j] * gamma_3
-                gamma_2 = calc_gamma2(sigmas[i, j], gamma_1, alpha, beta)
-                gamma_4 = sigmas[i, j] * gamma_2
+                gamma_1, gamma_2, gamma_3, gamma_4 = self._calc_angles_right(
+                    alpha, beta, sigmas[i, j], gamma_1)
 
                 dots_indices = indexes[i + 1, :j].flat
                 logger.debug(f'Changing vertical crease at {i},{j}. Angle: {gamma_2}. '
@@ -132,12 +122,10 @@ class RFFQM(object):
             # See eq. 76 for the angles one step up
             j = 1
             alpha, beta = self.angles[:, indexes[i + 1, j]]
-            gamma_4 = igamma2
-            gamma_2 = sigmas[i + 1, j] * gamma_4
-            gamma_1 = calc_gamma1(sigmas[i + 1, j], gamma_2, alpha, beta)
-            gamma_3 = -sigmas[i + 1, j] * gamma_1
+            gamma_1, gamma_2, gamma_3, gamma_4 = self._calc_angles_up(
+                alpha, beta, sigmas[i + 1, j], initial_gamma2)
 
-            igamma2 = gamma_2  # Save the seed of a vertical crease to the next row
+            initial_gamma2 = gamma_2  # Save the seed of a vertical crease to the next row
             gamma_1 = gamma_3  # This is the seed angle for the next row
 
         if should_center:
@@ -159,17 +147,34 @@ class RFFQM(object):
             raise RuntimeError("Unknown direction of a crease")
 
         dots = self.dots.dots
-        idots = self.initial_dots.dots
+        initial_dots = self.initial_dots.dots
         indexes = self.indexes
 
-        x0 = idots[:, indexes[i0, j0]]
-        t = idots[:, indexes[i1, j1]] - x0
+        x0 = initial_dots[:, indexes[i0, j0]]
+        t = initial_dots[:, indexes[i1, j1]] - x0
         if t[2] != 0:
             raise RuntimeError(
                 "Folding around a crease only works when the crease is in the XY-plane. "
                 f"Got a crease line {t}")
         R = linalgutils.create_rotation_around_axis(t, angle)
         dots[:, indexes_to_change] = x0[:, np.newaxis] + R @ (dots[:, indexes_to_change] - x0[:, np.newaxis])
+
+    @staticmethod
+    def _calc_angles_right(alpha, beta, sigma, gamma_1):
+        # See eq. 75 for the angles one step right
+        gamma_3 = gamma_1
+        gamma_1 = -sigma * gamma_3
+        gamma_2 = calc_gamma2(sigma, gamma_1, alpha, beta)
+        gamma_4 = sigma * gamma_2
+        return gamma_1, gamma_2, gamma_3, gamma_4
+
+    @staticmethod
+    def _calc_angles_up(alpha, beta, sigma, gamma_2):
+        gamma_4 = gamma_2
+        gamma_2 = sigma * gamma_4
+        gamma_1 = calc_gamma1(sigma, gamma_2, alpha, beta)
+        gamma_3 = -sigma * gamma_1
+        return gamma_1, gamma_2, gamma_3, gamma_4
 
 
 def calc_gamma2(sigma: int, omega: float, alpha: float, beta: float) -> float:

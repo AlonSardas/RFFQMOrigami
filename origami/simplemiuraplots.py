@@ -7,7 +7,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import origami.quadranglearray
 from formsanalyzer import SimpleMiuraOriFormAnalyzer
 from miuraori import SimpleMiuraOri
-from origami import miuraori
 from origami.utils import plotutils, logutils
 
 
@@ -138,21 +137,21 @@ def plot_origami():
     # origami = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
-    # origami = create_planar()
+    ori = create_planar()
     # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
 
     ax: Axes3D = fig.add_subplot(111, projection='3d')
-    origami.plot(ax)
+    ori.plot(ax)
 
-    origami.set_omega(1)
-    valid, reason = origami.quadranglearray.is_valid(origami.initial_dots, origami.dots, origami.indexes)
+    ori.set_omega(1)
+    valid, reason = origami.quadranglearray.is_valid(ori.initial_dots, ori.dots, ori.indexes)
     if not valid:
         raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
 
     # noinspection PyUnusedLocal
-    slider = add_slider(ax, origami, should_plot_normals=False)
+    slider = add_slider(ax, ori, should_plot_normals=False)
 
     plt.show()
 
