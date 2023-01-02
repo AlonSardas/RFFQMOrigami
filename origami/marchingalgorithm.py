@@ -37,9 +37,11 @@ class MarchingAlgorithm(object):
         :param sigmas: Array of +- of shape (rows, cols). Default is all -
         """
         # TODO: Fix sigmas to be only at the boundaries
+        self._assert_valid_input_angles(angles_left, angles_bottom)
+
         rows, cols = angles_left.shape[1], angles_bottom.shape[1] + 1
-        alphas = np.zeros((rows, cols))
-        betas = np.zeros((rows, cols))
+        alphas = np.zeros((rows, cols), dtype=np.float128)
+        betas = np.zeros((rows, cols), dtype=np.float128)
 
         if sigmas is None:
             sigmas = np.ones(alphas.shape) * -1
@@ -58,6 +60,17 @@ class MarchingAlgorithm(object):
         self.sigmas = sigmas
 
         self._fill_angles()
+
+    @staticmethod
+    def _assert_valid_input_angles(angles_left: np.ndarray, angles_bottom: np.ndarray):
+        if np.any(angles_left < 0):
+            raise ValueError("Got a left boundary angle with negative value")
+        if np.any(angles_bottom < 0):
+            raise ValueError("Got a bottom boundary angle with negative value")
+        if np.any(angles_left > np.pi):
+            raise ValueError("Got a left boundary angle with value greater then pi")
+        if np.any(angles_bottom > np.pi):
+            raise ValueError("Got a bottom boundary angle with value greater then pi")
 
     def _calc_angles(self, i, j):
         """
@@ -120,7 +133,7 @@ class MarchingAlgorithm(object):
         :return: (Dots, Indexes)
         """
         rows, cols = self.rows, self.cols
-        dots = np.zeros((2, rows * cols))
+        dots = np.zeros((2, rows * cols), dtype=np.float128)
         indexes = np.arange(rows * cols).reshape((rows, cols))
 
         if hasattr(ls_left, '__len__'):
@@ -208,8 +221,8 @@ class IncompatibleError(Exception):
 
 
 def create_miura_angles(ls, cs, angle):
-    angles_left = np.ones((2, len(ls) + 1)) * angle
-    angles_bottom = np.ones((2, len(cs))) * angle
+    angles_left = np.ones((2, len(ls) + 1), dtype=np.float128) * angle
+    angles_bottom = np.ones((2, len(cs)), dtype=np.float128) * angle
     angles_bottom[:, ::2] = np.pi - angle
 
     return angles_left, angles_bottom

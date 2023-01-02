@@ -20,7 +20,7 @@ class QuadrangleArray(object):
             dots = dots3D
         self.dots = dots
         self.rows, self.cols = rows, cols
-        self.indexes = np.arange(rows * cols).reshape((rows, cols))
+        self.indexes: np.ndarray = np.arange(rows * cols).reshape((rows, cols))
 
     def plot(self, ax: Axes3D, alpha=1.0):
         return plot_dots(self.dots, self.indexes, ax, alpha)

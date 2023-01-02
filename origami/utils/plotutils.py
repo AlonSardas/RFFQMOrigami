@@ -1,6 +1,9 @@
 import fractions
 
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -39,3 +42,9 @@ def set_axis_scaled(ax: Axes3D):
     ax.set_xlim(min_lim, max_lim)
     ax.set_ylim(min_lim, max_lim)
     ax.set_zlim(min_lim, max_lim)
+
+
+def create_colorbar(fig: Figure, ax: Axes, im):
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="8%", pad=0.15)
+    fig.colorbar(im, cax=cax)
