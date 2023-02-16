@@ -1,6 +1,9 @@
 """
 Utils especially for parsing latex to sympy
 """
+from functools import reduce
+from typing import Iterable
+
 from sympy import *
 # Initializing session seems unnecessary, and it causes bugs
 # sympy.init_session()
@@ -32,7 +35,7 @@ def sub_imaginary(expr):
 
 
 def parse_matrix(tex):
-    """
+    r"""
     \begin{bmatrix}x+3 & -4 & 0 & 0\\
     9 & x-9 & 0 & 0\\
     0 & 0 & x+4 & 7\\
@@ -60,3 +63,23 @@ def np_matrix_to_latex(mat):
         for line in mat])
     s = r'\begin{bmatrix}' + s + '\n' + r'\end{bmatrix}'
     return s
+
+
+def linearize_multivariable(expr: (Expr, Matrix), variables: Iterable[Symbol]) -> (Expr, Matrix):
+    """
+    Apparently, taking only linear term with several variables is hard.
+    There is a mathematical trick, see
+    https://community.wolfram.com/groups/-/m/t/572931
+    """
+    # For some reason, series doesn't work on matrices. This is a workaround
+    if isinstance(expr, Matrix):
+        for i, v in enumerate(expr):
+            expr[i] = linearize_multivariable(expr[i], variables)
+        return expr
+
+    t = Symbol("temp_symbol")
+    # Replace all variables: [x, y] -> [tx, ty]
+    expr = reduce(lambda ex, s: ex.subs(s, t * s), variables, expr)
+    linearized = series(expr, t, 0, n=2)
+    expr = linearized.removeO().subs(t, 1)
+    return expr

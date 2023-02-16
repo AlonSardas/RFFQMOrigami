@@ -206,10 +206,10 @@ def create_MARS_Barreto():
 def main():
     # logutils.enable_logger()
     # create_basic_crease()
-    # create_radial()
+    create_radial()
     # create_sphere_interactive()
     # create_sphere()
-    create_MARS_Barreto()
+    # create_MARS_Barreto()
 
 
 if __name__ == '__main__':
