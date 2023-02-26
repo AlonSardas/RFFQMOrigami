@@ -12,7 +12,7 @@ where F,G are general functions
 Here we try to test this result
 """
 import os.path
-from typing import Callable
+from typing import Callable, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,15 +58,15 @@ def test_continuous_perturbations():
 
 def test_continuous_perturbations_2steps():
     # F = lambda x: np.sin(x / 50) / 100
-    F = lambda x: (np.sin(x / 12)+0.3) / 70 * (x % 2)
-    G = lambda y: +(np.cos(y / 12)+0.2) / 50 * (y % 2)
+    F = lambda x: (np.sin(x / 12) + 0.3) / 70 * (x % 2)
+    G = lambda y: +(np.cos(y / 12) + 0.2) / 50 * (y % 2)
 
     angle = 1
 
     rows = 30
     cols = 30
     ls = np.ones(rows)
-    ls[::2] *=1.5
+    ls[::2] *= 1.5
     # ls = np.linspace(1, 17, rows)
     cs = np.ones(cols) * 1
     # cs[1::2] *= 5
@@ -114,7 +114,10 @@ def set_perturbations_by_func_v1(F: Callable, G: Callable, C: float,
     set_perturbations_by_func(func_v1, angles_left, angles_bottom, which_angle, which_boundary)
 
 
-def set_perturbations_by_func(func: Callable, angles_left: np.ndarray, angles_bottom: np.ndarray,
+AnglesFuncType = Callable[[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]
+
+
+def set_perturbations_by_func(func: AnglesFuncType, angles_left: np.ndarray, angles_bottom: np.ndarray,
                               which_angle: str = 'delta+eta', which_boundary: str = 'left+bottom'):
     bottom_range = np.arange(angles_bottom.shape[1])
     left_range = np.arange(angles_left.shape[1])
@@ -478,6 +481,15 @@ def _create_func_v1(F, G, C) -> Callable:
         return deltas, etas
 
     return func_v1
+
+
+def create_angles_func(F, G) -> Callable:
+    def func(xs, ys):
+        deltas = F(xs) + G(ys)
+        etas = F(xs) - G(ys)
+        return deltas, etas
+
+    return func
 
 
 def main():

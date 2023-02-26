@@ -6,9 +6,11 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 import origami
+from origami import continuousperturbations, RFFQMOrigami
 from origami.continuousperturbations import set_perturbations_by_func_v1
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
+from origami.utils import linalgutils
 
 FIGURES_PATH = os.path.join(origami.BASE_PATH, 'RFFQM/Compatibility/Figures/continuous-lengths')
 
@@ -97,8 +99,78 @@ def test_special_case_G_const():
     print(c_vs_ys)
 
 
+def test_omega():
+    F = lambda x: 0.03 * np.cos(x / 40) - 0.01 * np.sin(x / 50 + 10) + 0.0001 * (x - 30)
+    G = lambda y: 0  # 0.03 * np.cos(y / 30) + 0.02 * np.sin(y / 50 + 10)
+    angle = 1
+
+    rows = 4
+    cols = 200
+    ls = np.ones(rows - 1) * 1
+    cs = np.ones(cols - 1) * 1
+
+    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
+    angles_func = continuousperturbations.create_angles_func(F, G)
+    continuousperturbations.set_perturbations_by_func(angles_func, angles_left, angles_bottom)
+
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
+
+    valid, reason = quads.is_valid()
+    if not valid:
+        print(f"Got a not-valid pattern. Reason: {reason}")
+
+    fig, _ = plot_flat_quadrangles(quads)
+
+    rffqm = RFFQMOrigami.RFFQM(quads)
+    quads = rffqm.set_omega(-2, should_center=False)
+    fig, _ = plot_flat_quadrangles(quads)
+
+    omegas = np.zeros(cols // 2 - 1)
+    for j in range(len(omegas)):
+        jj = 2 * (j + 1)
+        base_dot = quads.dots[:, quads.indexes[0, jj]]
+        v0 = quads.dots[:, quads.indexes[1, jj]] - base_dot
+        v1 = quads.dots[:, quads.indexes[0, jj - 1]] - base_dot
+        v2 = quads.dots[:, quads.indexes[0, jj + 1]] - base_dot
+        n1 = np.cross(v1, v0)
+        n2 = np.cross(v0, v2)
+        omegas[j] = linalgutils.calc_angle(n1, n2)
+        print(omegas[j])
+
+    fig, ax = plt.subplots()
+    ax: Axes = ax
+    ax.plot(omegas, '.')
+
+    xs = np.linspace(0, len(omegas), 200)
+    # C = 1.31      # To fix initial condition
+    C = np.tan(np.pi / 2 - 1.3472 / 2) / (np.exp(F(0) * np.tan(angle)))
+    expected = np.pi - 2 * np.arctan(C * np.exp(F(xs * 2) * np.tan(angle)))
+    ax.plot(xs, expected)
+    ax.set_xlabel('j = x axis')
+    ax.set_ylabel(r'$ \omega $')
+
+    path = os.path.join(origami.BASE_PATH, 'RFFQM/ContinuousMetric/Figures', 'omega_comparison.png')
+    fig.savefig(path)
+
+    # fig, ax = plt.subplots()
+    # ax: Axes = ax
+    # ax.plot(np.tan((np.pi-omegas)/2), '.')
+    #
+    # xs = np.linspace(0, len(omegas), 200)
+    # C = 1.34  # To fix initial condition
+    # expected = C * np.exp(F(xs * 2) * np.tan(angle))
+    # ax.plot(xs, expected)
+
+
+def _calc_normal(v1, v2) -> np.ndarray:
+    perp = np.cross(v1, v2)
+    return perp / np.linalg.norm(perp)
+
+
 def main():
-    test_special_case_G_const()
+    # test_special_case_G_const()
+    test_omega()
     plt.show()
 
 

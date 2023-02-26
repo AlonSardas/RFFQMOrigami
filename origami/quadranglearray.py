@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -31,7 +31,7 @@ class QuadrangleArray(object):
     def center(self):
         self.dots -= self.dots.mean(axis=1)[:, None]
 
-    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray'] = None) -> (bool, str):
+    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray'] = None) -> Tuple[bool, str]:
         return is_valid(flat_quadrangles, self.dots, self.indexes)
 
     def assert_valid(self):
@@ -108,7 +108,7 @@ def center_dots(dots: np.ndarray, indexes):
     return dots
 
 
-def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> (bool, str):
+def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> Tuple[bool, str]:
     """
     check that all panels are actually quadrangle, i.e. on a single plane
     """
@@ -126,11 +126,11 @@ def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> (bool, str):
             angle = linalgutils.calc_angle(n1, n2)
             if np.isclose(angle, np.pi, atol=1e-5):
                 return False, \
-                       f'Panel {x},{y} has 2 opposite normals. ' \
-                       f'Most likely that 2 creases intersect in the flat configuration'
+                    f'Panel {x},{y} has 2 opposite normals. ' \
+                    f'Most likely that 2 creases intersect in the flat configuration'
             if not np.isclose(angle, 0, atol=1e-5):
                 return False, \
-                       f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
+                    f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
 
     return True, 'All quadrangle are indeed planar'
 
@@ -140,7 +140,7 @@ def dots_to_quadrangles(dots: np.ndarray, indexes: np.ndarray) -> QuadrangleArra
     return QuadrangleArray(dots, cols, rows)
 
 
-def plot_flat_quadrangles(quads: QuadrangleArray) -> (Figure, Axes3D):
+def plot_flat_quadrangles(quads: QuadrangleArray) -> Tuple[Figure, Axes3D]:
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
     quads.plot(ax)

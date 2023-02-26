@@ -10,7 +10,7 @@ The basic idea behind the algorithm is that given the angles and the lengths of
 the left and bottom boundaries, the entire crease pattern is determined
 step-by-step
 """
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy as np
 
@@ -125,7 +125,7 @@ class MarchingAlgorithm(object):
 
     def create_dots(self,
                     ls_left: float | List[float] | np.ndarray,
-                    cs_bottom: float | List[float] | np.ndarray) -> (np.ndarray, np.ndarray):
+                    cs_bottom: float | List[float] | np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Create the dots that corresponds the crease pattern
         :param ls_left: List of lengths of the left boundary (rows-1 cells)
@@ -220,7 +220,16 @@ class IncompatibleError(Exception):
     pass
 
 
-def create_miura_angles(ls, cs, angle):
+def create_miura_angles(ls, cs, angle: float) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Create the angles in the L boundary for a basic Miura-Ori pattern
+    :param ls: Array of the vertical lengths
+    :param cs: Array of the horizontal lengths
+    :param angle: The angle of the parallelograms in the Miura-Ori
+    :return: 2 Arrays, of shape (2,len(ls)+1); (2,len(cs))
+        they represent the left angles and the bottom angles.
+        Note that the vertex at the L-shape
+    """
     angles_left = np.ones((2, len(ls) + 1), dtype=np.float128) * angle
     angles_bottom = np.ones((2, len(cs)), dtype=np.float128) * angle
     angles_bottom[:, ::2] = np.pi - angle

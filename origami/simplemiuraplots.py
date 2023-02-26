@@ -126,6 +126,7 @@ def create_test_origami():
 
 def plot_origami():
     # origami = SimpleMiuraOri([1, 3, 1, 3, 1, 1, 3, 1, 3], [1, 2, 1, 2, 1, 2], angle=np.pi / 10)
+    # ori = SimpleMiuraOri([1, 3], [2, 4], angle=1/4*np.pi)
     # origami = SimpleMiuraOri([1, 3, 1, 3, 1, 1, 3, 1, 3], [1, 1, 1, 1, 1, 1], angle=np.pi / 10)
     # origami = SimpleMiuraOri([1, 3, 1, 1], [1, 2, 1, 1], angle=np.pi / 4)
     # origami = SimpleMiuraOri([1, 2, 1, 1] * 6, [1, 2, 1, 1] * 3 + [2, 1, 1, 1] * 3, angle=np.pi / 4)
@@ -134,10 +135,10 @@ def plot_origami():
     # origami = create_cylinder()
     # origami = create_saddle()
     # origami = create_curved_cylinder()
-    # origami = create_cylinder_with_lag()
+    ori = create_cylinder_with_lag()
     # origami = create_sphere_bad()
     # origami = create_test_origami()
-    ori = create_planar()
+    # ori = create_planar()
     # origami = create_cylinder_large_sector()
 
     fig = plt.figure()
@@ -184,7 +185,7 @@ def add_slider(ax, origami, should_plot_normals=False):
     omega_slider = matplotlib.widgets.Slider(
         ax=omega_slider_ax,
         label='Omega',
-        valmin=0,
+        valmin=-np.pi,
         valmax=np.pi,
         valinit=init_omega,
     )

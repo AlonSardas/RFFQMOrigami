@@ -65,7 +65,7 @@ def np_matrix_to_latex(mat):
     return s
 
 
-def linearize_multivariable(expr: (Expr, Matrix), variables: Iterable[Symbol]) -> (Expr, Matrix):
+def linearize_multivariable(expr: Expr | Matrix, variables: Iterable[Symbol]) -> Expr | Matrix:
     """
     Apparently, taking only linear term with several variables is hard.
     There is a mathematical trick, see
