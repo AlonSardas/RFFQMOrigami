@@ -6,10 +6,11 @@ from matplotlib import pyplot
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami import zigzagplots, zigzagmiuraori
+from origami import zigzagmiuraori
+from origami.plotsandcalcs import zigzagplots
 from origami.utils import linalgutils
 
-FIGURES_PATH = '../../RFFQM/Figures/zigzag-origami'
+FIGURES_PATH = '../../../RFFQM/Figures/zigzag-origami'
 
 
 def record_points():
@@ -103,7 +104,7 @@ def build_origami():
 
     rows = num_of_dots
     cols = 3
-    dots = zigzagplots.create_zigzag_dots(origami_angles, cols, ls, 0.01)
+    dots = zigzagmiuraori.create_zigzag_dots(origami_angles, cols, ls, 0.01)
     origami = zigzagmiuraori.ZigzagMiuraOri(dots, rows, cols)
     zigzagplots.plot_flat_configuration(origami)
     valid, reason = origami.is_valid()

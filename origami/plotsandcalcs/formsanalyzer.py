@@ -1,7 +1,7 @@
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-from miuraori import SimpleMiuraOri
+from origami.miuraori import SimpleMiuraOri
 
 
 class SimpleMiuraOriFormAnalyzer(object):

@@ -5,9 +5,10 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.quadranglearray
-from formsanalyzer import SimpleMiuraOriFormAnalyzer
-from miuraori import SimpleMiuraOri
-from origami.utils import plotutils, logutils
+from origami.interactiveplot import add_slider_miuraori
+from origami.plotsandcalcs.formsanalyzer import SimpleMiuraOriFormAnalyzer
+from origami.miuraori import SimpleMiuraOri
+from origami.utils import logutils
 
 
 def create_cylinder():
@@ -152,7 +153,7 @@ def plot_origami():
         raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
 
     # noinspection PyUnusedLocal
-    slider = add_slider(ax, ori, should_plot_normals=False)
+    slider = add_slider_miuraori(ax, ori, should_plot_normals=False)
 
     plt.show()
 
@@ -168,49 +169,11 @@ def analyze_forms():
     ax: matplotlib.axes.Axes = fig.add_subplot(111, projection='3d')
     form_analyzer.plot(ax)
     # noinspection PyUnusedLocal
-    slider = add_slider(ax, form_analyzer)
+    slider = add_slider_miuraori(ax, form_analyzer)
 
     form_analyzer.compare_to_theory()
 
     plt.show()
-
-
-def add_slider(ax, origami, should_plot_normals=False):
-    lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
-
-    init_omega = 1
-
-    # Make a horizontal slider to control the frequency.
-    omega_slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
-    omega_slider = matplotlib.widgets.Slider(
-        ax=omega_slider_ax,
-        label='Omega',
-        valmin=-np.pi,
-        valmax=np.pi,
-        valinit=init_omega,
-    )
-
-    origami.plot(ax)
-
-    def update_omega(omega):
-        ax.clear()
-        origami.set_omega(omega)
-        if should_plot_normals:
-            origami.plot_normals(ax)
-            origami.plot(ax, alpha=0.3)
-        else:
-            origami.plot(ax, alpha=1)
-        # ax.set_autoscale_on(False)
-        ax.set_xlim(-lim, lim)
-        ax.set_ylim(-lim, lim)
-        ax.set_zlim(-lim / 2, lim / 2)
-
-        plotutils.set_3D_labels(ax)
-
-    omega_slider.on_changed(update_omega)
-    # update_omega(np.pi/2)
-    update_omega(init_omega)
-    return omega_slider
 
 
 def main():

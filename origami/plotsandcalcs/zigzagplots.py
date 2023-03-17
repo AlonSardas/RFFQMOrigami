@@ -1,53 +1,17 @@
 import os.path
 from fractions import Fraction
-from typing import Union, Sequence
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami import simplemiuraplots, quadranglearray
+from origami import quadranglearray
+from origami.interactiveplot import plot_interactive_miuraori
 from origami.utils import plotutils
-from origami.zigzagmiuraori import ZigzagMiuraOri
+from origami.zigzagmiuraori import ZigzagMiuraOri, create_zigzag_dots
 
-FIGURES_PATH = '../../RFFQM/Figures/zigzag-origami'
-
-
-def create_zigzag(n, dxs, y, angle) -> np.ndarray:
-    dots = np.zeros((2, n))
-    dots[0, 1:] = np.cumsum(dxs)
-
-    dys = np.zeros(n - 1)
-    dys[0::2] = dxs[0::2] / np.tan(angle)
-    dys[1::2] = -dxs[1::2] / np.tan(angle)
-    dots[1, 1:] = np.cumsum(dys)
-    dots[1, :] += y
-    return dots
-
-
-def create_zigzag_dots(angles: Sequence[float], n, ls: Union[float, Sequence[float]], dxs) -> np.ndarray:
-    if hasattr(ls, '__len__'):
-        assert len(ls) == len(angles) - 1
-    else:
-        ls = np.ones(len(angles) - 1) * ls
-    ls = np.append(ls, 0)
-
-    if hasattr(dxs, '__len__'):
-        assert len(dxs) == n - 1, \
-            f'Got {len(dxs)} dxs while there should be {n}-1'
-    else:
-        dxs = np.ones(n - 1) * dxs
-
-    dots = np.zeros((2, len(angles) * n))
-
-    y = 0
-    for i, angle in enumerate(angles):
-        dots[:, i * n:(i + 1) * n] = create_zigzag(n, dxs, y, angle)
-
-        y += ls[i]
-
-    return dots
+FIGURES_PATH = '../../../RFFQM/Figures/zigzag-origami'
 
 
 def create_basic_crease1():
@@ -164,20 +128,7 @@ def plot():
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
         print(f'Not a valid folded configuration. Reason: {reason}')
 
-    plot_interactive(origami)
-
-
-def plot_interactive(origami):
-    fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d')
-    origami.plot(ax)
-
-    # We need to assign the return value to variable slider for the slider object
-    # stay alive and keep functioning
-    # noinspection PyUnusedLocal
-    slider = simplemiuraplots.add_slider(ax, origami, should_plot_normals=False)
-
-    plt.show()
+    plot_interactive_miuraori(origami)
 
 
 def plot_simple_example():

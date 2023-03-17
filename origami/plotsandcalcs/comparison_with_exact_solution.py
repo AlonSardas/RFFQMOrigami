@@ -7,10 +7,10 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami import miuraori
-from origami.continuousorigami import follow_curve, plot_zigzag
+from origami.utils.zigzagutils import follow_curve, plot_zigzag
 from origami.utils import plotutils, sympyutils
 
-FIGURES_PATH = '../../RFFQM/Figures'
+FIGURES_PATH = '../../../RFFQM/Figures'
 
 
 class DiscreteOrigami(object):

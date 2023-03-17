@@ -1,19 +1,11 @@
-import os.path
 from typing import Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from origami.utils import plotutils
-
-PI = np.pi
-
-FIGURES_PATH = '../../RFFQM/Figures/continuous-origami'
 
 
-def follow_curve(xs, ys, zigzag_angle) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def follow_curve(xs: np.ndarray, ys: np.ndarray, zigzag_angle: float) -> \
+        Tuple[np.ndarray, np.ndarray, np.ndarray]:
     ls = np.zeros((len(xs) - 1) * 2)
     middle_points_xs = np.zeros((len(xs) - 1))
     middle_points_ys = np.zeros((len(xs) - 1))
@@ -44,7 +36,7 @@ def follow_curve(xs, ys, zigzag_angle) -> Tuple[np.ndarray, np.ndarray, np.ndarr
     return ls, middle_points_xs, middle_points_ys
 
 
-def calc_zigzag_points_by_lengths(cs, zigzag_angle, x0=0, y0=0):
+def calc_zigzag_points_by_lengths(cs, zigzag_angle: float, x0: float = 0, y0: float = 0):
     if len(cs) % 2 == 1:
         raise RuntimeError(f'length of cs must be even, got {len(cs)}')
     xs = np.zeros(len(cs) // 2 + 1)
@@ -82,65 +74,3 @@ def plot_zigzag(ax: Axes, xs, ys, mid_xs, mid_ys):
     zigzag = ax.plot(all_ys, all_zs, '-')[0]
 
     return points, middles, zigzag
-
-
-def plot_ratio_field():
-    phi = 0.6
-    xs = np.linspace(0, 2 * PI, 200)
-    Hs = (np.cos(xs) * np.tan(phi) + 1) / (1 - np.cos(xs) * np.tan(phi))
-
-    fig, ax = plt.subplots()
-    fig: Figure = fig
-    ax: Axes = ax
-    ax.plot(xs, Hs)
-    plotutils.set_pi_ticks(ax, 'X', pi_range=(0, 2))
-    ax.set_xlabel('x')
-    ax.set_ylabel('H(x)')
-
-    fig.savefig(os.path.join(FIGURES_PATH, 'H-vs-x.png'))
-
-
-def plot_following_curve():
-    phi = 0.6
-
-    def H_func(x): return (np.cos(x) * np.tan(phi) + 1) / (1 - np.cos(x) * np.tan(phi))
-
-    dx = 0.5
-    xs = np.arange(0, 2 * PI, dx)
-    Hs = H_func(xs[:-1] + dx / 2)
-
-    cs = np.zeros((len(xs) - 1) * 2)
-    cs[::2] = dx / ((1 + Hs) * np.sin(phi))
-    cs[1::2] = cs[::2] * Hs
-    # print(cs)
-
-    xs, ys, mid_xs, mid_ys = calc_zigzag_points_by_lengths(cs, phi)
-
-    fig: Figure = plt.figure()
-    ax: Axes = fig.add_subplot()
-
-    points, middles, _ = plot_zigzag(ax, xs, ys, mid_xs, mid_ys)
-
-    points.set_markersize(12)
-    middles.set_markersize(12)
-
-    smooth_xs = np.linspace(0, 2 * PI, 200)
-    smooth_ys = np.sin(smooth_xs)
-
-    ax.plot(smooth_xs, smooth_ys, '--')
-
-    ax.set_xlabel('x')
-    ax.set_ylabel(r'$ y=\sin(x) $')
-
-    fig.savefig(os.path.join(FIGURES_PATH, 'following-sin-curve.png'))
-
-    plt.show()
-
-
-def main():
-    # plot_ratio_field()
-    plot_following_curve()
-
-
-if __name__ == '__main__':
-    main()

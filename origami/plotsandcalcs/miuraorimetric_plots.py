@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from miuraori import SimpleMiuraOri
 from origami.utils.plotutils import set_pi_ticks, set_3D_labels
 
-FIGURES_PATH = '../../RFFQM/Figures'
+FIGURES_PATH = '../../../RFFQM/Figures'
 
 
 def plot_simple_crease_pattern():
