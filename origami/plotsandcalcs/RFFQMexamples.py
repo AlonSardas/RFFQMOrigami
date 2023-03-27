@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
+from origami import origamimetric
 from origami.RFFQMOrigami import RFFQM
 from origami.interactiveplot import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
@@ -73,7 +74,7 @@ def create_sphere():
 
     ls_sphere, _, _ = zigzagutils.follow_curve(xs, ys, (np.pi - zigzag_angle) / 2)
     ls = np.append(ls_sphere, np.ones(20) * 0.01)
-
+    print(ls_sphere)
     angle = 0.51 * np.pi
     cs = np.ones(20) * 0.015
 
@@ -88,7 +89,17 @@ def create_sphere():
     quads = QuadrangleArray(dots, rows, cols)
     origami = RFFQM(quads)
 
-    origami.set_omega(zigzag_angle)
+    origami.set_gamma(zigzag_angle)
+
+    # Trying to verify that the curvature is indeed constant:
+    Ks, _, _, _ = origamimetric.calc_curvature_and_metric(origami.dots)
+    fig, ax = plt.subplots()
+    print(Ks.shape)
+    print(Ks[5:-5, 5:-5])
+    # ax.plot([1, 4, 5, 2], '.')
+    # ax.plot(Ks[4:len(ls_sphere)//2, 1:8].flat, '.')
+    ax.plot(Ks[5:, 1:].flat, '.')
+    # print(Ks.transpose())
 
     # This aligns the sphere
     dots = origami.dots.dots
@@ -119,8 +130,8 @@ def create_sphere():
     # relevant_dots = dots[:, indexes[1:len(ls_sphere):2, 1::2].flat]
     relevant_dots = dots[:, indexes[1:len(ls_sphere):2, 1::2].flat]
     d = np.sqrt(np.sum(relevant_dots ** 2, axis=0))
-    print(d.shape)
-    print(d)
+    # print(d.shape)
+    # print(d)
     print(f'among {len(d)} points, mean: {d.mean()}, and std: {d.std()}')
 
     plotutils.set_axis_scaled(ax)
@@ -162,8 +173,8 @@ def main():
     # logutils.enable_logger()
     # create_basic_crease()
     # create_radial()
-    create_sphere_interactive()
-    # create_sphere()
+    # create_sphere_interactive()
+    create_sphere()
     # create_MARS_Barreto()
 
 

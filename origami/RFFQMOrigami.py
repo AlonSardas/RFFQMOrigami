@@ -32,7 +32,7 @@ class RFFQM(object):
         self.initial_dots = crease_pattern
         self.dots = crease_pattern.copy()
         self.indexes = self.initial_dots.indexes
-        self.omega = 0
+        self.gamma = 0
 
         if sigmas is None:
             # In a Miura-Ori all the sigmas are -1
@@ -57,7 +57,7 @@ class RFFQM(object):
 
         return angles
 
-    def set_omega(self, omega, should_center=True) -> QuadrangleArray:
+    def set_gamma(self, gamma, should_center=True) -> QuadrangleArray:
         """
         See eq. 70 and after for the algorithm and notation used here.
         Note that in the paper, they use some imaginary seed values for angles that we
@@ -68,7 +68,7 @@ class RFFQM(object):
         calculating the kinematics, here we calculate each deformation gradient just before
         we need to use it on the specific panel
         """
-        self.omega = omega
+        self.gamma = gamma
         self.dots = self.initial_dots.copy()  # Each time we start from a flat configuration
         indexes = self.indexes
         sigmas = self.sigmas
@@ -77,12 +77,12 @@ class RFFQM(object):
         i, j = 1, 1
         alpha, beta = self.angles[:, indexes[i, j]]
         gamma_1, gamma_2, gamma_3, gamma_4 = self._calc_angles_right(
-            alpha, beta, sigmas[i, j], omega)
+            alpha, beta, sigmas[i, j], gamma)
 
         # This is used as the seed for the angles for the next rows
         initial_gamma2 = gamma_2
 
-        gamma_1 = omega
+        gamma_1 = gamma
 
         i = 1
         # We fold first the bottom row
@@ -97,7 +97,7 @@ class RFFQM(object):
                 f'Indices to change: {np.array(dots_indices)}')
             self._rotate_crease(i, j, 4, gamma_4, dots_indices)
 
-        gamma_1 = omega
+        gamma_1 = gamma
 
         for i in range(1, self.rows - 1):
             for j in range(1, self.cols - 1):
@@ -132,6 +132,47 @@ class RFFQM(object):
             self.dots.rotate_and_center()
 
         return self.dots
+
+    def calc_gamma_by_omega(self, omega):
+        """
+        This is for convenient when there when sometime we want to determine gamma,
+        and sometime we want to determine omega of the first vertex.
+        It happened because of inconsistency in the naming of omega and gamma
+        """
+        i, j = 1, 1
+        alpha, beta = self.angles[:, self.indexes[i, j]]
+        omega = calc_gamma1(self.sigmas[i, j], omega, alpha, beta)
+        return omega
+
+    def calc_omegas_vs_x(self) -> np.ndarray:
+        cols = self.cols
+        quads = self.dots
+        omegas = np.zeros(cols // 2 - 1)
+        for j in range(len(omegas)):
+            jj = 2 * j + 1
+            base_dot = quads.dots[:, quads.indexes[0, jj]]
+            v0 = quads.dots[:, quads.indexes[1, jj]] - base_dot
+            v1 = quads.dots[:, quads.indexes[0, jj - 1]] - base_dot
+            v2 = quads.dots[:, quads.indexes[0, jj + 1]] - base_dot
+            n1 = np.cross(v1, v0)
+            n2 = np.cross(v0, v2)
+            omegas[j] = linalgutils.calc_angle(n1, n2)
+        return omegas
+
+    def calc_gammas_vs_y(self) -> np.ndarray:
+        rows = self.rows
+        quads = self.dots
+        gammas = np.zeros(rows // 2 - 1)
+        for i in range(len(gammas)):
+            ii = 2 * i + 1
+            base_dot = quads.dots[:, quads.indexes[ii, 0]]
+            v0 = quads.dots[:, quads.indexes[ii, 1]] - base_dot
+            v1 = quads.dots[:, quads.indexes[ii - 1, 0]] - base_dot
+            v2 = quads.dots[:, quads.indexes[ii + 1, 0]] - base_dot
+            n1 = np.cross(v1, v0)
+            n2 = np.cross(v0, v2)
+            gammas[i] = linalgutils.calc_angle(n1, n2)
+        return gammas
 
     def _rotate_crease(self, i0, j0, d, angle, indexes_to_change):
         i1, j1 = i0, j0

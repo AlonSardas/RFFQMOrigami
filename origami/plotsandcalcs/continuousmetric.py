@@ -213,14 +213,14 @@ def test_g12():
     omegas = np.linspace(-np.pi + 0.01, np.pi - 0.01, 16)
 
     for o in omegas:
-        origami.set_omega(o, should_center=False)
+        origami.set_gamma(o, should_center=False)
         quads = origami.dots
         AE_vec = quads.dots[:, quads.indexes[0, 2]] - quads.dots[:, quads.indexes[0, 0]]
         AJ_vec = quads.dots[:, quads.indexes[2, 0]] - quads.dots[:, quads.indexes[0, 0]]
         print(f"omega={o}; inner product {AE_vec.transpose().dot(AJ_vec)}")
 
 
-def calc_omegas():
+def calc_omega():
     omega_11 = Symbol(r"\omega_11")
 
     s = +1
@@ -258,7 +258,7 @@ def main():
     # test_g12()
     # calc_unperturbed_aligned()
     # calc_metric()
-    calc_omegas()
+    calc_omega()
 
 
 if __name__ == '__main__':

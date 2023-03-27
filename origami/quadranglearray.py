@@ -15,7 +15,7 @@ logger.setLevel(logging.DEBUG)
 class QuadrangleArray(object):
     def __init__(self, dots: np.ndarray, rows: int, cols: int):
         if dots.shape[0] == 2:
-            dots3D = np.zeros((3, dots.shape[1]))
+            dots3D = np.zeros((3, dots.shape[1]), dtype=dots.dtype)
             dots3D[:2, :] = dots
             dots = dots3D
         self.dots = dots

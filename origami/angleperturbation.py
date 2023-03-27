@@ -18,7 +18,7 @@ AnglesFuncType = Callable[[np.ndarray | float | int, np.ndarray | float | int], 
 
 def set_perturbations_by_func(func: AnglesFuncType, angles_left: np.ndarray, angles_bottom: np.ndarray,
                               which_angle: str = 'delta+eta', which_boundary: str = 'left+bottom'):
-    bottom_range = np.arange(angles_bottom.shape[1])
+    bottom_range = np.arange(angles_bottom.shape[1]) + 1
     left_range = np.arange(angles_left.shape[1])
 
     deltas_bottom, etas_bottom = func(bottom_range, 0)
