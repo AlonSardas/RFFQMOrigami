@@ -20,7 +20,7 @@ def set_pi_ticks(ax, axis, pi_range=(0, 1), divisions=4):
         return r'\frac{' + str(frac.numerator) + '}{' + str(frac.denominator) + '}'
 
     latexs = [fraction_to_latex(f) for f in values]
-    labels = ['$ ' + l + r'\pi $' if l != '0' else '0' for l in latexs]
+    labels = ['$ ' + frac_latex + r'\pi $' if frac_latex != '0' else '0' for frac_latex in latexs]
 
     if 'x' in axis:
         ax.set_xticks(ticks)
@@ -48,3 +48,10 @@ def create_colorbar(fig: Figure, ax: Axes, im):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="8%", pad=0.15)
     fig.colorbar(im, cax=cax)
+
+
+def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title):
+    im = ax.imshow(data)
+    create_colorbar(fig, ax, im)
+    ax.set_title(ax_title)
+    ax.invert_yaxis()

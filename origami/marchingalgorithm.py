@@ -60,6 +60,8 @@ class MarchingAlgorithm(object):
         self.sigmas = sigmas
 
         self._fill_angles()
+        self._ls = np.zeros((rows - 1, cols))
+        self._cs = np.zeros((rows, cols - 1))
 
     @staticmethod
     def _assert_valid_input_angles(angles_left: np.ndarray, angles_bottom: np.ndarray):
@@ -149,6 +151,7 @@ class MarchingAlgorithm(object):
         angle = np.pi / 2 - self.alphas[0, 0]
         for j in range(1, cols):
             length = cs_bottom[j - 1]
+            self._cs[0, j - 1] = length
             vec = np.array([np.cos(angle), np.sin(angle)])
             dots[:, indexes[0, j]] = dots[:, indexes[0, j - 1]] + vec * length
             angle = angle + np.pi - (self.alphas[0, j] + self.betas[0, j])
@@ -157,6 +160,7 @@ class MarchingAlgorithm(object):
         angle = np.pi / 2
         for i in range(1, rows):
             length = ls_left[i - 1]
+            self._ls[i - 1, 0] = length
             vec = np.array([np.cos(angle), np.sin(angle)])
             dots[:, indexes[i, 0]] = dots[:, indexes[i - 1, 0]] + vec * length
             angle = angle - np.pi + (self.alphas[i, 0] + np.pi - self.betas[i, 0])
@@ -189,6 +193,8 @@ class MarchingAlgorithm(object):
             raise IncompatibleError(
                 f"Got a non-positive crease line for line bd at index {i},{j}. "
                 f"length got: {l_bd}")
+        self._cs[i, j - 1] = l_bd
+        self._ls[i - 1, j] = l_cd
 
         vec_ca = dots[:, indexes[i - 1, j - 1]] - dots[:, indexes[i - 1, j]]
         vec_ca = vec_ca / norm(vec_ca)
@@ -197,6 +203,12 @@ class MarchingAlgorithm(object):
                                     [sin(angle), cos(angle)]])
         vec_cd = rotation_matrix @ vec_ca
         dots[:, indexes[i, j]] = dots[:, indexes[i - 1, j]] + vec_cd * l_cd
+
+    def get_ls(self) -> np.ndarray:
+        return self._ls
+
+    def get_cs(self) -> np.ndarray:
+        return self._cs
 
 
 def mu1(a, b, s):

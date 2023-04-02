@@ -4,7 +4,6 @@ Here we want to verify numerically these results.
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -70,35 +69,33 @@ def test_unit_cell():
     plot_interactive(ori)
 
 
-def _imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title):
-    im = ax.imshow(data)
-    plotutils.create_colorbar(fig, ax, im)
-    ax.set_title(ax_title)
-    ax.invert_yaxis()
-
-
 def reproduce_sphere():
     """
     We try to build the sphere again, using the results we got for the lengths
     """
-    Ms = np.array([1.01, 1.14075, 1.20849, 1.26581, 1.31854, 1.36899, 1.4184, 1.46759, \
-                   1.51714, 1.56753, 1.61921, 1.67259, 1.72808, 1.78615, 1.84729, \
-                   1.91206, 1.98112, 2.05524, 2.13539, 2.22272, 2.31871, 2.42526, \
-                   2.54488, 2.68092, 2.83809, 3.02316, 3.24638, 3.52411, 3.88458, \
-                   4.38191, 5.13774])
-    # Ms = Ms[:10]
-    W0 = 1.0
+    # Ms = np.array([1.01, 1.14075, 1.20849, 1.26581, 1.31854, 1.36899, 1.4184, 1.46759, \
+    #                1.51714, 1.56753, 1.61921, 1.67259, 1.72808, 1.78615, 1.84729, \
+    #                1.91206, 1.98112, 2.05524, 2.13539, 2.22272, 2.31871, 2.42526, \
+    #                2.54488, 2.68092, 2.83809, 3.02316, 3.24638, 3.52411, 3.88458, \
+    #                4.38191, 5.13774])
+
+    Mt = np.array([0., 0.898106, 1.78583, 2.65552, 3.50242, 4.32366, 5.11739, 5.88221, \
+                   6.61684, 7.31995, 7.98997, 8.62504, 9.22283, 9.78037, 10.2939, \
+                   10.7583, 11.167, 11.5106, 11.7756, 11.9408, 11.9705])
+    Ms = np.diff(Mt)
+
+    W0 = 2.0
     angle = 1.3
     C0 = 0.001
     L0 = 1
-    expectedK = 0.5
+    expectedK = 0.01  # Check the numbers
     F0 = 0.02
 
     F = lambda x: F0
     G = lambda y: 0
 
     rows = len(Ms) * 2
-    cols = 90
+    cols = 20
     ls = np.ones(rows)
     cs = np.ones(cols) * C0
 
@@ -115,12 +112,7 @@ def reproduce_sphere():
     fig, _ = plot_flat_quadrangles(quads)
     ori = RFFQM(quads)
 
-    # W0=0.2
-    print("gamma", ori.calc_gamma_by_omega(W0))
-    # gamma = 2.75
     ori.set_gamma(ori.calc_gamma_by_omega(W0), should_center=True)
-    # ori.set_omega(0.1W0 should_center=False)
-    print("calculated omega", ori.calc_omegas_vs_x()[0])
     Ks, g11, g12, g22 = origamimetric.calc_curvature_and_metric(ori.dots)
     print(f"max curvature: {np.max(np.abs(Ks))}")
     print(f"mean curvature: {np.mean(np.abs(Ks))}")
@@ -149,7 +141,8 @@ def reproduce_sphere():
     plotutils.set_axis_scaled(ax)
 
     fig, ax = plt.subplots()
-    ax.plot(Ks[5:-5, 1].flat, '.')
+    ax.set_title('Ks on line')
+    ax.plot(Ks[2:-2, 2].flat, '.')
 
     plot_interactive(ori)
 
