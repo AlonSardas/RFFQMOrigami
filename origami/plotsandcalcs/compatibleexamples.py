@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 
-import origami
+import origami.plotsandcalcs
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 
-FIGURES_PATH = os.path.join(origami.BASE_PATH, 'RFFQM/Compatibility/Figures')
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM/Compatibility/Figures')
 
 
 def create_miura_ori():

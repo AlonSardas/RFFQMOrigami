@@ -15,6 +15,11 @@ def calc_angle(v1, v2):
     return angle
 
 
+def calc_normal(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    n = np.cross(v1, v2)
+    return n / np.linalg.norm(n)
+
+
 def create_XY_rotation_matrix(angle):
     R_xy = np.array([
         [np.cos(angle), -np.sin(angle), 0],

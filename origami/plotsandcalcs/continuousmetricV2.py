@@ -39,7 +39,7 @@ def test_F():
     # cs[::2] = 3+np.arange(len(cs)//2)*0.1
     # ls[::2]=2-np.arange(len(ls)//2)**2/500
     # ls[::2]=2-np.arange(len(ls)//2)**2/500
-    ls[::2] += np.arange(len(ls)//2)*1.3
+    ls[::2] += np.arange(len(ls) // 2) * 1.3
     ls /= 100
     cs /= 10
     # ls += np.arange(len(ls)//2)*0.3
@@ -217,10 +217,7 @@ def test_metric():
 
 
 def _imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title):
-    im = ax.imshow(data)
-    plotutils.create_colorbar(fig, ax, im)
-    ax.set_title(ax_title)
-    ax.invert_yaxis()
+    plotutils.imshow_with_colorbar(fig, ax, data, ax_title)
 
 
 def main():

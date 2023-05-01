@@ -60,3 +60,13 @@ def create_angles_func(F, G) -> AnglesFuncType:
         return deltas, etas
 
     return func
+
+
+def create_angles_func_vertical_alternation(F1, F2) -> AnglesFuncType:
+    def func(xs, ys):
+        deltas = F1(xs) * (1 - ys % 2) + F2(xs) * (ys % 2)
+        etas = F1(xs) * (ys % 2) + F2(xs) * (1 - ys % 2)
+
+        return deltas, etas
+
+    return func

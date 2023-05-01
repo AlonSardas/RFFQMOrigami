@@ -7,13 +7,13 @@ from matplotlib.figure import Figure
 
 import origami
 import origami.angleperturbation
+import origami.plotsandcalcs
 from origami import RFFQMOrigami
 from origami.angleperturbation import set_perturbations_by_func_v1
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
-from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles, QuadrangleArray
-from origami.utils import linalgutils
+from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 
-FIGURES_PATH = os.path.join(origami.BASE_PATH, 'RFFQM/Compatibility/Figures/continuous-lengths')
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM/Compatibility/Figures/continuous-lengths')
 
 
 def test_special_case_F_const():
@@ -243,8 +243,8 @@ def test_omega():
     # expected = np.pi-2 * np.arctan((C * np.exp(Ftilde(xs * 2) * np.tan(angle))))
     W0 = 2
 
-    expected = 2 * np.arctan(np.tan(W0/2)*(np.exp((F(xs)-F(0)) * np.tan(angle))))
-    Lexpected = W0+(-F(0)+F(xs))*np.sin(W0)*np.tan(angle)
+    expected = 2 * np.arctan(np.tan(W0 / 2) * (np.exp((F(xs) - F(0)) * np.tan(angle))))
+    Lexpected = W0 + (-F(0) + F(xs)) * np.sin(W0) * np.tan(angle)
     # expected = 2 * np.arctan(np.tan(1.447 / 2) * np.exp((Ftilde(xs * 2) - Ftilde(0)) * np.tan(angle)))
     ax.plot(xs, expected)
     ax.plot(xs, Lexpected)
@@ -256,7 +256,7 @@ def test_omega():
     compared[:, 1] = np.pi / 2 - C * np.exp(Ftilde(np.arange(len(omegas)) * 2) * np.tan(angle))
     # print(compared)
 
-    path = os.path.join(origami.BASE_PATH, 'RFFQM/ContinuousMetric/Figures', 'omega_comparison.png')
+    path = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM/ContinuousMetric/Figures', 'omega_comparison.png')
     # fig.savefig(path)
 
     # fig, ax = plt.subplots()
@@ -270,7 +270,7 @@ def test_omega():
 
 
 def test_gamma():
-    Ftilde = lambda x: 0#0.0003 * np.cos(x / 40) - 0.001 * np.sin(x / 50 + 10)
+    Ftilde = lambda x: 0  # 0.0003 * np.cos(x / 40) - 0.001 * np.sin(x / 50 + 10)
     G = lambda y: 0.003 * np.cos(y / 40) + 0.002 * np.sin(y / 50 + 10)
     angle = 1
 

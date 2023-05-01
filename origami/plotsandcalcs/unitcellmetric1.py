@@ -82,7 +82,9 @@ def calc_gamma():
     b = pi - cth + eta_22
     o = omega
 
-    calculated_gamma = gamma2(s, a, b, o)
+    nom = (-s + cos(a) * cos(b)) * cos(o) + sin(a) * sin(b)
+    deno = -s + cos(a) * cos(b) + sin(a) * sin(b) * cos(o)
+    calculated_gamma = acos(nom / deno)
 
     print(latex(calculated_gamma))
     print("Ignoring perturbation: ")

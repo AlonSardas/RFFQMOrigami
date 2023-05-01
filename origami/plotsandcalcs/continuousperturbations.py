@@ -11,15 +11,15 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-import origami
+import origami.plotsandcalcs
 from origami.RFFQMOrigami import RFFQM
-from origami.interactiveplot import plot_interactive
 from origami.angleperturbation import set_perturbations_by_func_v1, set_perturbations_by_func, _create_func_v1
+from origami.interactiveplot import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles, IncompatibleError
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils
 
-FIGURES_PATH = os.path.join(origami.BASE_PATH, 'RFFQM/Compatibility/Figures/continuous-angles/')
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM/Compatibility/Figures/continuous-angles/')
 
 
 def test_continuous_perturbations():
