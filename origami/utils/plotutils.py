@@ -3,6 +3,7 @@ import fractions
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.image import AxesImage
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -50,8 +51,11 @@ def create_colorbar(fig: Figure, ax: Axes, im):
     fig.colorbar(im, cax=cax)
 
 
-def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title):
+def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title) -> AxesImage:
+    if(data.dtype == np.float128):
+        data = np.array(data, np.float64)
     im = ax.imshow(data)
     create_colorbar(fig, ax, im)
     ax.set_title(ax_title)
     ax.invert_yaxis()
+    return im

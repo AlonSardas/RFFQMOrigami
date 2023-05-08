@@ -1,7 +1,9 @@
 import os
+from typing import Tuple
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 
 import origami.plotsandcalcs
 from origami import origamimetric
@@ -148,21 +150,13 @@ def test_angles():
     rows = 70
     cols = 100
     L0 = 1
-    ls = np.ones(rows) * L0
-    cs = np.ones(cols) * 1
+    C0 = 1
     # ls[1::2] += 0.2 * np.sin((np.arange(len(ls) // 2) - 13) / 5)
     # cs += -0.5+0.1*np.sin(np.arange(len(cs))/20)
+    MM = lambda y: 0
+    ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
 
-    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
-
-    pert_func = create_angles_func_vertical_alternation(F1, F2)
-    set_perturbations_by_func(pert_func, angles_left, angles_bottom)
-
-    marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
-
-    fig, _ = plot_flat_quadrangles(quads)
-    ori = RFFQM(quads)
+    fig, _ = plot_flat_quadrangles(ori.dots)
 
     G0 = 2
     ori.set_gamma(G0)
@@ -313,63 +307,52 @@ def test_metric():
     ax.set_title(f"Ks comparison, y={y0}")
     ax.legend()
 
-    fig, axes = plt.subplots(2)
-
-    imshow_with_colorbar(fig, axes[0], Ks, "K")
-    len_ys, len_xs = Ks.shape
-    xs, ys = np.arange(len_xs), np.arange(len_ys)
-    Xs, Ys = np.meshgrid(xs, ys)
-    imshow_with_colorbar(fig, axes[1], expected_K_func(Xs, Ys), "expected K")
+    fig, ax = _compare_curvatures(Ks, expected_K_func)
     # fig.savefig(os.path.join(FIGURES_PATH, 'Ks-comparison.png'))
     plt.show()
 
     plot_interactive(ori)
 
 
+def _compare_curvatures(Ks, expected_K_func) -> Tuple[Figure, np.ndarray]:
+    fig, axes = plt.subplots(2)
+
+    len_ys, len_xs = Ks.shape
+    xs, ys = np.arange(len_xs), np.arange(len_ys)
+    Xs, Ys = np.meshgrid(xs, ys)
+
+    im = imshow_with_colorbar(fig, axes[0], Ks, "K")
+    vmin, vmax = im.get_clim()
+    im2 = imshow_with_colorbar(fig, axes[1], expected_K_func(Xs, Ys), "expected K")
+    im2.set_clim(vmin, vmax)
+
+    return fig, axes
+
+
 def test_constant_curvature():
     rows = 40
     cols = 40
+    # rows = 8
+    # cols = 24
+    angle = np.pi / 2 - 0.2
+    W0 = 2.6
 
-    F = lambda x: 0.03 * (x - cols / 2 + 0.05)
-    F1 = lambda x: F(x)
-    F2 = lambda x: -F(x)
+    F = lambda x: 0.01 * (x - cols / 2)
 
-    MM = lambda y: 0.01 * ((y -rows / 4)) ** 2
-    dMM = lambda y: MM(y + 1) - MM(y)
-    ddMM = lambda y: dMM(y + 1) - dMM(y)
-    dddMM = lambda y: ddMM(y + 1) - ddMM(y)
+    MM = lambda y: 0.01 * ((y - rows / 4)) ** 2
 
     FF = lambda x: F(x * 2)
-    dFF = lambda x: FF(x + 0.5) - FF(x - 0.5)
-    ddFF = lambda x: dFF(x + 0.5) - dFF(x - 0.5)
-    dddFF = lambda x: ddFF(x + 0.5) - ddFF(x - 0.5)
-
-    angle = np.pi / 2 - 0.1
 
     L0 = 1
     C0 = 0.5
-    ls = np.ones(rows) * L0
-    cs = np.ones(cols) * C0
 
-    ys = np.arange(len(ls) // 2)
-    ls[1::2] = L0 + dMM(ys) + 1 / 2 * ddMM(ys)
+    ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+    fig, _ = plot_flat_quadrangles(ori.dots)
 
-    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
-
-    pert_func = create_angles_func_vertical_alternation(F1, F2)
-    set_perturbations_by_func(pert_func, angles_left, angles_bottom)
-
-    marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
-
-    fig, _ = plot_flat_quadrangles(quads)
-    ori = RFFQM(quads)
-
-    W0 = 3.0
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
     Ks, g11, g12, g22 = origamimetric.calc_curvature_and_metric(ori.dots)
-    KsOther, _, _, _ = origamimetric.calc_curvature_by_triangles(ori.dots)
+    # KsOther, _, _, _ = origamimetric.calc_curvature_by_triangles(ori.dots)
 
     fig, axes = plt.subplots(2, 2)
     imshow_with_colorbar(fig, axes[0, 0], g11, "g11")
@@ -377,23 +360,147 @@ def test_constant_curvature():
     imshow_with_colorbar(fig, axes[1, 0], g12, "g12")
     imshow_with_colorbar(fig, axes[1, 1], Ks, "K")
 
-    fig, ax = plt.subplots()
-    imshow_with_colorbar(fig, ax, KsOther, "Ks by triangles")
+    # fig, ax = plt.subplots()
+    # imshow_with_colorbar(fig, ax, KsOther, "Ks by triangles")
 
     dF = FF(1) - FF(0)
     ddMM = MM(2) + MM(0) - 2 * MM(1)
     expectedK = -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dF * \
                 ddMM * (cos(W0) - 2 * csc(angle) ** 2 + 1)
     print(expectedK)
+    print("angles only", tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * \
+          (cos(W0) - 2 * csc(angle) ** 2 + 1))
 
     plot_interactive(ori)
+
+
+def plot_constant_curvature():
+    F = lambda x: 0.01 * (x - cols / 2)
+
+    MM = lambda y: 0.01 * ((y - rows / 4)) ** 2
+    dMM = lambda y: MM(y + +0.5) - MM(y - 0.5)
+    ddMM = lambda y: dMM(y + +0.5) - dMM(y - 0.5)
+
+    FF = lambda x: F(x * 2)
+    dFF = lambda x: FF(x + 0.5) - FF(x - 0.5)
+
+    L0 = 1
+    C0 = 0.5
+
+    angles = [0.9, 1.2, np.pi / 2 - 0.2, np.pi / 2 - 0.1, np.pi / 2 - 0.05, np.pi / 2 - 0.02]
+    rows, cols = 34, 34
+    W0 = 2.7
+    fig, axes = plt.subplots(3, 2)
+    fig: Figure = fig
+    axes = axes.flat
+    print(rf"Params: activation angle $ \omega={W0:.3f} $, rows,cols={rows}X{cols}")
+    for i, angle in enumerate(angles):
+        ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+        expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
+                                       ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
+        ori.set_gamma(ori.calc_gamma_by_omega(W0))
+        Ks, _, _, _ = origamimetric.calc_curvature_and_metric(ori.dots)
+        K0 = expected_K_func(1, 1)
+        imshow_with_colorbar(fig, axes[i], Ks, fr'$ \vartheta={angle:.2f} $, K0={K0:.3f}')
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'constant-curvature-vs-angle'))
+
+    rows = 50
+    cols = 50
+    angle = np.pi / 2 - 0.2
+    ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+
+    print(rf"Params: angle $ \vartheta={angle:.3f} $, rows,cols={rows}X{cols}")
+
+    omegas = [0.01, 1, 2, 2.5, 2.8, 3]
+    fig, axes = plt.subplots(3, 2)
+    fig: Figure = fig
+    axes = axes.flat
+    for i, omega in enumerate(omegas):
+        # print("angles only", tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * \
+        #       (cos(W0) - 2 * csc(angle) ** 2 + 1))
+
+        expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
+                                       ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
+        W0 = omega
+        ori.set_gamma(ori.calc_gamma_by_omega(W0))
+        Ks, _, _, _ = origamimetric.calc_curvature_and_metric(ori.dots)
+        K0 = expected_K_func(1, 1)
+        imshow_with_colorbar(fig, axes[i], Ks, f'$ \omega={W0:.2f} $, K0={K0:.3f}')
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'constant-curvature-vs-omega'))
+
+    plt.show()
+
+    # plot_interactive(ori)
+
+
+def plot_hills():
+    rows, cols = 80, 80
+    angle = np.pi / 2 - 0.2
+    W0 = 3
+
+    L0 = 1
+    C0 = 0.5
+
+    config = [(0.02, 0.1, 'hills-small.png'), (0.1, 0.7, 'hills-big.png')]
+    for F0, MM0, name in config:
+        F = lambda x: F0 * np.sin(2 * np.pi * x / 39)
+
+        MM = lambda y: MM0 * np.cos(2 * np.pi * y / 16)
+        dMM = lambda y: MM(y + 1) - MM(y)
+        ddMM = lambda y: dMM(y + 1) - dMM(y)
+
+        FF = lambda x: F(x * 2)
+        dFF = lambda x: FF(x + 0.5) - FF(x - 0.5)
+
+        ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+        ori.set_gamma(ori.calc_gamma_by_omega(W0))
+        Ks, g11, g12, g22 = origamimetric.calc_curvature_and_metric(ori.dots)
+
+        expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
+                                       ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
+        fig, ax = _compare_curvatures(Ks, expected_K_func)
+        print(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
+        fig.suptitle(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
+        fig.tight_layout()
+        fig.savefig(os.path.join(FIGURES_PATH, name))
+
+    plt.show()
+
+
+def create_perturbed_origami(angle, rows, cols, L0, C0, F, MM) -> RFFQM:
+    dMM = lambda y: MM(y + 1) - MM(y)
+    ddMM = lambda y: dMM(y + 1) - dMM(y)
+
+    F1 = lambda x: F(x)
+    F2 = lambda x: -F(x)
+
+    ls = np.ones(rows) * L0
+    cs = np.ones(cols) * C0
+
+    ys = np.arange(len(ls) // 2)
+    ls[1::2] = L0 + dMM(ys) + 1 / 2 * ddMM(ys)
+
+    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
+    pert_func = create_angles_func_vertical_alternation(F1, F2)
+    set_perturbations_by_func(pert_func, angles_left, angles_bottom)
+
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
+    ori = RFFQM(quads)
+    return ori
 
 
 def main():
     # debug_lengths_perturbations()
     # test_angles()
     # test_metric()
-    test_constant_curvature()
+    # test_constant_curvature()
+    plot_hills()
+    # plot_constant_curvature()
 
 
 if __name__ == '__main__':

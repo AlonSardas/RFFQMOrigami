@@ -59,27 +59,12 @@ def calc_curvature_and_metric(quads: QuadrangleArray) -> \
     metric_dot_ys: np.ndarray = quads.dots[1, indexes[::2, ::2]].reshape(rows, cols)
     metric_dot_zs: np.ndarray = quads.dots[2, indexes[::2, ::2]].reshape(rows, cols)
 
-    du_xs = np.diff(metric_dot_xs, axis=1)[:-1, :]
-    du_ys = np.diff(metric_dot_ys, axis=1)[:-1, :]
-    du_zs = np.diff(metric_dot_zs, axis=1)[:-1, :]
-
-    dv_xs = np.diff(metric_dot_xs, axis=0)[:, :-1]
-    dv_ys = np.diff(metric_dot_ys, axis=0)[:, :-1]
-    dv_zs = np.diff(metric_dot_zs, axis=0)[:, :-1]
+    du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
 
     # We use the second fundamental for to calculate the Gaussian curvature
     # it seems easier than working with Christoffel symbols
-    dudu_xs = np.diff(du_xs, axis=1)[:-1, :]
-    dudu_ys = np.diff(du_ys, axis=1)[:-1, :]
-    dudu_zs = np.diff(du_zs, axis=1)[:-1, :]
-
-    dvdv_xs = np.diff(dv_xs, axis=0)[:, :-1]
-    dvdv_ys = np.diff(dv_ys, axis=0)[:, :-1]
-    dvdv_zs = np.diff(dv_zs, axis=0)[:, :-1]
-
-    dvdu_xs = np.diff(du_xs, axis=0)[:, :-1]
-    dvdu_ys = np.diff(du_ys, axis=0)[:, :-1]
-    dvdu_zs = np.diff(du_zs, axis=0)[:, :-1]
+    (dudu_xs, dudu_ys, dudu_zs, dvdu_xs, dvdu_ys, dvdu_zs, dvdv_xs, dvdv_ys, dvdv_zs) = \
+        _calc_2nd_derivatives(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs)
 
     # To match the shape:
     du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = [
@@ -89,14 +74,7 @@ def calc_curvature_and_metric(quads: QuadrangleArray) -> \
     g22 = dv_xs ** 2 + dv_ys ** 2 + dv_zs ** 2
     g12 = du_xs * dv_xs + du_ys * dv_ys + du_zs * dv_zs
 
-    N_xs = du_ys * dv_zs - dv_ys * du_zs
-    N_ys = dv_xs * du_zs - du_xs * dv_zs
-    N_zs = du_xs * dv_ys - dv_xs * du_ys
-
-    N_norms = np.sqrt(N_xs ** 2 + N_ys ** 2 + N_zs ** 2)
-    N_xs /= N_norms
-    N_ys /= N_norms
-    N_zs /= N_norms
+    N_xs, N_ys, N_zs = _calc_normals(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs)
 
     b11 = dudu_xs * N_xs + dudu_ys * N_ys + dudu_zs * N_zs
     b22 = dvdv_xs * N_xs + dvdv_ys * N_ys + dvdv_zs * N_zs
@@ -105,6 +83,110 @@ def calc_curvature_and_metric(quads: QuadrangleArray) -> \
     Ks = (b11 * b22 - b12 ** 2) / (g11 * g22 - g12 ** 2)
 
     return Ks, g11, g12, g22
+
+
+def calc_curvature_by_christoffel(quads: QuadrangleArray) -> \
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    For the formulae, see
+    https://en.wikipedia.org/wiki/Christoffel_symbols
+    https://en.wikipedia.org/wiki/Gaussian_curvature
+
+    :param quads: The dots of the quadrilateral mesh origami
+    :return: K, g11, g12, g22
+    """
+    indexes = quads.indexes
+    rows = (quads.rows + 1) // 2
+    cols = (quads.cols + 1) // 2
+    metric_dot_xs: np.ndarray = quads.dots[0, indexes[::2, ::2]].reshape(rows, cols)
+    metric_dot_ys: np.ndarray = quads.dots[1, indexes[::2, ::2]].reshape(rows, cols)
+    metric_dot_zs: np.ndarray = quads.dots[2, indexes[::2, ::2]].reshape(rows, cols)
+
+    du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
+
+    g11 = du_xs ** 2 + du_ys ** 2 + du_zs ** 2
+    g22 = dv_xs ** 2 + dv_ys ** 2 + dv_zs ** 2
+    g12 = du_xs * dv_xs + du_ys * dv_ys + du_zs * dv_zs
+
+    g_dets = g11 * g22 - g12 ** 2
+    g_inv11 = 1 / g_dets * g22
+    g_inv22 = 1 / g_dets * g11
+    g_inv12 = -1 / g_dets * g12
+
+    should_assert = False
+    if should_assert:
+        I11 = g_inv11 * g11 + g_inv12 * g12
+        I12 = g_inv11 * g12 + g_inv12 * g22
+        I22 = g_inv12 * g12 + g_inv22 * g22
+        assert np.all(np.isclose(I11, 1)), "There's an error with the inverse of the metric"
+        assert np.all(np.isclose(I12, 0)), "There's an error with the inverse of the metric"
+        assert np.all(np.isclose(I22, 1)), "There's an error with the inverse of the metric"
+
+    # Note: I used here np.gradient which approximates the derivative using 2 adjacent values
+    # It is different from what I did in my calculations in Mathematica
+
+    def g_inv(i, j):
+        if i == j == 1:
+            return g_inv11
+        elif i == j == 2:
+            return g_inv22
+        else:
+            return g_inv12
+
+    def g_metric(i, j):
+        if i == j == 1:
+            return g11
+        elif i == j == 2:
+            return g22
+        else:
+            return g12
+
+    g = lambda i, j, k: np.gradient(g_metric(i, j), axis=2 - k, edge_order=2)
+
+    gamma = lambda i, k, l: sum((1 / 2 * g_inv(i, m) * (g(m, k, l) + g(m, l, k) - g(k, l, m)))
+                                for m in [1, 2])
+
+    Ks = -1 / g11 * (
+                np.gradient(gamma(2, 1, 2), axis=1, edge_order=2) - np.gradient(gamma(2, 1, 1), axis=0, edge_order=2) +
+                gamma(1, 1, 2) * gamma(2, 1, 1) - gamma(1, 1, 1) * gamma(2, 1, 2) +
+                gamma(2, 1, 2) * gamma(2, 1, 2) - gamma(2, 1, 1) * gamma(2, 2, 2))
+
+    return Ks, g11, g12, g22
+
+
+def _calc_normals(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs):
+    N_xs = du_ys * dv_zs - dv_ys * du_zs
+    N_ys = dv_xs * du_zs - du_xs * dv_zs
+    N_zs = du_xs * dv_ys - dv_xs * du_ys
+    N_norms = np.sqrt(N_xs ** 2 + N_ys ** 2 + N_zs ** 2)
+    N_xs /= N_norms
+    N_ys /= N_norms
+    N_zs /= N_norms
+    return N_xs, N_ys, N_zs
+
+
+def _calc_2nd_derivatives(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs):
+    dudu_xs = np.diff(du_xs, axis=1)[:-1, :]
+    dudu_ys = np.diff(du_ys, axis=1)[:-1, :]
+    dudu_zs = np.diff(du_zs, axis=1)[:-1, :]
+    dvdv_xs = np.diff(dv_xs, axis=0)[:, :-1]
+    dvdv_ys = np.diff(dv_ys, axis=0)[:, :-1]
+    dvdv_zs = np.diff(dv_zs, axis=0)[:, :-1]
+    dvdu_xs = np.diff(du_xs, axis=0)[:, :-1]
+    dvdu_ys = np.diff(du_ys, axis=0)[:, :-1]
+    dvdu_zs = np.diff(du_zs, axis=0)[:, :-1]
+    return dudu_xs, dudu_ys, dudu_zs, dvdu_xs, dvdu_ys, dvdu_zs, dvdv_xs, dvdv_ys, dvdv_zs
+
+
+def _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs):
+    du_xs = np.diff(metric_dot_xs, axis=1)[:-1, :]
+    du_ys = np.diff(metric_dot_ys, axis=1)[:-1, :]
+    du_zs = np.diff(metric_dot_zs, axis=1)[:-1, :]
+
+    dv_xs = np.diff(metric_dot_xs, axis=0)[:, :-1]
+    dv_ys = np.diff(metric_dot_ys, axis=0)[:, :-1]
+    dv_zs = np.diff(metric_dot_zs, axis=0)[:, :-1]
+    return du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs
 
 
 def calc_curvature_by_triangles(quads: QuadrangleArray) -> \
@@ -250,9 +332,11 @@ def calc_curvature_by_triangles(quads: QuadrangleArray) -> \
             b11[i - 1, j - 1] = tb11
             b22[i - 1, j - 1] = tb22
             b12[i - 1, j - 1] = tb12
-            Ks[i - 1, j - 1] = (tb11 * tb22 - tb12 ** 2) / (g11 * g22 - g12 ** 2)
+            K = (tb11 * tb22 - tb12 ** 2) / (g11 * g22 - g12 ** 2)
+            Ks[i - 1, j - 1] = K
+            print(i, j, K, tb11, tb22, tb12, g11 * g22 - g12 ** 2)
 
-    print(b12)
+    # print(b12)
     return Ks, b11, b12, b22
 
 
