@@ -7,7 +7,7 @@ import matplotlib.widgets
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-from miuraori import SimpleMiuraOri
+from origami.miuraori import SimpleMiuraOri
 from origami.utils.plotutils import set_pi_ticks, set_3D_labels
 
 FIGURES_PATH = '../../../RFFQM/Figures'
@@ -108,12 +108,13 @@ def plot_theta_vs_activation_angle():
     set_pi_ticks(ax, 'x')
     set_pi_ticks(ax, 'y', pi_range=(0, fractions.Fraction(1, 2)), divisions=4)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'theta_vs_activation_angle.png'))
+    # fig.savefig(os.path.join(FIGURES_PATH, 'theta_vs_activation_angle.png'))
 
     plt.show()
 
-    if __name__ == '__main__':
-        # plot_gamma_vs_activation_angle()
-        # plot_phi_vs_activation_angle()
-        plot_theta_vs_activation_angle()
-        # plot_FFF_unit()
+
+if __name__ == '__main__':
+    # plot_gamma_vs_activation_angle()
+    # plot_phi_vs_activation_angle()
+    plot_theta_vs_activation_angle()
+    # plot_FFF_unit()

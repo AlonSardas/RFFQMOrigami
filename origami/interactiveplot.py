@@ -60,9 +60,15 @@ def plot_interactive_miuraori(ori: SimpleMiuraOri):
     plt.show()
 
 
-def add_slider(ax, origami: RFFQM):
-    init_omega = 0.5
-    dots = origami.set_gamma(init_omega)
+def add_slider(ax, ori: RFFQM):
+    # dots.r
+    # if np.isclose(origami.gamma, 0):
+    #     init_omega = 0.5
+    #     dots = origami.set_gamma(init_omega)
+    dots = ori.dots
+    dots.rotate_and_center()
+    init_omega = ori.gamma
+
     # dots.assert_valid()
     dots.plot(ax)  # We plot to find the limits of the axis to use
 
@@ -80,7 +86,7 @@ def add_slider(ax, origami: RFFQM):
 
     def update_omega(omega):
         ax.clear()
-        quads = origami.set_gamma(omega, should_center=True)
+        quads = ori.set_gamma(omega, should_center=True)
         # dots.center()
         quads.plot(ax, alpha=0.85)
 

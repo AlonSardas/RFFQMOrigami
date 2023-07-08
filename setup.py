@@ -6,6 +6,6 @@ setuptools.setup(
     author='Alon Sardas',
     author_email='alon.sardas@mail.huji.ac.il',
     packages=['origami'],
-    install_requires=['numpy', 'matplotlib', 'sympy'],
+    install_requires=['numpy', 'matplotlib', 'sympy', 'scipy', 'uncertainties'],
     scripts=[]
 )

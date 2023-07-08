@@ -52,7 +52,7 @@ def create_colorbar(fig: Figure, ax: Axes, im):
 
 
 def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title) -> AxesImage:
-    if(data.dtype == np.float128):
+    if data.dtype == np.float128:
         data = np.array(data, np.float64)
     im = ax.imshow(data)
     create_colorbar(fig, ax, im)

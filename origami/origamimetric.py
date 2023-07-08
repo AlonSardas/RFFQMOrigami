@@ -41,6 +41,132 @@ from origami.quadranglearray import QuadrangleArray
 from origami.utils import linalgutils
 
 
+class OrigamiGeometry(object):
+    """
+    Calculate on demand the geometric properties of the folded paper.
+    The paper is described by array of dots, and the metric is calculated
+    using 2X2 quadrangles
+    """
+
+    def __init__(self, quads: QuadrangleArray):
+        self.quads = quads
+        self._g11, self._g12, self._g22 = None, None, None
+        self._b11, self._b12, self._b22 = None, None, None
+        self._c11, self._c12, self._c21, self._c22 = None, None, None, None
+        self._g_inv11, self._g_inv12, self._g_inv22 = None, None, None
+        self._g_dets = None
+        self._du_dv, self._du_dv_bad_shape, self._ddu_ddv = None, None, None
+        self._Ns = None
+
+        self._should_assert = False
+
+    def get_metric(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self._g11 is not None:
+            return self._g11, self._g12, self._g22
+
+        quads = self.quads
+        indexes = quads.indexes
+        rows = (quads.rows + 1) // 2
+        cols = (quads.cols + 1) // 2
+        metric_dot_xs: np.ndarray = quads.dots[0, indexes[::2, ::2]].reshape(rows, cols)
+        metric_dot_ys: np.ndarray = quads.dots[1, indexes[::2, ::2]].reshape(rows, cols)
+        metric_dot_zs: np.ndarray = quads.dots[2, indexes[::2, ::2]].reshape(rows, cols)
+
+        self._du_dv_bad_shape = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
+        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv_bad_shape
+
+        # To match the shape:
+        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = [
+            a[:-1, :-1] for a in [du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs]]
+        self._du_dv = du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs
+
+        g11 = du_xs ** 2 + du_ys ** 2 + du_zs ** 2
+        g22 = dv_xs ** 2 + dv_ys ** 2 + dv_zs ** 2
+        g12 = du_xs * dv_xs + du_ys * dv_ys + du_zs * dv_zs
+        self._g11, self._g12, self._g22 = g11, g12, g22
+        return self._g11, self._g12, self._g22
+
+    def get_SFF(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self._b11 is not None:
+            return self._b11, self._b12, self._b22
+        self.get_metric()  # Make sure the preliminary calculations are done
+
+        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv_bad_shape
+        # We use the second fundamental for to calculate the Gaussian curvature
+        # it seems easier than working with Christoffel symbols
+        self._ddu_ddv = \
+            _calc_2nd_derivatives(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs)
+        dudu_xs, dudu_ys, dudu_zs, dvdu_xs, dvdu_ys, dvdu_zs, dvdv_xs, dvdv_ys, dvdv_zs = self._ddu_ddv
+
+        N_xs, N_ys, N_zs = self.get_normals()
+        b11 = dudu_xs * N_xs + dudu_ys * N_ys + dudu_zs * N_zs
+        b22 = dvdv_xs * N_xs + dvdv_ys * N_ys + dvdv_zs * N_zs
+        b12 = dvdu_xs * N_xs + dvdu_ys * N_ys + dvdu_zs * N_zs
+        self._b11, self._b12, self._b22 = b11, b12, b22
+        return self._b11, self._b12, self._b22
+
+    def get_shape_operator(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        if self._c11 is not None:
+            return self._c11, self._c12, self._c21, self._c22
+        b11, b12, b22 = self.get_SFF()
+        g_inv11, g_inv12, g_inv22 = self.get_metric_inverse()
+        c11 = b11 * g_inv11 + b12 * g_inv12
+        c12 = b11 * g_inv12 + b12 * g_inv22
+        c21 = b12 * g_inv11 + b22 * g_inv12
+        c22 = b12 * g_inv12 + b22 * g_inv22
+
+        self._c11, self._c12, self._c21, self._c22 = c11, c12, c21, c22
+        return self._c11, self._c12, self._c21, self._c22
+
+    def get_curvatures_by_shape_operator(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculate the Gaussian curvature and the mean curvature for each unit cell
+        :return: K, H
+        """
+        c11, c12, c21, c22 = self.get_shape_operator()
+        Ks = c11 * c22 - c12 * c21
+        # Ks = c11 * c22 - c12 ** 2
+        Hs = 1 / 2 * (c11 + c22)
+        return Ks, Hs
+
+    def get_metric_determinant(self) -> np.ndarray:
+        if self._g_dets is not None:
+            return self._g_dets
+        g11, g12, g22 = self.get_metric()
+        g_dets = g11 * g22 - g12 ** 2
+
+        self._g_dets = g_dets
+        return self._g_dets
+
+    def get_metric_inverse(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self._g_inv11 is not None:
+            return self._g_inv11, self._g_inv12, self._g_inv22
+        g11, g12, g22 = self.get_metric()
+        g_dets = self.get_metric_determinant()
+        g_inv11 = 1 / g_dets * g22
+        g_inv22 = 1 / g_dets * g11
+        g_inv12 = -1 / g_dets * g12
+
+        if self._should_assert:
+            I11 = g_inv11 * g11 + g_inv12 * g12
+            I12 = g_inv11 * g12 + g_inv12 * g22
+            I22 = g_inv12 * g12 + g_inv22 * g22
+            assert np.all(np.isclose(I11, 1)), "There's an error with the inverse of the metric"
+            assert np.all(np.isclose(I12, 0)), "There's an error with the inverse of the metric"
+            assert np.all(np.isclose(I22, 1)), "There's an error with the inverse of the metric"
+
+        self._g_inv11, self._g_inv12, self._g_inv22 = g_inv11, g_inv12, g_inv22
+        return self._g_inv11, self._g_inv12, self._g_inv22
+
+    def get_normals(self):
+        if self._Ns is not None:
+            return self._Ns
+        self.get_metric()
+        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv
+        self._Ns = _calc_normals(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs)
+        return self._Ns
+
+
 def calc_curvature_and_metric(quads: QuadrangleArray) -> \
         Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -147,9 +273,9 @@ def calc_curvature_by_christoffel(quads: QuadrangleArray) -> \
                                 for m in [1, 2])
 
     Ks = -1 / g11 * (
-                np.gradient(gamma(2, 1, 2), axis=1, edge_order=2) - np.gradient(gamma(2, 1, 1), axis=0, edge_order=2) +
-                gamma(1, 1, 2) * gamma(2, 1, 1) - gamma(1, 1, 1) * gamma(2, 1, 2) +
-                gamma(2, 1, 2) * gamma(2, 1, 2) - gamma(2, 1, 1) * gamma(2, 2, 2))
+            np.gradient(gamma(2, 1, 2), axis=1, edge_order=2) - np.gradient(gamma(2, 1, 1), axis=0, edge_order=2) +
+            gamma(1, 1, 2) * gamma(2, 1, 1) - gamma(1, 1, 1) * gamma(2, 1, 2) +
+            gamma(2, 1, 2) * gamma(2, 1, 2) - gamma(2, 1, 1) * gamma(2, 2, 2))
 
     return Ks, g11, g12, g22
 

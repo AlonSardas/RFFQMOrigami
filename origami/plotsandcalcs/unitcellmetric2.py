@@ -85,16 +85,16 @@ def calc_vectors():
         AB2_0 = AB2n * sym.ell_21
         BD2n = _rotate_XY(pi - cth - sym.eta_41) * (-1 * AB2n)
         BD2n.simplify()
-        rot_gamma21 = _create_rotation_around_axis(-BD2n, gamma_sign * sym.gamma_21)
+        rot_gamma21 = _create_rotation_around_axis(-BD2n, -sym.gamma_21)
         BJ2n = _rotate_XY(cth + sym.delta_41) * BD2n
         BJ2n.simplify()
         BJ2_0 = sym.m_21 * BJ2n
         BJ2 = rot_gamma21 * BJ2_0
-        AJ2 = AB2_0 + BJ
+        AJ2 = AB2_0 + BJ2
 
-        rot_gammat = _create_rotation_around_axis(-JIn, gamma_sign * gammat)
+        rot_gammat = _create_rotation_around_axis(-JIn, -gammat)
         AJ2 = rot_gammat * AJ2
-        rot_gamma11 = _create_rotation_around_axis(-BDn, gamma_sign * gamma11)
+        rot_gamma11 = _create_rotation_around_axis(-BDn, -gamma11)
         AJ2 = rot_gamma11 * AJ2
 
         print('---- AJ2')
@@ -171,7 +171,8 @@ def calc_vectors():
         print(latex(AE2))
         print()
 
-    calc_AEy2()
+    # calc_AEy2()
+    calc_AJ2()
 
 
 def calc_omega12():

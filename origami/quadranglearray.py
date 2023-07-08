@@ -145,4 +145,5 @@ def plot_flat_quadrangles(quads: QuadrangleArray) -> Tuple[Figure, Axes3D]:
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
     quads.plot(ax)
     plotutils.set_axis_scaled(ax)
+    plotutils.set_3D_labels(ax)
     return fig, ax
