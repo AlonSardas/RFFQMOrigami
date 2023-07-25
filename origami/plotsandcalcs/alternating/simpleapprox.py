@@ -13,6 +13,8 @@ from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
 from origami.interactiveplot import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
+from origami.plotsandcalcs.alternating.utils import sin, cos, tan, csc, sec, compare_curvatures, get_FF_dFF_dMM_ddMM, \
+    create_perturbed_origami
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils, zigzagutils
 from origami.utils.fitter import FitParams, FuncFit
@@ -21,11 +23,43 @@ from origami.utils.plotutils import imshow_with_colorbar
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
                             'RFFQM/ContinuousMetric/AlternatingFigures')
 
-sin, cos, tan = np.sin, np.cos, np.tan
 
-cot = lambda x: 1 / tan(x)
-csc = lambda x: 1 / sin(x)
-sec = lambda x: 1 / cos(x)
+def plot_simple_flat_examples():
+    # F = lambda x: -0.2 + 0.2 * (x >= 6) + 0.2 * (x >= 12)
+    rows = 6
+    cols = 6
+    angle = 1
+
+    L0 = 0.3
+    C0 = 0.5
+    MM = lambda y: 0.0 * y
+
+    F = lambda x: -0.2 * (x >= 1)
+    ori1 = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+    F = lambda x: 0.2 * (x >= 1)
+    ori2 = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+
+    fig: Figure = plt.figure(figsize=(10, 6))
+    ax: Axes3D = fig.add_subplot(121, projection='3d', azim=-90, elev=90)
+    ori1.dots.plot(ax)
+    plotutils.set_axis_scaled(ax)
+    ax.set_axis_off()
+    ax.dist = 7
+    ax.set_title('F<0')
+
+    ax: Axes3D = fig.add_subplot(122, projection='3d', azim=-90, elev=90)
+    ori2.dots.plot(ax)
+    ax.set_title('F>0')
+    # ax.set_zlim(0, 0.01)
+    ax.set_axis_off()
+    ax.dist = 7
+    # ax.autoscale(tight=True)
+    plotutils.set_axis_scaled(ax)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'simple-flat-example.png'))
+
+    plt.show()
 
 
 def debug_lengths_perturbations():
@@ -312,22 +346,11 @@ def test_metric():
     ax.legend()
 
     fig, axes = plt.subplots(2)
-    _compare_curvatures(fig, axes, Ks, expected_K_func)
+    compare_curvatures(fig, axes, Ks, expected_K_func)
     # fig.savefig(os.path.join(FIGURES_PATH, 'Ks-comparison.png'))
     plt.show()
 
     plot_interactive(ori)
-
-
-def _compare_curvatures(fig, axes, Ks, expected_K_func):
-    len_ys, len_xs = Ks.shape
-    xs, ys = np.arange(len_xs), np.arange(len_ys)
-    Xs, Ys = np.meshgrid(xs, ys)
-
-    im = imshow_with_colorbar(fig, axes[0], Ks, "K")
-    vmin, vmax = im.get_clim()
-    im2 = imshow_with_colorbar(fig, axes[1], expected_K_func(Xs, Ys), "expected K")
-    im2.set_clim(vmin, vmax)
 
 
 def test_high_resolution():
@@ -343,7 +366,7 @@ def test_high_resolution():
 
         F = lambda x: 0.004 / factor * (x - cols / 2)
         MM = lambda y: 0.02 * ((y - rows / 4) / factor) ** 2
-        FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+        FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
         L0 = 1 / factor
         C0 = 0.5 / factor
@@ -379,7 +402,7 @@ def test_keeping_angles_factor_constant():
     F = lambda x: 0.005 * (x - cols / 2)
 
     MM = lambda y: 0.02 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
     def find_omega_for_angle(angle) -> float:
         eq_func = lambda w: -tan(w / 2) ** 2 * tan(angle) * sec(angle) * \
@@ -550,7 +573,7 @@ def test_2nd_order_MM():
     F = lambda x: 0.005 * (x - cols / 2)
 
     MM = lambda y: 0.005 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
     dddMM = lambda y: ddMM(y + 1) - ddMM(y)
 
     L0 = 1
@@ -573,8 +596,8 @@ def test_2nd_order_MM():
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
     Ks, _, _, _ = origamimetric.calc_curvature_and_metric(ori.dots)
 
-    _compare_curvatures(fig, (axes[0], axes[1]), Ks, expected_K_func)
-    _compare_curvatures(fig, (axes[0], axes[2]), Ks, expected_K_func_MM2)
+    compare_curvatures(fig, (axes[0], axes[1]), Ks, expected_K_func)
+    compare_curvatures(fig, (axes[0], axes[2]), Ks, expected_K_func_MM2)
 
     fig.tight_layout()
     # fig.savefig(os.path.join(FIGURES_PATH, 'MM-higher-order-correction.png'))
@@ -586,7 +609,7 @@ def test_2nd_order_MM():
     C0 = 0.5
 
     MM = lambda y: K0 / (4 * L0) * (y - rows / 4) ** 2 + 3 / (2 * L0) * K0 ** 2 / (24 * L0 ** 2) * (y - rows / 4) ** 3
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
     dddMM = lambda y: ddMM(y + 1) - ddMM(y)
 
     angle = np.pi / 2 - 0.3
@@ -606,8 +629,8 @@ def test_2nd_order_MM():
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
     Ks, _, _, _ = origamimetric.calc_curvature_and_metric(ori.dots)
 
-    _compare_curvatures(fig, (axes[0], axes[1]), Ks, expected_K_func)
-    _compare_curvatures(fig, (axes[0], axes[2]), Ks, expected_K_func_MM2)
+    compare_curvatures(fig, (axes[0], axes[1]), Ks, expected_K_func)
+    compare_curvatures(fig, (axes[0], axes[2]), Ks, expected_K_func_MM2)
     fig.suptitle("with correction")
 
     plt.show()
@@ -691,7 +714,7 @@ def test_horizontal_decay():
     F = lambda x: 0.005 * (x - cols / 2)
 
     MM = lambda y: 0.01 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
     dddMM = lambda y: ddMM(y + 1) - ddMM(y)
 
     L0 = 1
@@ -731,7 +754,7 @@ def test_horizontal_decay():
     ax.plot(xs, ys, label=rf'$ \omega={omega:.2f} $')
 
     fig, axes = plt.subplots(2)
-    _compare_curvatures(fig, axes, Ks, expected_K_func)
+    compare_curvatures(fig, axes, Ks, expected_K_func)
 
     plt.show()
 
@@ -740,7 +763,7 @@ def plot_horizontal_decay():
     F = lambda x: 0.005 * (x - cols / 2)
 
     MM = lambda y: 0.01 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
     dddMM = lambda y: ddMM(y + 1) - ddMM(y)
 
     L0 = 1
@@ -824,7 +847,7 @@ def plot_constant_curvature():
     F = lambda x: 0.01 * (x - cols / 2)
 
     MM = lambda y: 0.01 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
     L0 = 1
     C0 = 0.5
@@ -889,7 +912,7 @@ def plot_hills():
     for F0, MM0, name in config:
         F = lambda x: F0 * np.sin(2 * np.pi * x / 39)
         MM = lambda y: MM0 * np.cos(2 * np.pi * y / 16)
-        FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+        FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
         ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
@@ -898,7 +921,7 @@ def plot_hills():
         expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
                                        ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
         fig, axes = plt.subplots(2)
-        _compare_curvatures(fig, axes, Ks, expected_K_func)
+        compare_curvatures(fig, axes, Ks, expected_K_func)
         print(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
         fig.suptitle(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
         fig.tight_layout()
@@ -918,7 +941,7 @@ def test_periodic_with_constant():
     F = lambda x: F0 * (np.sin(2 * np.pi * x / 39) + 5 * 2 * np.pi / 39 * x)
 
     MM = lambda y: MM0 * ((y - rows / 4)) ** 2
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
     ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
 
@@ -933,7 +956,7 @@ def test_periodic_with_constant():
         expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
                                        ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
         ax2 = axes[:, i]
-        _compare_curvatures(fig, ax2, Ks, expected_K_func)
+        compare_curvatures(fig, ax2, Ks, expected_K_func)
     fig.suptitle(fr'$ \omega={omegas} $ from left to right')
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, "periodic-and-constant-vs-omega.png"))
@@ -952,7 +975,7 @@ def plot_cone():
     F = lambda x: F0 * np.tanh((x - cols / 2) / 10)
     MM = lambda y: (((y - rows / 4)) ** 2 - 10 < 0) * MM0 * (((y - rows / 4)) ** 2 - 10)
 
-    FF, dFF, dMM, ddMM = _get_FF_dFF_dMM_ddMM(F, MM)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
     ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
 
@@ -964,45 +987,13 @@ def plot_cone():
                                    ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
 
     fig, axes = plt.subplots(2)
-    _compare_curvatures(fig, axes, Ks, expected_K_func)
+    compare_curvatures(fig, axes, Ks, expected_K_func)
 
     plt.show()
 
 
-def _get_FF_dFF_dMM_ddMM(F, MM):
-    # There is no good reason why the derivative of F is calculated differently
-    FF = lambda x: F(x * 2)
-    dFF = lambda x: FF(x + 0.5) - FF(x - 0.5)
-    dMM = lambda y: MM(y + 1) - MM(y)
-    ddMM = lambda y: dMM(y + 1) - dMM(y)
-    return FF, dFF, dMM, ddMM
-
-
-def create_perturbed_origami(angle, rows, cols, L0, C0, F, MM) -> RFFQM:
-    dMM = lambda y: MM(y + 1) - MM(y)
-    ddMM = lambda y: dMM(y + 1) - dMM(y)
-
-    F1 = lambda x: F(x)
-    F2 = lambda x: -F(x)
-
-    ls = np.ones(rows) * L0
-    cs = np.ones(cols) * C0
-
-    ys = np.arange(len(ls) // 2)
-    # ls[1::2] = L0 + dMM(ys) + 1 / 2 * ddMM(ys)
-    ls[1::2] = L0 + dMM(ys)
-
-    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
-    pert_func = create_angles_func_vertical_alternation(F1, F2)
-    set_perturbations_by_func(pert_func, angles_left, angles_bottom)
-
-    marching = MarchingAlgorithm(angles_left, angles_bottom)
-    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
-    ori = RFFQM(quads)
-    return ori
-
-
 def main():
+    # plot_simple_flat_examples()
     # debug_lengths_perturbations()
     # test_angles()
     # test_metric()
@@ -1015,10 +1006,10 @@ def main():
     # test_keeping_angles_factor_constant()
     # test_2nd_order_MM()
     # plot_horizontal_decay()
-    # test_horizontal_decay()
+    test_horizontal_decay()
     # plot_cylinders()
     # test_M_vs_zigzag()
-    test_jump_in_F()
+    # test_jump_in_F()
 
 
 if __name__ == '__main__':
