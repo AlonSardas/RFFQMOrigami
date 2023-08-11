@@ -58,7 +58,8 @@ def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
                              dots[2, :].reshape((rows, cols)),
                              alpha=alpha, color='g', linewidth=2)
 
-    return surf, wire
+    # return surf, wire
+    return surf, None
 
 
 def center_dots(dots: np.ndarray, indexes):

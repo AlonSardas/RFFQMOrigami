@@ -10,7 +10,7 @@ from origami.utils.zigzagutils import calc_zigzag_points_by_lengths, plot_zigzag
 
 PI = np.pi
 
-FIGURES_PATH = '../../../RFFQM/Figures/continuous-origami'
+FIGURES_PATH = '../../../../RFFQM/Figures/continuous-origami'
 
 
 def plot_ratio_field():

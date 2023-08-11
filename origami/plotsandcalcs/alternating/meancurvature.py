@@ -5,9 +5,11 @@ import numpy as np
 
 import origami
 from origami import origamimetric
+from origami.interactiveplot import plot_interactive
+from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami
+from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_F_from_list, create_MM_from_list
 from origami.quadranglearray import plot_flat_quadrangles
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
@@ -90,9 +92,49 @@ def test_x_curvature():
     compare_curvatures(Ks, Hs, expected_K, expected_H)
 
 
+def test_saddle():
+    """
+    We want to produce a saddle with vanishing mean curvature
+    """
+    rows, cols = 16, 30
+    kx = 0.005
+    ky = -0.005
+
+    F0 = 0.01
+    M0 = -0.00
+    # print("here")
+    L0 = 1
+    C0 = 1
+    W0 = 2.3
+    theta = 0.99
+
+    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+
+    fig, axes = plt.subplots(1, 2)
+    axes[0].plot(xs, Fs, '.')
+    axes[1].plot(ys, np.diff(MMs), '.')
+    # plt.show()
+
+    print(Fs)
+    F = create_F_from_list(Fs)
+    MM = create_MM_from_list(MMs)
+
+    ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+    ori.set_gamma(ori.calc_gamma_by_omega(W0))
+
+    geometry = origamimetric.OrigamiGeometry(ori.dots)
+    Ks, Hs = geometry.get_curvatures_by_shape_operator()
+    expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
+    fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+
+    plot_interactive(ori)
+
+
 def main():
-    test_cylinders()
+    # test_cylinders()
     # test_x_curvature()
+    test_saddle()
     plt.show()
 
 

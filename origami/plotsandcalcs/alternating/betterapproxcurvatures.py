@@ -1,4 +1,5 @@
-from typing import Tuple, Callable
+import numbers
+from typing import Tuple, Callable, Union
 
 import numpy as np
 import sympy
@@ -67,16 +68,25 @@ def create_kx_ky_funcs(L0, C0, W0, theta) -> Tuple[Callable, Callable]:
 
 
 def get_F_for_kx(L0, C0, W0, theta,
-                 kx: float, F0: float, t0: int, tf: int):
+                 kx: Union[float, Callable[[float], float]],
+                 F0: float, t0: int, tf: int) -> Tuple[np.ndarray, np.ndarray]:
     kx_sub, _ = get_ky_kx_for_values(L0, C0, W0, theta)
-    eq = kx_sub - kx
+    kx_symbol = sympy.Symbol('k_x')
+    eq = kx_sub - kx_symbol
     dfdt = sympy.solve(eq, Ftt)[0]
-    dfdt_func = sympy.lambdify([Ft], dfdt)
+    dfdt_func = sympy.lambdify([Ft, kx_symbol], dfdt)
+
+    if isinstance(kx, numbers.Number):
+        kx_num = kx
+        kx = lambda t: kx_num
 
     def d_func(t, ft):
-        return dfdt_func(ft)
+        return dfdt_func(ft, kx(t))
 
-    sol = solve_ivp(d_func, (t0, tf), [F0], t_eval=np.arange(t0, tf + 1))
+    # We look at F every half step, since there are 2 perturbations for
+    # each step in F
+    ts = np.arange(t0, tf + 0.1, 0.5)
+    sol = solve_ivp(d_func, (t0, tf), [F0], t_eval=ts)
     if not sol.success:
         raise RuntimeError(f"Could not solve the ODE. Error: {sol.message}")
 
@@ -84,21 +94,44 @@ def get_F_for_kx(L0, C0, W0, theta,
 
 
 def get_MM_for_ky(L0, C0, W0, theta,
-                  ky: float, M0: float, t0: int, tf: int):
+                  ky: Union[float, Callable[[float], float]],
+                  M0: float, t0: int, tf: int):
     _, ky_sub = get_ky_kx_for_values(L0, C0, W0, theta)
-    eq = ky_sub - ky
+    ky_symbol = sympy.Symbol('k_y')
+    eq = ky_sub - ky_symbol
     ddMdt = sympy.solve(eq, Mtt)[0]
-    dMdt_func = sympy.lambdify([Mt], ddMdt)
+    dMdt_func = sympy.lambdify([Mt, ky_symbol], ddMdt)
+
+    if isinstance(ky, numbers.Number):
+        ky_num = ky
+        ky = lambda t: ky_num
 
     def d_func(t, mt):
-        return dMdt_func(mt)
+        return dMdt_func(mt, ky(t))
 
     sol = solve_ivp(d_func, (t0, tf), [M0], t_eval=np.arange(t0, tf + 1))
     if not sol.success:
         raise RuntimeError(f"Could not solve the ODE. Error: {sol.message}")
 
-    ys = np.cumsum(sol.y[0, :])
+    ys = np.append(0, np.cumsum(sol.y[0, :]))
     return sol.t, ys
+
+
+def get_MM_for_ky_by_recurrence(L0, C0, W0, theta,
+                                ky: float,
+                                M0: float, t0: int, tf: int):
+    _, ky_sub = get_ky_kx_for_values(L0, C0, W0, theta)
+    ky_symbol = sympy.Symbol('k_y')
+    eq = ky_sub - ky_symbol
+    ddMdt = sympy.solve(eq, Mtt)[0]
+    dMdt_func = sympy.lambdify([Mt, ky_symbol], ddMdt)
+
+    Ms = np.zeros(tf - t0)
+    Ms[0] = M0
+    for i in range(1, tf - t0):
+        Ms[i] = Ms[i - 1] + dMdt_func(Ms[i - 1], ky)
+    MMs = np.append(0, np.cumsum(Ms))
+    return np.arange(t0, tf), MMs
 
 
 def test_F_for_const():

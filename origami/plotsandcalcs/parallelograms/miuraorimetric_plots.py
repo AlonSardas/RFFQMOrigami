@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from origami.miuraori import SimpleMiuraOri
 from origami.utils.plotutils import set_pi_ticks, set_3D_labels
 
-FIGURES_PATH = '../../../RFFQM/Figures'
+FIGURES_PATH = '../../../../RFFQM/Figures'
 
 
 def plot_simple_crease_pattern():
@@ -23,6 +23,22 @@ def plot_simple_crease_pattern():
     set_3D_labels(ax)
 
     plt.savefig(os.path.join(FIGURES_PATH, 'simple_pattern.png'))
+
+    plt.show()
+
+
+def plot_parallelograms_example():
+    ori = SimpleMiuraOri(
+        [1, 1.5, 0.7, 1, 2, 0.3, 0.8],
+        [0.6, 1.1, 1.9, 0.9, 1.1, 1], angle=1)
+    fig = plt.figure()
+
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=-100)
+    ori.plot(ax)
+
+    set_3D_labels(ax)
+
+    plt.savefig(os.path.join(FIGURES_PATH, 'parallelograms-example.svg'))
 
     plt.show()
 
@@ -50,6 +66,41 @@ def plot_FFF_unit():
     ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
 
     plt.savefig(os.path.join(FIGURES_PATH, 'FFF_unit.png'))
+
+    plt.show()
+
+
+def plot_unperturbed_unit_cell():
+    origami = SimpleMiuraOri([1.4, 1.4], [1.0, 1.0], angle=0.6)
+    fig = plt.figure()
+
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=23)
+
+    origami.set_omega(-1.2)
+    origami.plot(ax, alpha=0.4)
+
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    ax.set_zlim(-1, 1)
+
+    set_3D_labels(ax)
+
+    edge_points = origami.dots[:, [origami.indexes[0, 0],
+                                   origami.indexes[0, -1],
+                                   origami.indexes[-1, 0],
+                                   origami.indexes[-1, -1]]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=120)
+
+    dot = origami.dots[:, origami.indexes[0, 0]]
+    ax.text(dot[0] + 0.2, dot[1], dot[2], "C", fontsize=30)
+    dot = origami.dots[:, origami.indexes[-1, 0]]
+    ax.text(dot[0] - 0.3, dot[1] + 0.1, dot[2], "D", fontsize=30)
+    dot = origami.dots[:, origami.indexes[0, -1]]
+    ax.text(dot[0] + 0.1, dot[1], dot[2], "A", fontsize=30)
+    dot = origami.dots[:, origami.indexes[-1, -1]]
+    ax.text(dot[0] + 0.1, dot[1], dot[2], "B", fontsize=30)
+
+    plt.savefig(os.path.join(FIGURES_PATH, 'unperturbed-unit-cell.svg'))
 
     plt.show()
 
@@ -116,5 +167,7 @@ def plot_theta_vs_activation_angle():
 if __name__ == '__main__':
     # plot_gamma_vs_activation_angle()
     # plot_phi_vs_activation_angle()
-    plot_theta_vs_activation_angle()
+    # plot_theta_vs_activation_angle()
     # plot_FFF_unit()
+    # plot_parallelograms_example()
+    plot_unperturbed_unit_cell()

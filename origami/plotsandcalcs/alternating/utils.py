@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 
 from origami.RFFQMOrigami import RFFQM
@@ -26,7 +28,7 @@ def compare_curvatures(fig, axes, Ks, expected_K_func):
 def get_FF_dFF_dMM_ddMM(F, MM):
     # There is no good reason why the derivative of F is calculated differently
     FF = lambda x: F(x * 2)
-    dFF = lambda x: FF(x + 0.5) - FF(x - 0.5)
+    dFF = lambda x: (FF(x + 0.5) - FF(x)) / 0.5
     dMM = lambda y: MM(y + 1) - MM(y)
     ddMM = lambda y: dMM(y + 1) - dMM(y)
     return FF, dFF, dMM, ddMM
@@ -59,3 +61,20 @@ def create_perturbed_origami(angle, rows, cols, L0, C0, F, MM) -> RFFQM:
     quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
     ori = RFFQM(quads)
     return ori
+
+
+def create_F_from_list(Fs: np.ndarray) -> Callable:
+    def F(x):
+        if isinstance(x, np.ndarray):
+            if np.issubdtype(x.dtype, 'float64'):
+                x = x.astype('int')
+        return Fs[x]
+
+    return F
+
+
+def create_MM_from_list(MMs: np.ndarray) -> Callable:
+    def MM(y):
+        return MMs[y]
+
+    return MM

@@ -66,11 +66,20 @@ class OrigamiGeometry(object):
 
         quads = self.quads
         indexes = quads.indexes
-        rows = (quads.rows + 1) // 2
-        cols = (quads.cols + 1) // 2
-        metric_dot_xs: np.ndarray = quads.dots[0, indexes[::2, ::2]].reshape(rows, cols)
-        metric_dot_ys: np.ndarray = quads.dots[1, indexes[::2, ::2]].reshape(rows, cols)
-        metric_dot_zs: np.ndarray = quads.dots[2, indexes[::2, ::2]].reshape(rows, cols)
+
+        skip_half_dots = True
+        if skip_half_dots:
+            rows = (quads.rows + 1) // 2
+            cols = (quads.cols + 1) // 2
+            metric_dot_xs: np.ndarray = quads.dots[0, indexes[::2, ::2]].reshape(rows, cols)
+            metric_dot_ys: np.ndarray = quads.dots[1, indexes[::2, ::2]].reshape(rows, cols)
+            metric_dot_zs: np.ndarray = quads.dots[2, indexes[::2, ::2]].reshape(rows, cols)
+        else:
+            rows = quads.rows
+            cols = quads.cols
+            metric_dot_xs: np.ndarray = quads.dots[0, :].reshape(rows, cols)
+            metric_dot_ys: np.ndarray = quads.dots[1, :].reshape(rows, cols)
+            metric_dot_zs: np.ndarray = quads.dots[2, :].reshape(rows, cols)
 
         self._du_dv_bad_shape = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
         du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv_bad_shape

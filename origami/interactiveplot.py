@@ -14,7 +14,7 @@ def add_slider_miuraori(ax, ori: SimpleMiuraOri, should_plot_normals=False):
 
     init_omega = 1
 
-    # Make a horizontal slider to control the frequency.
+    # Make a horizontal slider
     omega_slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     omega_slider = matplotlib.widgets.Slider(
         ax=omega_slider_ax,
@@ -74,7 +74,7 @@ def add_slider(ax, ori: RFFQM):
 
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
 
-    # Make a horizontal slider to control the frequency.
+    # Make a horizontal slider
     omega_slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     omega_slider = matplotlib.widgets.Slider(
         ax=omega_slider_ax,
@@ -94,6 +94,7 @@ def add_slider(ax, ori: RFFQM):
         ax.set_ylim(-lim, lim)
         ax.set_zlim(-lim, lim)
 
+    update_omega(init_omega)
     omega_slider.on_changed(update_omega)
     return omega_slider
 

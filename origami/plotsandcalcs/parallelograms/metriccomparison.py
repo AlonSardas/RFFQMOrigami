@@ -10,7 +10,7 @@ from origami import miuraori
 from origami.utils.zigzagutils import follow_curve, plot_zigzag
 from origami.utils import plotutils, sympyutils
 
-FIGURES_PATH = '../../../RFFQM/Figures'
+FIGURES_PATH = '../../../../RFFQM/Figures'
 
 
 class DiscreteOrigami(object):

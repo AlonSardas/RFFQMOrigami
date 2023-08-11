@@ -1,14 +1,21 @@
+import os.path
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami
+import origami.plotsandcalcs
 from origami import origamimetric
 from origami.RFFQMOrigami import RFFQM
 from origami.interactiveplot import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.quadranglearray import QuadrangleArray
-from origami.utils import linalgutils, plotutils, zigzagutils
+from origami.utils import linalgutils, zigzagutils
+
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
+                            'RFFQM', 'Compatibility', 'Figures')
 
 
 def create_basic_crease():
@@ -23,8 +30,8 @@ def create_basic_crease():
     rows, cols = len(angles), n
 
     quads = QuadrangleArray(dots, rows, cols)
-    origami = RFFQM(quads)
-    plot_interactive(origami)
+    ori = RFFQM(quads)
+    plot_interactive(ori)
 
 
 def create_radial():
@@ -41,8 +48,8 @@ def create_radial():
     dots, indexes = marching.create_dots(ls, cs)
     rows, cols = indexes.shape
     quads = QuadrangleArray(dots, rows, cols)
-    origami = RFFQM(quads)
-    plot_interactive(origami)
+    ori = RFFQM(quads)
+    plot_interactive(ori)
 
 
 def create_sphere_interactive():
@@ -87,12 +94,12 @@ def create_sphere():
     dots, indexes = marching.create_dots(ls, cs)
     rows, cols = indexes.shape
     quads = QuadrangleArray(dots, rows, cols)
-    origami = RFFQM(quads)
+    ori = RFFQM(quads)
 
-    origami.set_gamma(zigzag_angle)
+    ori.set_gamma(zigzag_angle)
 
     # Trying to verify that the curvature is indeed constant:
-    Ks, _, _, _ = origamimetric.calc_curvature_and_metric(origami.dots)
+    Ks, _, _, _ = origamimetric.calc_curvature_and_metric(ori.dots)
     fig, ax = plt.subplots()
     print(Ks.shape)
     print(Ks[5:-5, 5:-5])
@@ -102,21 +109,21 @@ def create_sphere():
     # print(Ks.transpose())
 
     # This aligns the sphere
-    dots = origami.dots.dots
-    indexes = origami.dots.indexes
+    dots = ori.dots.dots
+    indexes = ori.dots.indexes
     v1 = dots[:, indexes[50, 0]] - dots[:, indexes[50, 5]]
     v2 = dots[:, indexes[50, 5]] - dots[:, indexes[50, 10]]
     n = np.cross(v1, v2)
     R = linalgutils.create_alignment_rotation_matrix(n, [0, 0, 1])
-    origami.dots.dots = R @ dots
+    ori.dots.dots = R @ dots
 
-    dots = origami.dots.dots
+    dots = ori.dots.dots
     min_z = dots[2, :].min()
     dots[2, :] += 1 - min_z - 2
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d')
-    origami.dots.plot(ax, alpha=0.6)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-120, elev=23)
+    ori.dots.plot(ax, alpha=0.7)
 
     # Plot the sphere
     u = np.linspace(0, 2 * np.pi, 50)
@@ -124,7 +131,7 @@ def create_sphere():
     x = np.outer(np.cos(u), np.sin(v))
     y = np.outer(np.sin(u), np.sin(v))
     z = np.outer(np.ones(np.size(u)), np.cos(v))
-    ax.plot_surface(x, y, z, linewidth=0.0, alpha=0.2, color='r')
+    ax.plot_surface(x, y, z, linewidth=0.0, alpha=0.1, color='r')
 
     # Calculate the distance from targeted sphere
     # relevant_dots = dots[:, indexes[1:len(ls_sphere):2, 1::2].flat]
@@ -134,12 +141,18 @@ def create_sphere():
     # print(d)
     print(f'among {len(d)} points, mean: {d.mean()}, and std: {d.std()}')
 
-    plotutils.set_axis_scaled(ax)
+    lim = 0.75
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
+    ax.set_aspect('equal')
+    # plotutils.set_axis_scaled(ax)
+
+    fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.svg'))
 
     plt.show()
 
 
-# noinspection SpellCheckingInspection
 def create_MARS_Barreto():
     """
     For example of MARS_Barreto, see:
@@ -161,6 +174,8 @@ def create_MARS_Barreto():
     angles_bottom[0, 0::2] = np.pi - angle
     angles_bottom[1, 1::2] = angle
 
+    print(angles_left, angles_bottom)
+
     marching = MarchingAlgorithm(angles_left, angles_bottom)
     dots, indexes = marching.create_dots(ls, cs)
     rows, cols = indexes.shape
@@ -174,8 +189,8 @@ def main():
     # create_basic_crease()
     # create_radial()
     # create_sphere_interactive()
-    create_sphere()
-    # create_MARS_Barreto()
+    # create_sphere()
+    create_MARS_Barreto()
 
 
 if __name__ == '__main__':

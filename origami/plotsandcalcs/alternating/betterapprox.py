@@ -10,10 +10,11 @@ of the radii of curvature caused separately by the angle perturbation and by the
 Hopefully it will give us better predictions to the Gaussian curvature.
 """
 import os
-from typing import Tuple, Iterable
+from typing import Tuple
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from scipy.optimize import fsolve
 
@@ -22,7 +23,8 @@ from origami import origamimetric
 from origami.interactiveplot import plot_interactive
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_kx_ky_funcs, create_expected_K_func, \
     create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures
+from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \
+    create_MM_from_list
 from origami.plotsandcalcs.alternating.utils import csc, sec, get_FF_dFF_dMM_ddMM, \
     create_perturbed_origami, tan, cos
 from origami.utils.plotutils import imshow_with_colorbar
@@ -344,16 +346,8 @@ def test_IP_constant():
     L0 = 0.2
     C0 = 0.5
 
-    def F(x):
-        # return 0 * x
-        if isinstance(x, np.ndarray):
-            print(x.dtype)
-            if np.issubdtype(x.dtype, 'float64'):
-                x = x.astype('int')
-        return Fs[x + 1]
-
-    def MM(y):
-        return Ms[y]
+    F = create_F_from_list(Fs)
+    MM = create_MM_from_list(Ms)
 
     # F = lambda x: -0.00064624 * (x - cols // 2)
 
@@ -375,10 +369,10 @@ def test_IP_constant():
     fig.set_size_inches(10, 5)
     fig.tight_layout()
     plt.show()
-    # plot_interactive(ori)
+    plot_interactive(ori)
 
 
-def compare_curvatures(Ks, Hs, expected_K_func, expected_H_func) -> Tuple[Figure, Iterable]:
+def compare_curvatures(Ks, Hs, expected_K_func, expected_H_func) -> Tuple[Figure, np.ndarray[Axes]]:
     fig, axes = plt.subplots(2, 2)
 
     len_ys, len_xs = Ks.shape
@@ -401,10 +395,10 @@ def compare_curvatures(Ks, Hs, expected_K_func, expected_H_func) -> Tuple[Figure
 
 
 def main():
-    test_constant()
+    # test_constant()
     # test_hills()
     # test_constant_angle_factor()
-    # test_IP_constant()
+    test_IP_constant()
     # compare_y_curvature_discrete_to_continuous()
     # test_x_constant()
     plt.show()

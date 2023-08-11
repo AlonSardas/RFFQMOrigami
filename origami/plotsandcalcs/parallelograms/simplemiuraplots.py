@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import origami.quadranglearray
 from origami.interactiveplot import add_slider_miuraori
-from origami.plotsandcalcs.formsanalyzer import SimpleMiuraOriFormAnalyzer
+from origami.plotsandcalcs.parallelograms.formsanalyzer import SimpleMiuraOriFormAnalyzer
 from origami.miuraori import SimpleMiuraOri
 from origami.utils import logutils
 
