@@ -5,7 +5,7 @@ from sympy import *
 
 from origami import marchingalgorithm
 from origami.RFFQMOrigami import RFFQM
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import sympyutils
 

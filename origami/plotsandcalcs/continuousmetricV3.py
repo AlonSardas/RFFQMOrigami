@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from origami import origamimetric
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import set_perturbations_by_func_v1
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils, linalgutils

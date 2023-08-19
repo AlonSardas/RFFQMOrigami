@@ -11,7 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import origami
 from origami import origamimetric
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive, plot_crease_pattern
 from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func
@@ -107,6 +107,12 @@ def plot_spherical_cap():
     MM = create_MM_from_list(MMs)
 
     ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+    ori.set_gamma(0)
+
+    fig, _ = plot_crease_pattern(ori)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.png'))
+
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
     geometry = origamimetric.OrigamiGeometry(ori.dots)
@@ -124,7 +130,8 @@ def plot_spherical_cap():
     ax.set_ylim(-lim, lim)
     ax.set_zlim(-lim, lim)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'spherical_cap.svg'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.svg'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.png'), pad_inches=0.4)
     plt.show()
     plot_interactive(ori)
 
@@ -363,11 +370,12 @@ def plot_cap_different_curvatures_large_angle():
 
 
 def main():
-    plot_vase()
-    # plot_spherical_cap()
+    # plot_vase()
+    plot_spherical_cap()
     # plot_saddle()
     # plot_2D_sinusoid()
     # plot_cap_different_curvatures()
+    # plot_sphere_crease_pattern()
 
 
 if __name__ == '__main__':

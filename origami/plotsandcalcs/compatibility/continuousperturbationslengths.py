@@ -10,6 +10,7 @@ import origami.angleperturbation
 import origami.plotsandcalcs
 from origami import RFFQMOrigami
 from origami.angleperturbation import set_perturbations_by_func_v1
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 
@@ -62,7 +63,7 @@ def test_special_case_G_const():
         print(f"Got a not-valid pattern. Reason: {reason}")
 
     fig, _ = plot_flat_quadrangles(quads)
-    fig.savefig(os.path.join(FIGURES_PATH, 'perturbed_G_const.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'perturbed_G_const2.png'))
 
     c_vs_ys = np.zeros(quads.indexes.shape[0])
     for i in range(len(c_vs_ys)):
@@ -95,7 +96,7 @@ def test_special_case_G_const():
     ax.set_ylabel('$ c_{i0} $')
     ax.set_xlabel('i = y axis')
 
-    # fig.savefig(os.path.join(FIGURES_PATH, 'perturbed_G_const-c_i0_vs_y.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'perturbed_G_const-c_i0_vs_y.png'))
 
     print(c_vs_ys)
 
@@ -311,11 +312,11 @@ def _calc_normal(v1, v2) -> np.ndarray:
 
 
 def main():
-    # test_special_case_G_const()
+    test_special_case_G_const()
     # test_ls_approximation()
     # test_cs_approximation()
     # test_omega()
-    test_gamma()
+    # test_gamma()
     plt.show()
 
 

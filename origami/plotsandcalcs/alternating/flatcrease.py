@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import origami
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, csc, sin
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles

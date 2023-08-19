@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 import origami.plotsandcalcs
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import set_perturbations_by_func_v1, set_perturbations_by_func, _create_func_v1
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles, IncompatibleError
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils
@@ -46,6 +46,40 @@ def test_continuous_perturbations():
 
     fig, _ = plot_flat_quadrangles(quads)
     ori = RFFQM(quads)
+    plot_interactive(ori)
+
+
+def plot_F_periodic():
+    F = lambda x: 0.02* (np.cos(2*np.pi * x / 40))
+    G = lambda y: 0
+    C = 0.0
+
+    angle = 1.3
+
+    rows = 20
+    cols = 40
+    ls = np.ones(rows)
+    cs = np.ones(cols) * 1
+
+    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
+    set_perturbations_by_func_v1(F, G, C, angles_left, angles_bottom, ls, cs)
+
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
+
+    fig, _ = plot_flat_quadrangles(quads)
+    ori = RFFQM(quads)
+
+    quads = ori.set_gamma(0)
+    fig, ax = plot_flat_quadrangles(quads)
+    ax.set_axis_off()
+    ax.set_aspect('equal')
+    # ax.set_box_aspect(None, zoom=2)
+    # ax.view_init(azim=-40)
+    ax.dist = 5.5
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, '../parallel-F-periodic-flat.svg'))
+
     plot_interactive(ori)
 
 
@@ -438,7 +472,9 @@ def _imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title):
 
 def main():
     # test_non_continuous_perturbation()
-    test_continuous_perturbations_2steps()
+    # test_continuous_perturbations()
+    plot_F_periodic()
+    # test_continuous_perturbations_2steps()
     # test_crease_size()
     # compare_to_expected()
     # debug_approximation_validity()

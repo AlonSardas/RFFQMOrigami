@@ -5,7 +5,7 @@ import numpy as np
 
 import origami
 from origami import origamimetric
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func

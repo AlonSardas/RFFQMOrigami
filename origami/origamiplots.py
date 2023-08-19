@@ -2,6 +2,8 @@ import matplotlib
 import matplotlib.widgets
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami.RFFQMOrigami import RFFQM
@@ -109,3 +111,50 @@ def plot_interactive(origami: RFFQM):
     slider = add_slider(ax, origami)
 
     plt.show()
+
+
+def plot_crease_pattern(ori: RFFQM):
+    if not np.isclose(ori.gamma, 0):
+        raise ValueError(f"The given origami is not flat. gamma={ori.gamma}")
+    if not np.all(np.isclose(ori.dots.dots[2, :], 0)):
+        raise ValueError(f"The given origami is not on XY plane!")
+    fig: Figure = plt.figure()
+    # ax: Axes3D = fig.add_subplot(111, projection='3d', elev=90, azim=-90)
+    ax: Axes = fig.add_subplot(111)
+    indexes = ori.dots.indexes
+    dots = ori.dots.dots
+
+    rows, cols = indexes.shape
+
+    MVA_to_color = {1: 'r', -1: 'b'}
+    MVA = 1
+
+    def draw_crease(dot, i, j, _MVA):
+        ax.plot([dot[0], dots[0, indexes[i, j]]],
+                [dot[1], dots[1, indexes[i, j]]],
+                # [dot[2], dots[2, indexes[i, j]]],
+                color=MVA_to_color[_MVA])
+
+    for j in range(1, cols):
+        dot = dots[:, indexes[0, j]]
+        draw_crease(dot, 0, j - 1, -MVA)
+
+    for i in range(1, rows):
+        dot = dots[:, indexes[i, 0]]
+        draw_crease(dot, i - 1, 0, MVA)
+        MVA *= -1
+
+    for i in range(1, rows):
+        for j in range(1, cols):
+            vertical_MVA = 1 if j % 2 == 0 else -1
+
+            dot_index = indexes[i, j]
+            dot = dots[:, dot_index]
+            draw_crease(dot, i, j - 1, MVA)
+            draw_crease(dot, i - 1, j, vertical_MVA * MVA)
+        MVA *= -1
+
+    ax.set_aspect('equal')
+    ax.set_axis_off()
+    fig.tight_layout()
+    return fig, ax

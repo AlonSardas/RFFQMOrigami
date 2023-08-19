@@ -249,9 +249,9 @@ def test_rotate_around_axis():
 
 def main():
     # test_rotate_around_axis()
-    calc_vectors()
-    # calc_omega12()
-    # calc_gamma21()
+    # calc_vectors()
+    calc_omega12()
+    calc_gamma21()
 
 
 if __name__ == '__main__':

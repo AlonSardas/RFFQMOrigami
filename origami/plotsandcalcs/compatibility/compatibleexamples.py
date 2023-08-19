@@ -5,6 +5,9 @@ import numpy as np
 from matplotlib.axes import Axes
 
 import origami.plotsandcalcs
+from origami import RFFQMOrigami
+from origami.angleperturbation import set_perturbations_by_func_v1
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 
@@ -139,6 +142,51 @@ def single_angle_perturbation():
     # fig.savefig(os.path.join(FIGURES_PATH, 'all_bottom_perturbed.png'))
 
 
+def plot_parallel_G_const():
+    G_0 = 0.05
+    F = lambda x: 0
+    G = lambda y: G_0
+    angle = 1
+
+    rows = 20
+    cols = 20
+    ls = np.ones(rows - 1) * 1
+    cs = np.ones(cols - 1) * 1
+
+    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
+    set_perturbations_by_func_v1(F, G, 0, angles_left, angles_bottom, ls, cs)
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
+    ori = RFFQMOrigami.RFFQM(quads)
+
+    quads = ori.set_gamma(0)
+    fig, ax = plot_flat_quadrangles(quads)
+    ax.set_axis_off()
+    ax.set_aspect('equal')
+    # ax.set_box_aspect(None, zoom=2)
+    ax.view_init(azim=-40)
+    ax.dist = 5
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'parallel-G-const-flat.svg'))
+
+    plot_interactive(ori)
+
+    # fig = plt.figure()
+    # ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-159, azim=103)
+    #
+    # ori.set_gamma(2.8)
+    # ori.dots.plot(ax, alpha=0.4)
+    #
+    # ax.dist = 8.5
+    # ax.set_aspect('equal')
+    # # ax.set(xticks=[], yticks=[], zticks=[])
+    # # ax.set(zticks=[-3, 0, 3])
+    # plotutils.set_labels_off(ax)
+    # # ax.set_axis_off()
+    # fig.tight_layout()
+    # fig.savefig(os.path.join(FIGURES_PATH, 'alternating-with-G-folded.svg'))
+
+
 def main():
     # create_miura_ori()
     # plot_zigzag()
@@ -146,6 +194,7 @@ def main():
     # plot_same_perturbed_angles()
     # plot_all_bottom_perturbed()
     # single_angle_perturbation()
+    plot_parallel_G_const()
 
     plt.show()
 

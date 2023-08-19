@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami import quadranglearray
-from origami.interactiveplot import plot_interactive_miuraori
+from origami.origamiplots import plot_interactive_miuraori
 from origami.utils import plotutils
 from origami.zigzagmiuraori import ZigzagMiuraOri, create_zigzag_dots
 
@@ -20,7 +20,7 @@ def create_basic_crease1():
     dy = 2
 
     rows = 3
-    angles = 0.2 * np.ones(rows) * np.pi
+    angles = 0.4 * np.ones(rows) * np.pi
 
     dots = create_zigzag_dots(angles, n, dy, dx)
 
@@ -115,20 +115,20 @@ def plot():
     # dots, rows, cols = create_changing_cs_example()
     # dots, rows, cols = create_spiral_changing_cs()
     # dots, rows, cols = create_cylinder_changing_dxs()
-    dots, rows, cols = create_basic_crease2()
-    origami = ZigzagMiuraOri(dots, rows, cols)
+    dots, rows, cols = create_basic_crease1()
+    ori = ZigzagMiuraOri(dots, rows, cols)
 
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
-    origami.plot(ax)
+    ori.plot(ax)
 
-    origami.set_omega(1)
-    valid, reason = quadranglearray.is_valid(origami.initial_dots, origami.dots, origami.indexes)
+    ori.set_omega(1)
+    valid, reason = quadranglearray.is_valid(ori.initial_dots, ori.dots, ori.indexes)
     if not valid:
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
         print(f'Not a valid folded configuration. Reason: {reason}')
 
-    plot_interactive_miuraori(origami)
+    plot_interactive_miuraori(ori)
 
 
 def plot_simple_example():

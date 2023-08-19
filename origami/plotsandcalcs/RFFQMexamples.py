@@ -9,9 +9,9 @@ import origami
 import origami.plotsandcalcs
 from origami import origamimetric
 from origami.RFFQMOrigami import RFFQM
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
-from origami.quadranglearray import QuadrangleArray
+from origami.quadranglearray import QuadrangleArray, plot_flat_quadrangles
 from origami.utils import linalgutils, zigzagutils
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
@@ -34,7 +34,7 @@ def create_basic_crease():
     plot_interactive(ori)
 
 
-def create_radial():
+def create_radial_simple():
     angle = 2
     # ls = np.ones(5) * 2
     ls = [2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4]
@@ -50,6 +50,53 @@ def create_radial():
     quads = QuadrangleArray(dots, rows, cols)
     ori = RFFQM(quads)
     plot_interactive(ori)
+
+
+def create_radial():
+    angle = 1.3
+    # ls = np.ones(5) * 2
+    ls = [4, 1, 4, 1.5, 4, 2, 4, 3, 2, 4, 1, 4]
+    cs = np.ones(8)
+
+    angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
+    angles_bottom[:, :] += 0.05
+    angles_left[:, :] += 0.05
+
+    marching = MarchingAlgorithm(angles_left, angles_bottom)
+    dots, indexes = marching.create_dots(ls, cs)
+    rows, cols = indexes.shape
+    quads = QuadrangleArray(dots, rows, cols)
+    ori = RFFQM(quads)
+
+    fig, ax = plot_flat_quadrangles(quads)
+    ax.set_axis_off()
+    ax.set_aspect('equal')
+    # ax.set_box_aspect(None, zoom=1.7)
+    ax.dist = 5
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat.svg'))
+
+    fig = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-156, elev=-140)
+
+    ori.set_gamma(1.5)
+    ori.dots.plot(ax, alpha=0.4)
+    
+    # ax.set_ylim(-10, 15)
+    # ax.set_box_aspect(None, zoom=2)
+    # ax.dist is deprecated but I couldn't combine set_box_aspect with set_aspect('equal')
+    ax.dist = 8.5
+    ax.set_aspect('equal')
+    # ax.set(xticks=[], yticks=[], zticks=[])
+    ax.set(zticks=[-3, 0, 3])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+    ax.set_zlabel('')
+    # ax.set_axis_off()
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-folded.svg'))
+
+    plt.show()
 
 
 def create_sphere_interactive():
@@ -149,6 +196,7 @@ def create_sphere():
     # plotutils.set_axis_scaled(ax)
 
     fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.png'))
 
     plt.show()
 
@@ -189,8 +237,8 @@ def main():
     # create_basic_crease()
     # create_radial()
     # create_sphere_interactive()
-    # create_sphere()
-    create_MARS_Barreto()
+    create_sphere()
+    # create_MARS_Barreto()
 
 
 if __name__ == '__main__':

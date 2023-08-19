@@ -11,7 +11,7 @@ import origami.plotsandcalcs
 from origami import origamimetric, quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.utils import sin, cos, tan, csc, sec, compare_curvatures, get_FF_dFF_dMM_ddMM, \

@@ -20,7 +20,7 @@ from scipy.optimize import fsolve
 
 import origami
 from origami import origamimetric
-from origami.interactiveplot import plot_interactive
+from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_kx_ky_funcs, create_expected_K_func, \
     create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \

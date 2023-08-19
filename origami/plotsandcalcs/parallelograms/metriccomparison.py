@@ -128,7 +128,7 @@ def plot_discrete():
     print(f'ls={origami.ly}')
     print(f'cs={origami.lx}')
 
-    fig, axes = plt.subplots(1, 2)
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4))
     fig: Figure = fig
     ax: Axes = axes[0]
     origami.plot_YZ_zigzag(ax)
@@ -140,6 +140,9 @@ def plot_discrete():
 
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, 'zigzag_approximation.png'))
+
+    plt.show()
+    return
 
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
@@ -194,8 +197,8 @@ def _print_comparison_for_point(origami: DiscreteOrigami, i, j):
 
 def main():
     # plot_smooth_surface()
-    # plot_discrete()
-    compare_forms()
+    plot_discrete()
+    # compare_forms()
 
 
 if __name__ == '__main__':

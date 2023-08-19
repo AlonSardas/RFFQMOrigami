@@ -7,18 +7,20 @@ import matplotlib.widgets
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami.plotsandcalcs
 from origami.miuraori import SimpleMiuraOri
+from origami.utils import plotutils
 from origami.utils.plotutils import set_pi_ticks, set_3D_labels
 
-FIGURES_PATH = '../../../../RFFQM/Figures'
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM/Figures')
 
 
 def plot_simple_crease_pattern():
-    origami = SimpleMiuraOri(np.ones(6), np.ones(6))
+    ori = SimpleMiuraOri(np.ones(6), np.ones(6))
     fig = plt.figure()
 
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
-    origami.plot(ax)
+    ori.plot(ax)
 
     set_3D_labels(ax)
 
@@ -44,14 +46,14 @@ def plot_parallelograms_example():
 
 
 def plot_FFF_unit():
-    origami = SimpleMiuraOri([1, 1.5], [1.5, 0.8])
+    ori = SimpleMiuraOri([1, 1.5], [1.5, 0.8])
     fig = plt.figure()
 
     # ax: Axes3D = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-110, elev=40)
 
-    origami.set_omega(0.9)
-    origami.plot(ax, alpha=0.4)
+    ori.set_omega(0.9)
+    ori.plot(ax, alpha=0.4)
 
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
@@ -59,10 +61,10 @@ def plot_FFF_unit():
 
     set_3D_labels(ax)
 
-    edge_points = origami.dots[:, [origami.indexes[0, 0],
-                                   origami.indexes[0, -1],
-                                   origami.indexes[-1, 0],
-                                   origami.indexes[-1, -1]]]
+    edge_points = ori.dots[:, [ori.indexes[0, 0],
+                               ori.indexes[0, -1],
+                               ori.indexes[-1, 0],
+                               ori.indexes[-1, -1]]]
     ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
 
     plt.savefig(os.path.join(FIGURES_PATH, 'FFF_unit.png'))
@@ -71,13 +73,16 @@ def plot_FFF_unit():
 
 
 def plot_unperturbed_unit_cell():
-    origami = SimpleMiuraOri([1.4, 1.4], [1.0, 1.0], angle=0.6)
+    ori = SimpleMiuraOri([1.4, 1.4], [1.0, 1.0], angle=-0.6)
     fig = plt.figure()
 
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=23)
 
-    origami.set_omega(-1.2)
-    origami.plot(ax, alpha=0.4)
+    # ori.set_omega(-1.2)
+    ori.set_omega(1.2)
+    _, wire = ori.plot(ax, alpha=0.4)
+    wire.set_color('r')
+    wire.set_alpha(0.2)
 
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
@@ -85,22 +90,68 @@ def plot_unperturbed_unit_cell():
 
     set_3D_labels(ax)
 
-    edge_points = origami.dots[:, [origami.indexes[0, 0],
-                                   origami.indexes[0, -1],
-                                   origami.indexes[-1, 0],
-                                   origami.indexes[-1, -1]]]
-    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=120)
+    edge_points = ori.dots[:, [ori.indexes[0, 0],
+                               ori.indexes[0, -1],
+                               ori.indexes[-1, 0],
+                               ori.indexes[-1, -1]]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='g', s=120)
 
-    dot = origami.dots[:, origami.indexes[0, 0]]
-    ax.text(dot[0] + 0.2, dot[1], dot[2], "C", fontsize=30)
-    dot = origami.dots[:, origami.indexes[-1, 0]]
-    ax.text(dot[0] - 0.3, dot[1] + 0.1, dot[2], "D", fontsize=30)
-    dot = origami.dots[:, origami.indexes[0, -1]]
-    ax.text(dot[0] + 0.1, dot[1], dot[2], "A", fontsize=30)
-    dot = origami.dots[:, origami.indexes[-1, -1]]
-    ax.text(dot[0] + 0.1, dot[1], dot[2], "B", fontsize=30)
+    dot = ori.dots[:, ori.indexes[0, 0]]
+    ax.text(dot[0] - 0.2, dot[1], dot[2], "E", fontsize=30)
+    dot = ori.dots[:, ori.indexes[-1, 0]]
+    ax.text(dot[0] + 0.1, dot[1], dot[2], "K", fontsize=30)
+    dot = ori.dots[:, ori.indexes[0, -1]]
+    ax.text(dot[0] + 0.1, dot[1], dot[2]+0.2, "A", fontsize=30)
+    dot = ori.dots[:, ori.indexes[-1, -1]]
+    ax.text(dot[0], dot[1], dot[2]+0.2, "J", fontsize=30)
 
     plt.savefig(os.path.join(FIGURES_PATH, 'unperturbed-unit-cell.svg'))
+
+    plt.show()
+
+
+def plot_zigzag_with_patterns():
+    ori = SimpleMiuraOri(
+        [3, 3],
+        [1, 2, 1, 3, 2, 1, 2, 0.9], angle=0.4)
+    fig = plt.figure()
+
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=55, elev=35)
+
+    ori.set_omega(-1.7)
+    ori.plot(ax, alpha=0.3)
+
+    edge_points = ori.dots[:, ori.indexes[:, 0]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=120)
+
+    # plotutils.set_axis_scaled(ax)
+    lim = 2.5
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
+    ax.set_aspect('equal')
+    set_3D_labels(ax)
+
+    fig.savefig(os.path.join(FIGURES_PATH, 'YZ-zigzag-pattern.svg'))
+    plt.show()
+
+    ori = SimpleMiuraOri(
+        [1, 2, 1.5, 2, 3, 1],
+        [2, 2], angle=0.6)
+    fig = plt.figure()
+
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=89)
+
+    ori.set_omega(-1.2)
+    ori.plot(ax, alpha=0.4)
+
+    edge_points = ori.dots[:, ori.indexes[0, :]]
+    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=120)
+
+    plotutils.set_axis_scaled(ax)
+    set_3D_labels(ax)
+
+    fig.savefig(os.path.join(FIGURES_PATH, 'XY-zigzag-pattern.svg'))
 
     plt.show()
 
@@ -171,3 +222,4 @@ if __name__ == '__main__':
     # plot_FFF_unit()
     # plot_parallelograms_example()
     plot_unperturbed_unit_cell()
+    # plot_zigzag_with_patterns()
