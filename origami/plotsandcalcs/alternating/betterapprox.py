@@ -21,6 +21,7 @@ from scipy.optimize import fsolve
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
+from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_kx_ky_funcs, create_expected_K_func, \
     create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \
@@ -394,13 +395,88 @@ def compare_curvatures(Ks, Hs, expected_K_func, expected_H_func) -> Tuple[Figure
     return fig, axes
 
 
+def compare_to_old():
+    angle = np.pi / 2 - 0.2
+    W0 = 3
+
+    rows = 48
+    cols = 48
+
+    F = lambda x: 0.004 / 2 * (x - cols / 2)
+    MMt = lambda y: 0.02 * ((y - rows / 4) / 2) ** 2
+    MM = lambda y: MMt(y)-MMt(0)
+    FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
+
+    L0 = 1 / 2
+    C0 = 0.5 / 2
+
+    ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+    ori.set_gamma(ori.calc_gamma_by_omega(W0))
+
+    Ks, g11, g12, g22 = origamimetric.calc_curvature_and_metric(ori.dots)
+    ori_old = ori
+
+    fig, ax = plt.subplots()
+    imshow_with_colorbar(fig, ax, Ks, "K - old")
+
+    dF = FF(1) - FF(0)
+    ddMM = MM(2) + MM(0) - 2 * MM(1)
+    expectedK = -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dF * \
+                ddMM * (cos(W0) - 2 * csc(angle) ** 2 + 1)
+
+    print(expectedK)
+
+    # kx = -1.00
+    ky = -0.1
+
+    kx = -1.5
+    ky = -0.26
+
+    print(kx*ky)
+
+    # F0 = -0.048
+    F0 = -0.055
+    M0 = dMM(0)
+    # M0 = 0.125
+    theta = angle
+
+    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+
+    fig, axes = plt.subplots(1, 2)
+    axes[0].plot(xs, FF(xs), '.', label='old')
+    axes[0].plot(xs, Fs, '.', label='better')
+    axes[0].legend()
+    # axes[1].plot(ys, np.diff(MMs), '.')
+    axes[1].plot(ys, MM(ys), '.', label='old')
+    axes[1].plot(ys, MMs[:-1], '.', label='better')
+    axes[1].legend()
+    # plt.show()
+
+    F = create_F_from_list(Fs)
+    MM = create_MM_from_list(MMs)
+
+    ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+
+    ori.set_gamma(ori.calc_gamma_by_omega(W0))
+
+    geometry = origamimetric.OrigamiGeometry(ori.dots)
+    Ks, Hs = geometry.get_curvatures_by_shape_operator()
+    expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
+    fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+
+    plot_interactive(ori)
+    # plot_interactive(ori_old)
+
+
 def main():
     # test_constant()
     # test_hills()
     # test_constant_angle_factor()
-    test_IP_constant()
+    # test_IP_constant()
     # compare_y_curvature_discrete_to_continuous()
     # test_x_constant()
+    compare_to_old()
     plt.show()
 
 

@@ -11,11 +11,12 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import origami
 from origami import origamimetric
-from origami.origamiplots import plot_interactive, plot_crease_pattern
+from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs.alternating import betterapproxcurvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami
+from origami.utils import plotutils
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
                             'RFFQM', 'Figures', 'design-examples')
@@ -109,9 +110,9 @@ def plot_spherical_cap():
     ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
     ori.set_gamma(0)
 
-    fig, _ = plot_crease_pattern(ori)
-    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.svg'))
-    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.png'))
+    # fig, _ = plot_crease_pattern(ori)
+    # fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.svg'))
+    # fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap-crease-pattern.png'))
 
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
@@ -124,7 +125,8 @@ def plot_spherical_cap():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
     lim = 5.0
-    ori.dots.plot(ax, alpha=0.6)
+    surf, wire = ori.dots.plot(ax, alpha=0.6)
+    wire.set_alpha(0.0)
 
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
@@ -238,6 +240,109 @@ def plot_2D_sinusoid():
 
 
 def plot_cap_different_curvatures():
+    rows, cols = 20, 30
+    kx = 0.10
+    ky = 0.10
+
+    L0 = 1.0
+    C0 = 1
+    W0 = 2.4
+    theta = 1.1
+
+    K = 0.007
+    K_factor = 1.6
+    # kxs = [-np.sqrt(K) * 1.7, -np.sqrt(K) / 1.7, -np.sqrt(K)]
+    kxs = [-np.sqrt(K) * K_factor, -np.sqrt(K) / K_factor]
+
+    fig_all: Figure = plt.figure()
+    ax_all: Axes3D = fig_all.add_subplot(111, projection='3d', elev=-150, azim=130)
+
+    for i, kx in enumerate(kxs):
+        ky = K / kx
+        print(f"Plot for kx={kx}, ky={ky}")
+
+        F0 = 0.0
+        M0 = -0.5
+
+        xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+        ys, MMs = betterapproxcurvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+
+        # Make Fs symmetric
+        Fs = np.append(-Fs[1::][::-1], Fs)
+
+        fig, axes = plt.subplots(1, 2)
+        axes[0].plot(Fs, '.')
+        axes[1].plot(ys, np.diff(MMs), '.')
+        # plt.show()
+
+        F = create_F_from_list(Fs)
+        MM = create_MM_from_list(MMs)
+
+        ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+        ori.set_gamma(ori.calc_gamma_by_omega(W0))
+
+        dots, indexes = ori.dots.dots, ori.dots.indexes
+        r, c = indexes.shape
+        # ax_all.plot_surface(
+        #     dots[0, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)),
+        #     dots[1, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)),
+        #     dots[2, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)), alpha=0.3, linewidth=100)
+        z_shift = i * 2.1
+        ax_all.plot_surface(
+            dots[0, :].reshape((r, c)),
+            dots[1, :].reshape((r, c)),
+            z_shift + dots[2, :].reshape((r, c)),
+            alpha=0.3, linewidth=100)
+        # wire = ax_all.plot_wireframe(
+        #     dots[0, :].reshape((r, c)),
+        #     dots[1, :].reshape((r, c)),
+        #     z_shift + dots[2, :].reshape((r, c)),
+        #     alpha=0.1, color='g', linewidth=2)
+        l1 = ax_all.plot(
+            dots[0, indexes[::2, 0]],
+            dots[1, indexes[::2, 0]],
+            dots[2, indexes[::2, 0]] + z_shift, '--g', linewidth=3)[0]
+        l2 = ax_all.plot(
+            dots[0, indexes[0, ::2]],
+            dots[1, indexes[0, ::2]],
+            dots[2, indexes[0, ::2]] + z_shift, '--r', linewidth=3)[0]
+        l1.set_zorder(30)
+        l2.set_zorder(30)
+
+        should_plot_geometry = False
+        if should_plot_geometry:
+            geometry = origamimetric.OrigamiGeometry(ori.dots)
+            Ks, Hs = geometry.get_curvatures_by_shape_operator()
+            expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
+            fig, axes = compare_curvatures(Ks, Hs, expected_K, expected_H)
+            axes[1, 0].set_title(f'K={kx * ky:.3f}')
+            axes[1, 1].set_title(f'H={-(kx + ky) / 2:.3f}')
+            # fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}-curvatures.svg'))
+
+        should_plot_separately = False
+        if should_plot_separately:
+            fig: Figure = plt.figure()
+            ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
+            lim = 1.8
+            ori.dots.plot(ax, alpha=0.6)
+
+            ax.set_xlim(-lim, lim)
+            ax.set_ylim(-lim, lim)
+            # ax.set_zlim(-lim, lim)
+
+            # fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}.svg'), pad_inches=0.4)
+        # plot_interactive(ori)
+    # ax_all.set_aspect('equal')
+    plotutils.set_3D_labels(ax_all)
+    ax_all.dist = 8.0
+    fig_all.subplots_adjust(left=0.4)
+    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.svg'), pad_inches=0.3)
+    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.png'), pad_inches=0.3)
+    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'), pad_inches=0.3)
+    plt.show()
+
+
+def plot_cap_different_curvatures_ugly():
     """
     Here we try to plot the same cap with constant Gaussian curvature
     but with different principal curvatures
@@ -371,10 +476,11 @@ def plot_cap_different_curvatures_large_angle():
 
 def main():
     # plot_vase()
-    plot_spherical_cap()
+    # plot_spherical_cap()
     # plot_saddle()
     # plot_2D_sinusoid()
-    # plot_cap_different_curvatures()
+    plot_cap_different_curvatures()
+    # plot_cap_different_curvatures_ugly()
     # plot_sphere_crease_pattern()
 
 

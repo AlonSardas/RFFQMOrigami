@@ -40,6 +40,12 @@ import numpy as np
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import linalgutils
 
+# This is an ugly way to generalize the geometry to general surfaces,
+# where the 2X2 unit cell is meaningless.
+skip_half_dots = True
+
+always_use_gradient = False
+
 
 class OrigamiGeometry(object):
     """
@@ -67,7 +73,6 @@ class OrigamiGeometry(object):
         quads = self.quads
         indexes = quads.indexes
 
-        skip_half_dots = True
         if skip_half_dots:
             rows = (quads.rows + 1) // 2
             cols = (quads.cols + 1) // 2
@@ -81,13 +86,25 @@ class OrigamiGeometry(object):
             metric_dot_ys: np.ndarray = quads.dots[1, :].reshape(rows, cols)
             metric_dot_zs: np.ndarray = quads.dots[2, :].reshape(rows, cols)
 
-        self._du_dv_bad_shape = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
-        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv_bad_shape
+        if always_use_gradient:
+            du_xs = np.gradient(metric_dot_xs, axis=1)
+            du_ys = np.gradient(metric_dot_ys, axis=1)
+            du_zs = np.gradient(metric_dot_zs, axis=1)
 
-        # To match the shape:
-        du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = [
-            a[:-1, :-1] for a in [du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs]]
-        self._du_dv = du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs
+            dv_xs = np.gradient(metric_dot_xs, axis=0)
+            dv_ys = np.gradient(metric_dot_ys, axis=0)
+            dv_zs = np.gradient(metric_dot_zs, axis=0)
+
+            self._du_dv = du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs
+            self._du_dv_bad_shape = self._du_dv
+        else:
+            self._du_dv_bad_shape = _calc_du_dv(metric_dot_xs, metric_dot_ys, metric_dot_zs)
+            du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = self._du_dv_bad_shape
+
+            # To match the shape:
+            du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs = [
+                a[:-1, :-1] for a in [du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs]]
+            self._du_dv = du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs
 
         g11 = du_xs ** 2 + du_ys ** 2 + du_zs ** 2
         g22 = dv_xs ** 2 + dv_ys ** 2 + dv_zs ** 2
@@ -301,15 +318,26 @@ def _calc_normals(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs):
 
 
 def _calc_2nd_derivatives(du_xs, du_ys, du_zs, dv_xs, dv_ys, dv_zs):
-    dudu_xs = np.diff(du_xs, axis=1)[:-1, :]
-    dudu_ys = np.diff(du_ys, axis=1)[:-1, :]
-    dudu_zs = np.diff(du_zs, axis=1)[:-1, :]
-    dvdv_xs = np.diff(dv_xs, axis=0)[:, :-1]
-    dvdv_ys = np.diff(dv_ys, axis=0)[:, :-1]
-    dvdv_zs = np.diff(dv_zs, axis=0)[:, :-1]
-    dvdu_xs = np.diff(du_xs, axis=0)[:, :-1]
-    dvdu_ys = np.diff(du_ys, axis=0)[:, :-1]
-    dvdu_zs = np.diff(du_zs, axis=0)[:, :-1]
+    if always_use_gradient:
+        dudu_xs = np.gradient(du_xs, axis=1)
+        dudu_ys = np.gradient(du_ys, axis=1)
+        dudu_zs = np.gradient(du_zs, axis=1)
+        dvdv_xs = np.gradient(dv_xs, axis=0)
+        dvdv_ys = np.gradient(dv_ys, axis=0)
+        dvdv_zs = np.gradient(dv_zs, axis=0)
+        dvdu_xs = np.gradient(du_xs, axis=0)
+        dvdu_ys = np.gradient(du_ys, axis=0)
+        dvdu_zs = np.gradient(du_zs, axis=0)
+    else:
+        dudu_xs = np.diff(du_xs, axis=1)[:-1, :]
+        dudu_ys = np.diff(du_ys, axis=1)[:-1, :]
+        dudu_zs = np.diff(du_zs, axis=1)[:-1, :]
+        dvdv_xs = np.diff(dv_xs, axis=0)[:, :-1]
+        dvdv_ys = np.diff(dv_ys, axis=0)[:, :-1]
+        dvdv_zs = np.diff(dv_zs, axis=0)[:, :-1]
+        dvdu_xs = np.diff(du_xs, axis=0)[:, :-1]
+        dvdu_ys = np.diff(du_ys, axis=0)[:, :-1]
+        dvdu_zs = np.diff(du_zs, axis=0)[:, :-1]
     return dudu_xs, dudu_ys, dudu_zs, dvdu_xs, dvdu_ys, dvdu_zs, dvdv_xs, dvdv_ys, dvdv_zs
 
 

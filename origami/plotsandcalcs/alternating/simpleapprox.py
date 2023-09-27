@@ -213,8 +213,7 @@ def test_high_resolution():
     resolution_factors = [1, 2, 3]
     angle = np.pi / 2 - 0.2
     W0 = 3
-    fig, axes = plt.subplots(3)
-    axes = axes.flat
+    fig, axes = plt.subplots(1, 3, figsize=(11, 4))
 
     for i, factor in enumerate(resolution_factors):
         rows = 24 * factor
@@ -233,7 +232,9 @@ def test_high_resolution():
 
         Ks, g11, g12, g22 = origamimetric.calc_curvature_and_metric(ori.dots)
 
-        im = imshow_with_colorbar(fig, axes[i], Ks, f"factor: {factor}")
+        ax = axes[i]
+        im = ax.imshow(Ks, origin='lower')
+        ax.set_title(f"factor: {factor}")
         im.set_extent([0, cols, 0, rows])
 
         dF = FF(1) - FF(0)
@@ -245,6 +246,8 @@ def test_high_resolution():
         print(expectedK)
 
     fig.tight_layout()
+    fig.colorbar(im, ax=axes.ravel().tolist())
+    fig.savefig(os.path.join(FIGURES_PATH, "constant-curvature-changing-resolution.svg"))
     fig.savefig(os.path.join(FIGURES_PATH, "constant-curvature-changing-resolution.png"))
     plt.show()
 
@@ -744,8 +747,10 @@ def plot_hills():
     L0 = 1
     C0 = 0.5
 
-    config = [(0.02, 0.1, 'hills-small.png'), (0.1, 0.7, 'hills-big.png')]
-    for F0, MM0, name in config:
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6.5))
+
+    config = [(0.02, 0.1, 'small'), (0.1, 0.7, 'large')]
+    for i, (F0, MM0, name) in enumerate(config):
         F = lambda x: F0 * np.sin(2 * np.pi * x / 39)
         MM = lambda y: MM0 * np.cos(2 * np.pi * y / 16)
         FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
@@ -756,12 +761,13 @@ def plot_hills():
 
         expected_K_func = lambda x, y: -1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * dFF(x) * \
                                        ddMM(y) * (cos(W0) - 2 * csc(angle) ** 2 + 1)
-        fig, axes = plt.subplots(2)
-        compare_curvatures(fig, axes, Ks, expected_K_func)
+        compare_curvatures(fig, axes[:, i], Ks, expected_K_func)
+        axes[0,i].set_title(f'K {name} pert')
         print(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
-        fig.suptitle(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
+        # fig.suptitle(rf'$ \omega={W0:.3f} $, F0={F0:.3f}, MM0={MM0:.3f}')
+        # fig.suptitle(rf'F0={F0:.3f}, MM0={MM0:.3f}')
         fig.tight_layout()
-        fig.savefig(os.path.join(FIGURES_PATH, name))
+    fig.savefig(os.path.join(FIGURES_PATH, "hills.svg"))
 
     plt.show()
 
@@ -879,7 +885,7 @@ def main():
     # test_angles()
     # test_metric()
     # test_constant_curvature()
-    # plot_hills()
+    plot_hills()
     # plot_constant_curvature()
     # test_periodic_with_constant()
     # plot_cone()
@@ -891,7 +897,7 @@ def main():
     # plot_cylinders()
     # test_M_vs_zigzag()
     # test_jump_in_F()
-    test_zigzag_in_angles()
+    # test_zigzag_in_angles()
 
 
 if __name__ == '__main__':
