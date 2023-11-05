@@ -44,6 +44,15 @@ def set_labels_off(ax: Axes3D):
 
 
 def set_axis_scaled(ax: Axes3D):
+    ax.set_aspect('equal')
+
+
+def set_axis_scaled_by_limits(ax: Axes3D):
+    """
+    This is a workaround for times when ax.set_aspect didn't work well.
+    By now, it is preferred to use set_axis_scaled.
+    This method reach similar results, but it is not really scaled.
+    """
     max_lim = max(ax.get_xlim()[1], ax.get_ylim()[1], ax.get_zlim()[1])
     min_lim = min(ax.get_xlim()[0], ax.get_ylim()[0], ax.get_zlim()[0])
     ax.set_xlim(min_lim, max_lim)

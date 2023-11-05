@@ -6,11 +6,14 @@ from matplotlib import pyplot
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami.plotsandcalcs
 from origami import zigzagmiuraori
 from origami.plotsandcalcs import zigzagplots
 from origami.utils import linalgutils
 
-FIGURES_PATH = '../../../RFFQM/Figures/zigzag-origami'
+FIGURES_PATH = os.path.join(
+    origami.plotsandcalcs.BASE_PATH, "RFFQM", "Figures", "zigzag-origami"
+)
 
 
 def record_points():
@@ -21,7 +24,7 @@ def record_points():
     ax.set_xlim(-10, 10)
     ax.set_ylim(-10, 10)
 
-    line, = ax.plot(x_pts, y_pts, marker="o")
+    (line,) = ax.plot(x_pts, y_pts, marker="o")
 
     def onpick(event):
         m_x, m_y = event.x, event.y
@@ -32,7 +35,7 @@ def record_points():
         line.set_ydata(y_pts)
         fig.canvas.draw()
 
-    fig.canvas.mpl_connect('button_press_event', onpick)
+    fig.canvas.mpl_connect("button_press_event", onpick)
 
     pyplot.show()
 
@@ -58,8 +61,8 @@ def build_origami():
 
     fig, ax = plt.subplots()
     ax.plot(xs, ys, '-')
-    ax.plot(xs, ys, '*')
-    fig.savefig(os.path.join(FIGURES_PATH, 'cat-curve.png'))
+    ax.plot(xs, ys, "*")
+    fig.savefig(os.path.join(FIGURES_PATH, "cat-curve.png"))
     # plt.show()
 
     num_of_dots = len(xs)
@@ -98,19 +101,19 @@ def build_origami():
         elif sign == -1:
             alpha = np.pi / 2 + angle / 2
         else:
-            raise RuntimeError(f'Unexpected value for sign: {sign}')
+            raise RuntimeError(f"Unexpected value for sign: {sign}")
         origami_angles[i + 1] = alpha
         omega_sign *= -1
 
     rows = num_of_dots
     cols = 3
-    dots = zigzagmiuraori.create_zigzag_dots(origami_angles, cols, ls, 0.01)
+    dots = zigzagmiuraori.create_zigzag_dots(origami_angles, cols, ls, 0.02)
     origami = zigzagmiuraori.ZigzagMiuraOri(dots, rows, cols)
     zigzagplots.plot_flat_configuration(origami)
     valid, reason = origami.is_valid()
     if not valid:
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
-        print(f'Not a valid folded configuration. Reason: {reason}')
+        print(f"Not a valid folded configuration. Reason: {reason}")
     else:
         print("The origami is valid")
     # plt.show()
@@ -118,20 +121,25 @@ def build_origami():
     origami.set_omega(omega)
     valid, reason = origami.is_valid()
     if not valid:
-        # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
-        print(f'Not a valid folded configuration. Reason: {reason}')
+        raise RuntimeError(
+            f'Not a valid folded configuration. Reason: {reason}')
+        # print(f"Not a valid folded configuration. Reason: {reason}")
     else:
         print("The origami is valid")
     # zigzagplots.plot_interactive(origami)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-174, elev=-177)
-    origami.plot(ax)
-    ax.set_xlabel('')
-    ax.set_ylabel('')
-    ax.set_zlabel('')
+    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=-179, azim=-175)
+    surf, wire = origami.plot(ax, alpha=0.8)
+    wire.set_alpha(0.4)
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.set_zlabel("")
     # ax.set_zlim(-2, 2)
-    ax.set_xlim(-0.0003, 0.0003)
+
+    # ax.set_xlim(-0.0003, 0.0003)
+    # ax.set_xticks([-0.00025, 0.00025])
+    ax.tick_params(axis='x', which='major', pad=25)
     fig.tight_layout()
 
     # fig.savefig(os.path.join(FIGURES_PATH, 'origami-cat.png'))
@@ -144,5 +152,5 @@ def main():
     build_origami()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

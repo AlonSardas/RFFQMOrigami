@@ -481,7 +481,6 @@ def main():
     # plot_2D_sinusoid()
     plot_cap_different_curvatures()
     # plot_cap_different_curvatures_ugly()
-    # plot_sphere_crease_pattern()
 
 
 if __name__ == '__main__':

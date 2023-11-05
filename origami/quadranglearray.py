@@ -8,12 +8,20 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from origami.utils import plotutils, linalgutils
 
-logger = logging.getLogger('origami.dots')
+logger = logging.getLogger("origami.dots")
 logger.setLevel(logging.DEBUG)
 
 
 class QuadrangleArray(object):
     def __init__(self, dots: np.ndarray, rows: int, cols: int):
+        """
+        Store the data of N=rows*columns dots, and their x,y,z positions in 3D space
+
+        :param dots: 2D of shape 3XN with the coordinates for each dot.
+            If the given data is 2XN, the last z coordinate is filled with 0.
+        :param rows: the number of rows in the quadrangle array
+        :param cols: the number of columns in the quadrangle array
+        """
         if dots.shape[0] == 2:
             dots3D = np.zeros((3, dots.shape[1]), dtype=dots.dtype)
             dots3D[:2, :] = dots
@@ -31,15 +39,17 @@ class QuadrangleArray(object):
     def center(self):
         self.dots -= self.dots.mean(axis=1)[:, None]
 
-    def is_valid(self, flat_quadrangles: Optional['QuadrangleArray'] = None) -> Tuple[bool, str]:
+    def is_valid(
+        self, flat_quadrangles: Optional["QuadrangleArray"] = None
+    ) -> Tuple[bool, str]:
         return is_valid(flat_quadrangles, self.dots, self.indexes)
 
     def assert_valid(self):
         valid, reason = self.is_valid()
         if not valid:
-            raise RuntimeError(f'Not a valid quadrangles array. Reason: {reason}')
+            raise RuntimeError(f"Not a valid quadrangles array. Reason: {reason}")
         else:
-            logger.debug('Configuration is valid')
+            logger.debug("Configuration is valid")
 
     def copy(self):
         new_dots = self.dots.copy()
@@ -49,14 +59,26 @@ class QuadrangleArray(object):
 def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
     plotutils.set_3D_labels(ax)
 
+    # It seems that plotting with float128 is not supported by matplotlib
+    if dots.dtype == np.float128:
+        dots = np.array(dots, np.float64)
+
     rows, cols = indexes.shape
-    surf = ax.plot_surface(dots[0, :].reshape((rows, cols)),
-                           dots[1, :].reshape((rows, cols)),
-                           dots[2, :].reshape((rows, cols)), alpha=alpha, linewidth=100)
-    wire = ax.plot_wireframe(dots[0, :].reshape((rows, cols)),
-                             dots[1, :].reshape((rows, cols)),
-                             dots[2, :].reshape((rows, cols)),
-                             alpha=alpha, color='g', linewidth=2)
+    surf = ax.plot_surface(
+        dots[0, :].reshape((rows, cols)),
+        dots[1, :].reshape((rows, cols)),
+        dots[2, :].reshape((rows, cols)),
+        alpha=alpha,
+        linewidth=100,
+    )
+    wire = ax.plot_wireframe(
+        dots[0, :].reshape((rows, cols)),
+        dots[1, :].reshape((rows, cols)),
+        dots[2, :].reshape((rows, cols)),
+        alpha=alpha,
+        color="g",
+        linewidth=2,
+    )
 
     return surf, wire
     # return surf, None
@@ -68,7 +90,7 @@ def center_dots(dots: np.ndarray, indexes):
     v1: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
     v2: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[0, -1 - (1 - cols % 2)]]
     n1: np.ndarray = np.cross(v1, v2)
-    logger.debug(f'centering dots. normal before={n1}')
+    logger.debug(f"centering dots. normal before={n1}")
 
     n = np.array([0, 0, 1])
 
@@ -86,11 +108,11 @@ def center_dots(dots: np.ndarray, indexes):
     v1: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[-1, 0]]
     v2: np.ndarray = dots[:, indexes[0, 0]] - dots[:, indexes[0, -1 - (1 - cols % 2)]]
     n1: np.ndarray = np.cross(v1, v2)
-    logger.debug(f'normal after rotation={n1}')
+    logger.debug(f"normal after rotation={n1}")
 
     vec = dots[:, indexes[-1, 0]] - dots[:, indexes[0, 0]]
 
-    logger.debug(f'xy vec: {vec}')
+    logger.debug(f"xy vec: {vec}")
 
     vec[2] = 0  # cast on XY plane
 
@@ -102,7 +124,7 @@ def center_dots(dots: np.ndarray, indexes):
 
     vec = dots[:, indexes[-1, 0]] - dots[:, indexes[0, 0]]
 
-    logger.debug(f'xy vec after rotation: {vec}')
+    logger.debug(f"xy vec after rotation: {vec}")
 
     dots -= dots.mean(axis=1)[:, None]
 
@@ -126,14 +148,18 @@ def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> Tuple[bool, st
 
             angle = linalgutils.calc_angle(n1, n2)
             if np.isclose(angle, np.pi, atol=1e-5):
-                return False, \
-                    f'Panel {x},{y} has 2 opposite normals. ' \
-                    f'Most likely that 2 creases intersect in the flat configuration'
+                return (
+                    False,
+                    f"Panel {x},{y} has 2 opposite normals. "
+                    f"Most likely that 2 creases intersect in the flat configuration",
+                )
             if not np.isclose(angle, 0, atol=1e-5):
-                return False, \
-                    f'Panel {x},{y} is not planar. Angle between 2 normals is {angle}'
+                return (
+                    False,
+                    f"Panel {x},{y} is not planar. Angle between 2 normals is {angle}",
+                )
 
-    return True, 'All quadrangle are indeed planar'
+    return True, "All quadrangle are indeed planar"
 
 
 def dots_to_quadrangles(dots: np.ndarray, indexes: np.ndarray) -> QuadrangleArray:
@@ -143,7 +169,7 @@ def dots_to_quadrangles(dots: np.ndarray, indexes: np.ndarray) -> QuadrangleArra
 
 def plot_flat_quadrangles(quads: QuadrangleArray) -> Tuple[Figure, Axes3D]:
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-90, elev=90)
     quads.plot(ax)
     plotutils.set_axis_scaled(ax)
     return fig, ax

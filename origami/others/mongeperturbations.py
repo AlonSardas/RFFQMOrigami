@@ -23,9 +23,9 @@ def test_periodic_by_extended_ruled_surface():
     plt.rcParams['axes.titley'] = 1.2
     plt.rcParams['axes.titlepad'] = -10
 
-    def calc_periodic_surface(Ax, Ay, i):
+    def calc_periodic_surface(A, B, i):
         xs, ys = np.meshgrid(np.linspace(0, L, nx), np.linspace(0, L, ny))
-        zs = Ax * np.sin(2 * np.pi * xs / 0.45) + Ay * np.sin(2 * np.pi * ys / 0.67)
+        zs = A * np.sin(2 * np.pi * xs / 0.45) + B * np.sin(2 * np.pi * ys / 0.67)
 
         dots = np.array([xs.reshape(N), ys.reshape(N), zs.reshape(N)])
 
@@ -46,7 +46,7 @@ def test_periodic_by_extended_ruled_surface():
         expected_Ks_linear = h_xx * h_yy
         expected_Ks_exact = (h_xx * h_yy) / (1 + h_x ** 2 + h_y ** 2) ** 2
 
-        im1 = plotutils.imshow_with_colorbar(fig, axes[0, i], Ks, f"Ks: Ax={Ax},Ay={Ay}")
+        im1 = plotutils.imshow_with_colorbar(fig, axes[0, i], Ks, f"K: $A={A},B={B}$")
         # label1 = "Ks linearized\n" "$ h_{xx}^2+h_{yy}^2 $"
         im2 = plotutils.imshow_with_colorbar(fig, axes[2, i], expected_Ks_linear, "approximated Monge")
         im3 = plotutils.imshow_with_colorbar(fig, axes[1, i], expected_Ks_exact, "exact by Monge")
@@ -56,11 +56,10 @@ def test_periodic_by_extended_ruled_surface():
 
     calc_periodic_surface(0.01, 0.01, 0)
     calc_periodic_surface(0.1, 0.01, 1)
-    fig.suptitle("Surfaces of the form:\n" r"h(x,y)=$A_x \sin(x/ \alpha) + A_y \sin(x/ \beta)$")
-    # fig.supxlabel("Surfaces of the form:\n" r"$A_x \sin(x/ \alpha) + A_y \sin(x/ \beta)$")
+    fig.suptitle("Surfaces of the form:\n" r"$h(x,y)=A \sin(x/ \alpha) + B \sin(x/ \beta)$")
     fig.tight_layout()
     # fig.subplots_adjust(top=0.85)
-    fig.savefig(os.path.join(FIGURES_PATH, 'periodic-perturbation-comparison.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic-perturbation-comparison.pdf'))
     plt.show()
 
 

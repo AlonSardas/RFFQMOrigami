@@ -6,12 +6,15 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
+import origami.plotsandcalcs
 from origami import quadranglearray
 from origami.origamiplots import plot_interactive_miuraori
 from origami.utils import plotutils
 from origami.zigzagmiuraori import ZigzagMiuraOri, create_zigzag_dots
 
-FIGURES_PATH = '../../../RFFQM/Figures/zigzag-origami'
+FIGURES_PATH = os.path.join(
+    origami.plotsandcalcs.BASE_PATH, "RFFQM", "Figures", "zigzag-origami"
+)
 
 
 def create_basic_crease1():
@@ -30,9 +33,10 @@ def create_basic_crease1():
 def create_basic_crease2():
     n = 7
     dx = 1
-    dy = 2
+    dy = 1.5
 
-    angles = np.array([0.2, 0.3, 0.7, 0.6, 0.7]) * np.pi
+    angles = np.array([0.25, 0.3, 0.65, 0.6, 0.65]) * np.pi
+    angles = np.pi - angles
 
     dots = create_zigzag_dots(angles, n, dy, dx)
 
@@ -48,6 +52,7 @@ def create_full_cylinder():
     # angles = np.array([0.2, 0.3, 0.7, 0.6, 0.7]) * np.pi
     angles = np.ones(rows) * 0.1 * np.pi
     angles[::2] += 0.1 * np.pi
+    angles = np.pi - angles
     dots = create_zigzag_dots(angles, n, dy, dx)
     return dots, len(angles), n
 
@@ -119,14 +124,14 @@ def plot():
     ori = ZigzagMiuraOri(dots, rows, cols)
 
     fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d')
+    ax: Axes3D = fig.add_subplot(111, projection="3d")
     ori.plot(ax)
 
     ori.set_omega(1)
     valid, reason = quadranglearray.is_valid(ori.initial_dots, ori.dots, ori.indexes)
     if not valid:
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
-        print(f'Not a valid folded configuration. Reason: {reason}')
+        print(f"Not a valid folded configuration. Reason: {reason}")
 
     plot_interactive_miuraori(ori)
 
@@ -135,17 +140,27 @@ def plot_simple_example():
     dots, rows, cols = create_basic_crease2()
     origami = ZigzagMiuraOri(dots, rows, cols)
 
-    fig, _ = plot_flat_configuration(origami)
-    fig.savefig(os.path.join(FIGURES_PATH, 'simple-example-flat.png'))
+    fig, ax = plot_flat_configuration(origami)
+    ax.set_aspect("equal")
+    ax.set_axis_off()
+    fig.savefig(os.path.join(FIGURES_PATH, "simple-example-flat.pdf"), pad_inches=-1)
 
-    origami.set_omega(0.4)
+    origami.set_omega(0.5)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=157, elev=32)
-    origami.plot(ax)
-    ax.set_zlim(-2, 2)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=167, elev=47)
+    origami.plot(ax, alpha=0.8)
+    ax.set_aspect("equal")
+    ax.set_zticks([-0.5, 0, 0.5])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
+    plotutils.set_labels_off(ax)
+    # ax.set_zlim(-2, 2)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'simple-example-folded.png'))
+    fig.savefig(
+        os.path.join(FIGURES_PATH, "simple-example-folded.pdf"), pad_inches=-0.2
+    )
 
     plt.show()
 
@@ -154,17 +169,26 @@ def plot_full_cylinder():
     dots, rows, cols = create_full_cylinder()
     origami = ZigzagMiuraOri(dots, rows, cols)
 
-    fig, _ = plot_flat_configuration(origami)
-    fig.savefig(os.path.join(FIGURES_PATH, 'cylinder-flat.png'))
+    fig, ax = plot_flat_configuration(origami)
+    # ax.set_axis_off()
+    # ax.zaxis.set_label_position('none')
+    # ax.zaxis.set_ticks_position('none')
+    ax.set_zticks([])
+    ax.set_xlabel('X', labelpad=10)
+    ax.set_ylabel('Y', labelpad=10)
+    ax.set_zlabel('')
+    ax.tick_params(axis='y', which='major', pad=10)
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat.png"), pad_inches=-0.3)
 
     origami.set_omega(1.85)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-30, elev=21)
-    origami.plot(ax)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-30, elev=21)
+    origami.plot(ax, alpha=0.7)
     plotutils.set_3D_labels(ax)
+    ax.set_xlabel('X', labelpad=10)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'cylinder-folded.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-folded.png"))
 
     plt.show()
 
@@ -174,46 +198,93 @@ def plot_spiral():
     origami = ZigzagMiuraOri(dots, rows, cols)
 
     fig, _ = plot_flat_configuration(origami)
-    fig.savefig(os.path.join(FIGURES_PATH, 'spiral-flat.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, "spiral-flat.png"))
 
     origami.set_omega(2.2)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-20, elev=15)
-    origami.plot(ax)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-20, elev=15)
+    origami.plot(ax, alpha=0.7)
     ax.set_xlim(-3, 3)
-    fig.savefig(os.path.join(FIGURES_PATH, 'spiral-folded.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, "spiral-folded.png"))
 
     plt.show()
 
 
 def plot_flat_configuration(origami):
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=90, elev=-100)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=90, elev=-100)
     origami.set_omega(0)
     origami.plot(ax)
     ax.set_zlim(-1, 1)
     return fig, ax
 
 
-def plot_theta_vs_alpha():
-    fig, ax = plt.subplots()
+def plot_theta_vs_alpha_2_subplots():
+    # alpha and beta are kind of the same, beta=pi-alpha.
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
     xs = np.linspace(0, np.pi, 200)
-    s_a = np.sin(xs)
-    s_a_2 = s_a ** 2
-    omega = 2
-    c_o = np.cos(omega)
-    ys = 1 / 2 * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
 
-    ax.plot(xs, ys)
+    def plot_for_omega(ax, omega):
+        s_a = np.sin(xs)
+        s_a_2 = s_a**2
+        c_o = np.cos(omega)
+        ys = (
+            1
+            / 2
+            * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
+        )
 
-    plotutils.set_pi_ticks(ax, 'x')
-    plotutils.set_pi_ticks(ax, 'y', (0, Fraction(1, 2)))
+        ax.plot(xs, ys)
 
-    ax.set_xlabel(r'$ \alpha $')
-    ax.set_ylabel(r'$ \theta\left(\omega=2\right) $ vs  $ \alpha $')
+        plotutils.set_pi_ticks(ax, "x")
+        plotutils.set_pi_ticks(ax, "y", (0, Fraction(1, 2)))
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'theta_vs_alpha.png'))
+        ax.set_xlabel(r"$ \beta $")
+        # ax.set_ylabel(r"$ \theta\left(\omega=" + str(omega) + r"\right) $ vs  $ \beta $")
+        ax.set_ylabel(r"$ \theta $ vs $\beta$")
+        ax.set_title(r"$ \omega=" + str(omega) + " $")
+
+    plot_for_omega(axes[0], omega=0.7)
+    plot_for_omega(axes[1], omega=3)
+
+    fig.savefig(os.path.join(FIGURES_PATH, "theta_vs_beta.pdf"))
+
+    plt.show()
+
+
+def plot_theta_vs_alpha():
+    # alpha and beta are kind of the same, beta=pi-alpha.
+
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+    xs = np.linspace(0, np.pi, 400)
+
+    def plot_for_omega(omega):
+        s_a = np.sin(xs)
+        s_a_2 = s_a**2
+        c_o = np.cos(omega)
+        ys = (
+            1
+            / 2
+            * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
+        )
+
+        ax.plot(xs, ys, label=r"$ \omega=" + str(omega) + " $")
+
+    plotutils.set_pi_ticks(ax, "x")
+    plotutils.set_pi_ticks(ax, "y", (0, Fraction(1, 2)))
+
+    ax.set_xlabel(r"$ \beta $")
+    ax.set_ylabel(r"$ \theta $ vs $\beta$")
+
+    plot_for_omega(omega=0.3)
+    plot_for_omega(omega=1)
+    plot_for_omega(omega=3)
+
+    ax.legend()
+
+    fig.savefig(os.path.join(FIGURES_PATH, "theta_vs_beta.pdf"))
 
     plt.show()
 
@@ -229,23 +300,30 @@ def plot_unit_cell():
     origami = ZigzagMiuraOri(dots, rows, cols)
 
     fig, ax = plot_flat_configuration(origami)
-    edge_points = origami.dots[:, [origami.indexes[0, 0],
-                                   origami.indexes[0, -1],
-                                   origami.indexes[-1, 0],
-                                   origami.indexes[-1, -1]]]
-    ax.scatter3D(edge_points[0, :], edge_points[1, :], edge_points[2, :], color='r', s=220)
-    fig.savefig(os.path.join(FIGURES_PATH, 'zigzag-FFF-unit.png'))
+    edge_points = origami.dots[
+        :,
+        [
+            origami.indexes[0, 0],
+            origami.indexes[0, -1],
+            origami.indexes[-1, 0],
+            origami.indexes[-1, -1],
+        ],
+    ]
+    ax.scatter3D(
+        edge_points[0, :], edge_points[1, :], edge_points[2, :], color="r", s=220
+    )
+    fig.savefig(os.path.join(FIGURES_PATH, "zigzag-FFF-unit.png"))
     plt.show()
 
 
 def main():
-    plot()
+    # plot()
     # plot_spiral()
-    # plot_full_cylinder()
+    plot_full_cylinder()
     # plot_simple_example()
     # plot_theta_vs_alpha()
     # plot_unit_cell()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
