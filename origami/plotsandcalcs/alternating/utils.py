@@ -1,17 +1,17 @@
-from typing import Callable
+from typing import Optional
 
 import numpy as np
 
 from origami.RFFQMOrigami import RFFQM
-from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
+from origami.angleperturbation import AnglesFuncType, create_angles_func_vertical_alternation, set_perturbations_by_func
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.quadranglearray import dots_to_quadrangles
 from origami.utils.plotutils import imshow_with_colorbar
 
 sin, cos, tan = np.sin, np.cos, np.tan
-cot = lambda x: 1 / tan(x)
-csc = lambda x: 1 / sin(x)
-sec = lambda x: 1 / cos(x)
+def cot(x): return 1 / tan(x)
+def csc(x): return 1 / sin(x)
+def sec(x): return 1 / cos(x)
 
 
 def compare_curvatures(fig, axes, Ks, expected_K_func):
@@ -27,24 +27,25 @@ def compare_curvatures(fig, axes, Ks, expected_K_func):
 
 def get_FF_dFF_dMM_ddMM(F, MM):
     # There is no good reason why the derivative of F is calculated differently
-    FF = lambda x: F(x * 2)
-    dFF = lambda x: (FF(x + 0.5) - FF(x)) / 0.5
-    dMM = lambda y: MM(y + 1) - MM(y)
-    ddMM = lambda y: dMM(y + 1) - dMM(y)
+    def FF(x): return F(x * 2)
+    def dFF(x): return (FF(x + 0.5) - FF(x)) / 0.5
+    def dMM(y): return MM(y + 1) - MM(y)
+    def ddMM(y): return dMM(y + 1) - dMM(y)
     return FF, dFF, dMM, ddMM
 
 
-def create_perturbed_origami(angle, rows, cols, L0, C0, F, MM) -> RFFQM:
+def create_perturbed_origami(angle, rows, cols, L0, C0, 
+                             F: Optional[AnglesFuncType], MM: Optional[AnglesFuncType]) -> RFFQM:
     if F is None:
-        F = lambda x: 0 * x
+        def F(x): return 0 * x
     if MM is None:
-        MM = lambda y: 0 * y
+        def MM(y): return 0 * y
 
-    dMM = lambda y: MM(y + 1) - MM(y)
-    ddMM = lambda y: dMM(y + 1) - dMM(y)
+    def dMM(y): return MM(y + 1) - MM(y)
+    def ddMM(y): return dMM(y + 1) - dMM(y)
 
-    F1 = lambda x: F(x)
-    F2 = lambda x: -F(x)
+    def F1(x): return F(x)
+    def F2(x): return -F(x)
 
     ls = np.ones(rows) * L0
     cs = np.ones(cols) * C0
@@ -63,7 +64,7 @@ def create_perturbed_origami(angle, rows, cols, L0, C0, F, MM) -> RFFQM:
     return ori
 
 
-def create_F_from_list(Fs: np.ndarray) -> Callable:
+def create_F_from_list(Fs: np.ndarray) -> AnglesFuncType:
     def F(x):
         if isinstance(x, np.ndarray):
             if np.issubdtype(x.dtype, 'float64'):
@@ -73,7 +74,7 @@ def create_F_from_list(Fs: np.ndarray) -> Callable:
     return F
 
 
-def create_MM_from_list(MMs: np.ndarray) -> Callable:
+def create_MM_from_list(MMs: np.ndarray) -> AnglesFuncType:
     def MM(y):
         return MMs[y]
 

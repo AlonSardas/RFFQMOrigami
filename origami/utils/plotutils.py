@@ -4,8 +4,9 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
+from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D, proj3d
 
 
 def set_pi_ticks(ax, axis, pi_range=(0, 1), divisions=4):
@@ -60,6 +61,15 @@ def set_axis_scaled_by_limits(ax: Axes3D):
     ax.set_zlim(min_lim, max_lim)
 
 
+def set_zoom_by_limits(ax: Axes3D, zoom: float):
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    zlim = ax.get_zlim()
+    ax.set_xlim(xlim[0]/zoom, xlim[1]/zoom)
+    ax.set_ylim(ylim[0]/zoom, ylim[1]/zoom)
+    ax.set_zlim(zlim[0]/zoom, zlim[1]/zoom)
+
+
 def create_colorbar(fig: Figure, ax: Axes, im):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="8%", pad=0.15)
@@ -74,3 +84,22 @@ def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title) -> A
     ax.set_title(ax_title)
     ax.invert_yaxis()
     return im
+
+
+class Arrow3D(FancyArrowPatch):
+    """
+    A class used to draw arrows in 3D plots.
+    The code is taken from
+    https://stackoverflow.com/a/74122407
+    """
+
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        super().__init__((0, 0), (0, 0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def do_3d_projection(self, renderer=None):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
+        self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
+
+        return np.min(zs)

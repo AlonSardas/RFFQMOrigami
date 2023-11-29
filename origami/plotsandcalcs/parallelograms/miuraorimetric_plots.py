@@ -92,16 +92,23 @@ def plot_unperturbed_unit_cell():
     ori = SimpleMiuraOri([1.4, 1.4], [1.0, 1.0], angle=-0.6)
     fig = plt.figure()
 
-    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-50, elev=23)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=25, azim=-133)
 
     # ori.set_omega(-1.2)
-    ori.set_omega(1.2)
+    ori.set_omega(-1.2)
     _, wire = ori.plot(ax, alpha=0.4)
     wire.remove()
     # wire.set_color("r")
     # wire.set_alpha(0.2)
 
     mountain_creases = [
+        ((0, 0), (1, 0)),
+        ((1, 0), (1, 1)),
+        ((1, 1), (1, 2)),
+        ((1, 1), (2, 1)),
+        ((1, 2), (0, 2)),
+    ]
+    valley_creases = [
         ((0, 0), (0, 1)),
         ((0, 1), (0, 2)),
         ((0, 1), (1, 1)),
@@ -109,13 +116,6 @@ def plot_unperturbed_unit_cell():
         ((2, 0), (2, 1)),
         ((2, 1), (2, 2)),
         ((1, 2), (2, 2)),
-    ]
-    valley_creases = [
-        ((0, 0), (1, 0)),
-        ((1, 0), (1, 1)),
-        ((1, 1), (1, 2)),
-        ((1, 1), (2, 1)),
-        ((1, 2), (0, 2)),
     ]
 
     creases_with_color = itertools.chain(
@@ -130,9 +130,10 @@ def plot_unperturbed_unit_cell():
         l = ax.plot(line[:, 0], line[:, 1], line[:, 2], color)[0]
         l.set_zorder(10)
 
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
-    ax.set_zlim(-1, 1)
+    lim = 1.1
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
     ax.set_aspect("equal")
 
     set_3D_labels(ax)
@@ -152,13 +153,28 @@ def plot_unperturbed_unit_cell():
     sc.set_zorder(15)
 
     dot = ori.dots[:, ori.indexes[0, 0]]
-    ax.text(dot[0] - 0.3, dot[1], dot[2] - 0.1, "E", fontsize=30)
+    ax.text(dot[0] - 0.25, dot[1]-0.15, dot[2] - 0.15, "E", fontsize=30)
     dot = ori.dots[:, ori.indexes[-1, 0]]
-    ax.text(dot[0] + 0.1, dot[1], dot[2], "K", fontsize=30)
+    ax.text(dot[0] + 0.1, dot[1]-0.15, dot[2]-0.1, "K", fontsize=30)
     dot = ori.dots[:, ori.indexes[0, -1]]
-    ax.text(dot[0] + 0.1, dot[1], dot[2] + 0.2, "A", fontsize=30)
+    ax.text(dot[0] - 0.2, dot[1], dot[2] - 0.2, "A", fontsize=30)
     dot = ori.dots[:, ori.indexes[-1, -1]]
-    ax.text(dot[0], dot[1], dot[2] + 0.2, "J", fontsize=30)
+    ax.text(dot[0], dot[1]+0.2, dot[2] + 0.1, "J", fontsize=30)
+
+    A_dot = ori.dots[:, ori.indexes[0, -1]]
+    J_dot = ori.dots[:, ori.indexes[-1, -1]]
+    AJ_arrow = plotutils.Arrow3D((A_dot[0], J_dot[0]), 
+                                 (A_dot[1]+0.1, J_dot[1]-0.1),
+                                 (A_dot[2], J_dot[2]), 
+                                 arrowstyle='->,head_width=.25', mutation_scale=30, lw=2.5)
+    ax.add_patch(AJ_arrow)
+
+    E_dot = ori.dots[:, ori.indexes[0, 0]]
+    AE_arrow = plotutils.Arrow3D((A_dot[0]+0.1, E_dot[0]-0.1), 
+                                 (A_dot[1], E_dot[1]),
+                                 (A_dot[2], E_dot[2]), 
+                                 arrowstyle='->,head_width=.25', mutation_scale=30, lw=2.5)
+    ax.add_patch(AE_arrow)
 
     ax.set_xticklabels([])
     ax.set_yticklabels([])

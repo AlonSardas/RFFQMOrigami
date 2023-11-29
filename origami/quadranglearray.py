@@ -69,7 +69,7 @@ def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
         dots[1, :].reshape((rows, cols)),
         dots[2, :].reshape((rows, cols)),
         alpha=alpha,
-        linewidth=100,
+        linewidth=1,
     )
     wire = ax.plot_wireframe(
         dots[0, :].reshape((rows, cols)),

@@ -1,3 +1,7 @@
+"""
+This is an old version for calculating the vectors of a unit cell that uses 
+linear approximation to the angles
+"""
 import itertools
 
 import numpy as np
@@ -8,6 +12,8 @@ from origami.RFFQMOrigami import RFFQM
 from origami.origamiplots import plot_interactive
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import sympyutils
+from origami.plotsandcalcs.unitcellmetricold import _create_rotation_around_axis
+
 
 delta_11, delta_12, eta_12, eta_21, delta_22, eta_22 = symbols(
     r"\delta_11, \delta_12, \eta_12, \eta_21, \delta_22, \eta_22")
@@ -23,18 +29,6 @@ e_3 = Matrix([0, 0, 1])
 def make_angles_vanish(expr: Expr) -> Expr:
     subs_dict = dict(zip(all_perturbation_angles, itertools.repeat(0)))
     return expr.subs(subs_dict)
-
-
-def _create_rotation_around_axis(t: Matrix, angle) -> Matrix:
-    t_perp = Matrix([-t[1], t[0], 0])  # A vector in XY plane that is perp to t
-    P = I - _outer(t, t)
-    W = _outer(e_3, t_perp) - _outer(t_perp, e_3)
-    R = _outer(t, t) + cos(angle) * P + sin(angle) * W
-    return R
-
-
-def _outer(v1: Matrix, v2: Matrix) -> Matrix:
-    return v1 * v2.transpose()
 
 
 def calc_AE() -> Expr:

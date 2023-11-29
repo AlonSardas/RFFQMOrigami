@@ -2,7 +2,6 @@ import numpy as np
 from sympy import *
 
 from origami.RFFQMOrigami import RFFQM
-from origami.plotsandcalcs.unitcellmetric1 import _create_rotation_around_axis
 from origami.quadranglearray import QuadrangleArray
 
 delta_11, delta_12, eta_12, eta_21, delta_22, eta_22 = symbols(
@@ -36,6 +35,18 @@ def _rotate_XY(angle) -> Matrix:
                    [0, 0, 0]])
 
 
+def _create_rotation_around_axis(t: Matrix, angle) -> Matrix:
+    t_perp = Matrix([-t[1], t[0], 0])  # A vector in XY plane that is perp to t
+    P = I - _outer(t, t)
+    W = _outer(e_3, t_perp) - _outer(t_perp, e_3)
+    R = _outer(t, t) + cos(angle) * P + sin(angle) * W
+    return R
+
+
+def _outer(v1: Matrix, v2: Matrix) -> Matrix:
+    return v1 * v2.transpose()
+
+
 def calc_vectors():
     pA0 = Matrix([0, 0, 0])
     pB0 = Matrix([0, l_11, 0])
@@ -44,8 +55,6 @@ def calc_vectors():
     BDn = _rotate_XY(pi - (cth + eta_21)) * (-1 * ABn)
     BDn.simplify()
 
-    # I'm not completely sure what should be the sign of gamma
-    # gamma_sign = -1
     rot_gamma11 = _create_rotation_around_axis(-BDn, -gamma11)
     BJn = _rotate_XY(cth + sym.delta_21) * BDn
     BJn.simplify()
@@ -172,7 +181,9 @@ def calc_vectors():
         print()
 
     # calc_AEy2()
-    calc_AJ2()
+    # calc_AJ2()
+
+    return AE, AJ
 
 
 def calc_omega12():
@@ -250,7 +261,7 @@ def test_rotate_around_axis():
 def main():
     # test_rotate_around_axis()
     # calc_vectors()
-    calc_omega12()
+    # calc_omega12()
     calc_gamma21()
 
 

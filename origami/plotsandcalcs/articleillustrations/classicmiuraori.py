@@ -1,15 +1,17 @@
 import os
 
-import numpy as np
 import matplotlib as mpl
+from matplotlib.colors import LightSource
+import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.utils import plotutils
 import origami.plotsandcalcs
+from origami import origamiplots
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.quadranglearray import QuadrangleArray
 from origami.RFFQMOrigami import RFFQM
+from origami.utils import plotutils
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, "RFFQM/Figures")
 
@@ -27,16 +29,32 @@ def main():
     ori = RFFQM(quads)
 
     fig = plt.figure(figsize=(10, 5))
-    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-60, elev=32)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-60, elev=32, computed_zorder=False)
 
     ori.dots.center()
-    ori.dots.plot(ax, 0.6)
-    ori.set_gamma(2)
+    panels, surf = ori.dots.plot(ax, 0.6)
+    surf.set_alpha(0)
+    panels.set_fc('C7')
+    panels.set_zorder(-10)
+    origamiplots.draw_creases(ori, 1, ax)
+    ori.set_gamma(ori.calc_gamma_by_omega(1))
     ori.dots.dots[0, :] += 8
-    ori.dots.plot(ax, 0.6)
-    ori.set_gamma(np.pi - 0.05)
+    _, surf = ori.dots.plot(ax, 0.6)
+    
+    # surf.set_alpha(0)
+    # origamiplots.draw_creases(ori, -1, ax)
+
+    ori.set_gamma(ori.calc_gamma_by_omega((np.pi - 0.01)))
     ori.dots.dots[0, :] += 13
-    ori.dots.plot(ax, 0.6)
+    panels, surf = ori.dots.plot(ax, 0.3)
+
+    # this is used to set the graph color to blue
+    blue = np.array([0., 0., 1.])
+    zs = ori.dots.dots[2, ori.dots.indexes]
+    rgb = np.tile(blue, (zs.shape[0], zs.shape[1], 1))
+
+    panels.set_fc('C0')
+    surf.set_alpha(0.1)
 
     plotutils.set_labels_off(ax)
     ax.set_aspect("equal")

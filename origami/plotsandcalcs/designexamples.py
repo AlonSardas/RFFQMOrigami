@@ -59,11 +59,13 @@ def plot_vase():
     fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.pdf'))
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=50, elev=30)
     lim = 4.0
-    ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot(ax, alpha=0.6)
+    wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
@@ -71,6 +73,7 @@ def plot_vase():
 
     # fig.tight_layout(rect=(0.3, 0, 0.7, 1))
     fig.savefig(os.path.join(FIGURES_PATH, 'vase.svg'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, 'vase.pdf'), pad_inches=0.4)
     plt.show()
 
     plot_interactive(ori)
@@ -125,7 +128,7 @@ def plot_spherical_cap():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
     lim = 5.0
-    surf, wire = ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot(ax, alpha=0.6)
     wire.set_alpha(0.0)
 
     ax.set_xlim(-lim, lim)
@@ -134,6 +137,7 @@ def plot_spherical_cap():
 
     fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.svg'), pad_inches=0.4)
     fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.png'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.pdf'), pad_inches=0.4)
     plt.show()
     plot_interactive(ori)
 
@@ -172,18 +176,19 @@ def plot_saddle():
     Ks, Hs = geometry.get_curvatures_by_shape_operator()
     expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
     fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-    fig.savefig(os.path.join(FIGURES_PATH, 'saddle-curvatures.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'saddle-curvatures.pdf'))
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-60, elev=20)
     lim = 5.5
-    ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot(ax, alpha=0.6)
+    wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
     ax.set_zlim(-lim, lim)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.svg'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.pdf'), pad_inches=0.4)
     plt.show()
     plot_interactive(ori)
 
@@ -223,18 +228,19 @@ def plot_2D_sinusoid():
     Ks, Hs = geometry.get_curvatures_by_shape_operator()
     expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
     fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-    fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid-curvatures.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid-curvatures.pdf'))
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-66, elev=29)
     lim = 6.0
-    ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot(ax, alpha=0.6)
+    wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
     ax.set_zlim(-lim, lim)
 
-    fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid.svg'), pad_inches=0.4)
+    fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid.pdf'), pad_inches=0.4)
     plt.show()
     plot_interactive(ori)
 
@@ -475,11 +481,11 @@ def plot_cap_different_curvatures_large_angle():
 
 
 def main():
-    # plot_vase()
-    # plot_spherical_cap()
-    # plot_saddle()
-    # plot_2D_sinusoid()
-    plot_cap_different_curvatures()
+    plot_vase()
+    plot_spherical_cap()
+    plot_saddle()
+    plot_2D_sinusoid()
+    # plot_cap_different_curvatures()
     # plot_cap_different_curvatures_ugly()
 
 

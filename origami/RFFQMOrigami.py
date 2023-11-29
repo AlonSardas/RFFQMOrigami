@@ -1,4 +1,3 @@
-# noinspection SpellCheckingInspection
 """
 This file implements the kinematics of a general RFFQM. For further reading, see:
 
@@ -141,7 +140,8 @@ class RFFQM(object):
         """
         i, j = 1, 1
         alpha, beta = self.angles[:, self.indexes[i, j]]
-        omega = calc_gamma1(self.sigmas[i, j], omega, alpha, beta)
+        omega = calc_gamma2(-self.sigmas[i, j], omega, np.pi-beta, alpha)
+
         return omega
 
     def calc_omegas_vs_x(self) -> np.ndarray:
