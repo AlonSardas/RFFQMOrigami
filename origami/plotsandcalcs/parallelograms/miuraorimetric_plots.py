@@ -155,17 +155,17 @@ def plot_unperturbed_unit_cell():
     dot = ori.dots[:, ori.indexes[0, 0]]
     ax.text(dot[0] - 0.25, dot[1]-0.15, dot[2] - 0.15, "E", fontsize=30)
     dot = ori.dots[:, ori.indexes[-1, 0]]
-    ax.text(dot[0] + 0.1, dot[1]-0.15, dot[2]-0.1, "K", fontsize=30)
+    ax.text(dot[0] + 0.1, dot[1]-0.15, dot[2]-0.1, "G", fontsize=30)
     dot = ori.dots[:, ori.indexes[0, -1]]
     ax.text(dot[0] - 0.2, dot[1], dot[2] - 0.2, "A", fontsize=30)
     dot = ori.dots[:, ori.indexes[-1, -1]]
-    ax.text(dot[0], dot[1]+0.2, dot[2] + 0.1, "J", fontsize=30)
+    ax.text(dot[0], dot[1]+0.3, dot[2] + 0.1, "J", fontsize=30)
 
     A_dot = ori.dots[:, ori.indexes[0, -1]]
     J_dot = ori.dots[:, ori.indexes[-1, -1]]
-    AJ_arrow = plotutils.Arrow3D((A_dot[0], J_dot[0]), 
-                                 (A_dot[1]+0.1, J_dot[1]-0.1),
-                                 (A_dot[2], J_dot[2]), 
+    AJ_arrow = plotutils.Arrow3D((A_dot[0], J_dot[0]),
+                                 (A_dot[1] + 0.1, J_dot[1] - 0.1),
+                                 (A_dot[2], J_dot[2]),
                                  arrowstyle='->,head_width=.25', mutation_scale=30, lw=2.5)
     ax.add_patch(AJ_arrow)
 

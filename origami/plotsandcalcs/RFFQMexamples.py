@@ -237,8 +237,8 @@ def main():
     # create_basic_crease()
     # create_radial()
     # create_sphere_interactive()
-    create_sphere()
-    # create_MARS_Barreto()
+    # create_sphere()
+    create_MARS_Barreto()
 
 
 if __name__ == '__main__':

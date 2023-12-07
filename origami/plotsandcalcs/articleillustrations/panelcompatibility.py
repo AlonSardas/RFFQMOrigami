@@ -6,13 +6,11 @@ from matplotlib.axes import Axes
 from matplotlib.patches import Arc, FancyArrowPatch
 
 import origami.plotsandcalcs
-from origami import marchingalgorithm, origamiplots
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
-from origami.quadranglearray import dots_to_quadrangles
-from origami.RFFQMOrigami import RFFQM
+from origami.quadranglearray import dots_to_quadrangles, QuadrangleArray
 from origami.utils import linalgutils
 
-FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures')
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures', 'article-illustrations')
 
 
 def plot_panel_illustration():
@@ -52,24 +50,6 @@ def plot_panel_illustration():
                 (dots[1, indexes[i0, j0]], dots[1, indexes[i1, j1]]),
                 color)
 
-    def plot_angle(ind1, ind0, ind2, name):
-        v1 = dots[:, indexes[ind1]]
-        v0 = dots[:, indexes[ind0]]
-        v2 = dots[:, indexes[ind2]]
-        theta1 = np.rad2deg(np.arctan2((v1-v0)[1], (v1-v0)[0]))
-        theta2 = np.rad2deg(np.arctan2((v2-v0)[1], (v2-v0)[0]))
-        arc = Arc(v0, arc_size, arc_size, theta1=theta1, theta2=theta2,
-                  lw=1, zorder=-10, color=angle_color)
-        ax.add_patch(arc)
-        if 'alpha' in name:
-            ax.text(v0[0]+arc_pad, v0[1]+arc_pad,
-                    name, ha='left', va='bottom', color=angle_color)
-        elif 'beta' in name:
-            ax.text(v0[0]-arc_pad, v0[1] + arc_pad,
-                    name, ha='right', va='bottom', color=angle_color)
-        else:
-            raise ValueError(f"Unknown angle type: {name}")
-
     plot_line(1, 1, 1, 2, 'r')
     plot_line(1, 1, 2, 1, 'r')
     plot_line(1, 2, 2, 2, 'b')
@@ -83,9 +63,13 @@ def plot_panel_illustration():
     plot_line(2, 2, 3, 2, '--r')
     plot_line(2, 2, 2, 3, '--b')
 
+    def _plot_angle(ind1, ind0, ind2, name):
+        plot_angle(ax, quads, ind1, ind0, ind2, name, arc_size, angle_color, arc_pad, arc_pad)
+
     def plot_alpha_beta(i0, j0, letter):
-        plot_angle((i0, j0+1), (i0, j0), (i0+1, j0), rf'$ \alpha_{letter} $')
-        plot_angle((i0+1, j0), (i0, j0), (i0, j0-1), rf'$ \beta_{letter} $')
+        _plot_angle((i0, j0 + 1), (i0, j0), (i0 + 1, j0), rf'$ \alpha_{letter} $')
+        _plot_angle((i0 + 1, j0), (i0, j0), (i0, j0 - 1), rf'$ \beta_{letter} $')
+
     plot_alpha_beta(1, 1, 'A')
     plot_alpha_beta(1, 2, 'C')
     plot_alpha_beta(2, 1, 'B')
@@ -94,10 +78,10 @@ def plot_panel_illustration():
     def plot_arrow(i0, j0, i1, j1, text, pad_x, pad_y):
         p0 = dots[:, indexes[i0, j0]]
         p1 = dots[:, indexes[i1, j1]]
-        end = p0 + 0.3 * (p1-p0)
+        end = p0 + 0.3 * (p1 - p0)
         arrow = FancyArrowPatch(p0, end, linestyle='-', arrowstyle='->', mutation_scale=30, lw=2.0, zorder=5)
         ax.add_patch(arrow)
-        ax.text(end[0]+pad_x, end[1]+pad_y, text)
+        ax.text(end[0] + pad_x, end[1] + pad_y, text)
 
     plot_arrow(1, 1, 1, 2, r'$ t_2^A $', -0.10, -0.15)
     plot_arrow(1, 1, 0, 1, r'$ t_1^A $', -0.15, 0.0)
@@ -120,6 +104,28 @@ def plot_panel_illustration():
     fig.savefig(os.path.join(FIGURES_PATH, 'panel-compatibility-notation.pdf'))
 
     plt.show()
+
+
+def plot_angle(ax: Axes, quads: QuadrangleArray, ind1: tuple[int, int],
+               ind0: tuple[int, int], ind2: tuple[int, int], name,
+               arc_size, angle_color, text_pad_x=0.0, text_pad_y=0.0, fontsize=None):
+    dots, indexes = quads.dots, quads.indexes
+    v1 = dots[:, indexes[ind1]]
+    v0 = dots[:, indexes[ind0]]
+    v2 = dots[:, indexes[ind2]]
+    theta1 = np.rad2deg(np.arctan2((v1 - v0)[1], (v1 - v0)[0]))
+    theta2 = np.rad2deg(np.arctan2((v2 - v0)[1], (v2 - v0)[0]))
+    arc = Arc(v0, arc_size, arc_size, theta1=theta1, theta2=theta2,
+              lw=1, zorder=-10, color=angle_color)
+    ax.add_patch(arc)
+    if 'alpha' in name or 'delta' in name:
+        ax.text(v0[0] + text_pad_x, v0[1] + text_pad_y,
+                name, ha='left', va='bottom', color=angle_color, fontsize=fontsize)
+    elif 'beta' in name or 'eta' in name:
+        ax.text(v0[0] - text_pad_x, v0[1] + text_pad_y,
+                name, ha='right', va='bottom', color=angle_color, fontsize=fontsize)
+    else:
+        raise ValueError(f"Unknown angle type: {name}")
 
 
 def plot_panel_illustration_old():

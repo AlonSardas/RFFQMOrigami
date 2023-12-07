@@ -1,6 +1,7 @@
 import fractions
 
 import numpy as np
+from matplotlib import patches as mpatches
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
@@ -65,9 +66,9 @@ def set_zoom_by_limits(ax: Axes3D, zoom: float):
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     zlim = ax.get_zlim()
-    ax.set_xlim(xlim[0]/zoom, xlim[1]/zoom)
-    ax.set_ylim(ylim[0]/zoom, ylim[1]/zoom)
-    ax.set_zlim(zlim[0]/zoom, zlim[1]/zoom)
+    ax.set_xlim(xlim[0] / zoom, xlim[1] / zoom)
+    ax.set_ylim(ylim[0] / zoom, ylim[1] / zoom)
+    ax.set_zlim(zlim[0] / zoom, zlim[1] / zoom)
 
 
 def create_colorbar(fig: Figure, ax: Axes, im):
@@ -103,3 +104,33 @@ class Arrow3D(FancyArrowPatch):
         self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
 
         return np.min(zs)
+
+
+# Based on
+# https://stackoverflow.com/a/38208040
+def draw_circular_arrow(ax: Axes, center, width, height, angle, theta1, theta2, color='black'):
+    arc = mpatches.Arc(center, width, height, angle=angle,
+                       theta1=theta1, theta2=theta2, capstyle='round', linestyle='-', lw=2, color=color,
+                       zorder=15)
+    ax.add_patch(arc)
+
+    rad = np.radians
+    # cent_x, cent_y = center
+    # Create the arrow head
+    end_x = (width / 2) * np.cos(rad(theta2))
+    end_y = (height / 2) * np.sin(rad(theta2))
+    cos_a, sin_a = np.cos(rad(angle)), np.sin(rad(angle))
+    rot_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
+    end_pos = center + rot_matrix @ np.array([end_x, end_y])
+
+    # Create triangle as arrow head
+    head = mpatches.RegularPolygon(
+        end_pos,
+        3,
+        radius=max(width, height) / 6,
+        orientation=rad(180 - (theta1 - angle)),
+        color=color
+    )
+    ax.add_patch(head)
+
+    return arc, head

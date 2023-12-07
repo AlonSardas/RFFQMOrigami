@@ -30,8 +30,8 @@ class QuadrangleArray(object):
         self.rows, self.cols = rows, cols
         self.indexes: np.ndarray = np.arange(rows * cols).reshape((rows, cols))
 
-    def plot(self, ax: Axes3D, alpha=1.0):
-        return plot_dots(self.dots, self.indexes, ax, alpha)
+    def plot(self, ax: Axes3D, color=None, alpha=1.0):
+        return plot_dots(self.dots, self.indexes, ax, color, alpha)
 
     def rotate_and_center(self):
         self.dots = center_dots(self.dots, self.indexes)
@@ -56,7 +56,7 @@ class QuadrangleArray(object):
         return QuadrangleArray(new_dots, self.rows, self.cols)
 
 
-def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
+def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, color=None, alpha=1.0):
     plotutils.set_3D_labels(ax)
 
     # It seems that plotting with float128 is not supported by matplotlib
@@ -69,7 +69,7 @@ def plot_dots(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, alpha=1.0):
         dots[1, :].reshape((rows, cols)),
         dots[2, :].reshape((rows, cols)),
         alpha=alpha,
-        linewidth=1,
+        linewidth=1, color=color
     )
     wire = ax.plot_wireframe(
         dots[0, :].reshape((rows, cols)),

@@ -20,13 +20,14 @@ from origami.plotsandcalcs.alternating.utils import (create_F_from_list,
                                                      create_perturbed_origami)
 from origami.utils import plotutils
 
-FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
-                            'RFFQM', 'Figures')
+FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures', 'article-illustrations')
 
 
 def plot_pattern_and_smooth_surface():
     rows, cols = 14, 16
+
     def kx_func(t): return -0.30 * np.tanh((t - cols / 4) * 3)
+
     def ky_func(t): return -0.1
 
     F0 = -0.5
@@ -63,7 +64,7 @@ def plot_pattern_and_smooth_surface():
     ori.dots.dots = np.array(ori.dots.dots, np.float64)
     surface_dots = ori.dots.dots[:, ori.dots.indexes[::2, ::2]]
     ax.scatter(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=15)
-    
+
     ori.dots.dots[2, :] += 3.4
     interp = origamiplots.plot_smooth_interpolation(ori.dots, ax)
     interp.set_color(interp_color)
@@ -93,7 +94,7 @@ def plot_pattern_and_smooth_surface():
     plotutils.set_zoom_by_limits(ax, zoom)
 
     # fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'smooth-surface-approx.pdf'), 
+    fig.savefig(os.path.join(FIGURES_PATH, 'smooth-surface-approx.pdf'),
                 bbox_inches=Bbox.from_extents(3.1, 1.7, 9.5, 7.2))
     plt.show()
 
@@ -109,15 +110,14 @@ def test_axes3d():
 
     ori.set_gamma(1)
     # ori.dots.center()
-    panels, surf = ori.dots.plot(ax, 0.6)
-    
+    panels, surf = ori.dots.plot(ax, alpha=0.6)
+
     # print(ax.get_box_aspect())
     # plotutils.set_axis_scaled(ax)
     # print(ax.get_box_aspect())
     # ax.set_box_aspect(ax.get_box_aspect(), zoom=1.5)
     ax.set_box_aspect((4, 4, 3), zoom=1.0)
     plt.show()
-
 
 
 def main():
