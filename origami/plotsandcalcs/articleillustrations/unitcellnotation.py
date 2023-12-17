@@ -122,42 +122,18 @@ def plot_unit_cell():
     plot_delta_eta(C_ind, r'\pi-\vartheta')
     plot_delta_eta(D_ind, r'\pi-\vartheta')
 
-    # Based on
-    # https://stackoverflow.com/a/38208040
-    def drawCirc(ax, width, height, centX, centY, theta1_, theta2_, color_='black'):
-        arc = mpatches.Arc([centX, centY], width, height,
-                           theta1=theta1_, theta2=theta2_, capstyle='round', linestyle='-', lw=2, color=color_,
-                           zorder=15)
-        ax.add_patch(arc)
-
-        rad = np.radians
-
-        # ========Create the arrow head
-        endX = centX + (width / 2) * np.cos(rad(theta1_))  # Do trig to determine end position
-        endY = centY + (height / 2) * np.sin(rad(theta1_))
-
-        ax.add_patch(  # Create triangle as arrow head
-            mpatches.RegularPolygon(
-                (endX, endY),  # (x,y)
-                3,  # number of vertices
-                radius=max(width, height) / 6,  # radius
-                orientation=rad(180 - theta1_),  # orientation
-                color=color_
-            )
-        )
-
     p0 = dots[:2, indexes[C_ind]]
     p1 = dots[:2, indexes[D_ind]]
     middle = (p0 + p1) / 2
-    # plotutils.draw_circular_arrow(ax, (middle[0], middle[1] + 0.08),0.2, 0.13, 0, -240, 40)
-    drawCirc(ax, 0.2, 0.13, middle[0], middle[1] + 0.08, -240, 40, )
+    plotutils.draw_elliptic_arrow(ax, (middle[0], middle[1] + 0.08), 0.2, 0.13, 0, -240, 40)
     ax.text(middle[0] + 0.1, middle[1], r'$\omega_{00}$')
 
     p0 = dots[:2, indexes[B_ind]]
     p1 = dots[:2, indexes[D_ind]]
     middle = 0.6 * p1 + 0.4 * p0
-    drawCirc(ax, 0.13, 0.2, middle[0], middle[1], -120, 130)
-    ax.text(middle[0] - 0.1, middle[1] + 0.15, r'$\gamma_{00}$')
+    plotutils.draw_elliptic_arrow(ax, middle, 0.13, 0.2, 0, -120, 130)
+    # plotutils.draw_elliptic_arrow(ax, middle, 0.13, 0.2, 0, 100, -20)
+    ax.text(middle[0] - 0.1, middle[1] + 0.17, r'$\gamma_{00}$')
 
     def _draw_length(ind0, ind1, name, shift_x, shift_y):
         p0 = dots[:2, indexes[ind0]]
@@ -179,7 +155,7 @@ def plot_unit_cell():
         dot_interval = 0.1
         dot_space_middle = 0.13
         three_dots = np.arange(3) * dot_interval
-        row_dots = y+np.concatenate((dot_space_middle + three_dots, -dot_space_middle-three_dots))
+        row_dots = y + np.concatenate((dot_space_middle + three_dots, -dot_space_middle - three_dots))
         xs = np.ones(6) * x
         ax.plot(xs, row_dots, '.k')
 

@@ -51,7 +51,7 @@ class SimpleMiuraOri(object):
             sign *= -1
 
     def plot(self, ax: Axes3D, alpha=1):
-        return plot_dots(self.dots, self.indexes, ax, alpha)
+        return plot_dots(self.dots, self.indexes, ax, alpha=alpha)
 
     def plot_normals(self, ax: Axes3D):
         dots = self.dots

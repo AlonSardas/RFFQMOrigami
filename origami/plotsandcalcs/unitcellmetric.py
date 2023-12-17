@@ -67,7 +67,8 @@ def calc_vectors():
     print()
 
     ACn = _rotate_XY(-cth - delta_11) * ABn
-    pC0 = ACn * c_11
+    # pC0 = ACn * c_11
+    AC = ACn * c_11
     CDn = _rotate_XY(-(pi - cth + eta_12)) * (-ACn)
     CDn = simplify(CDn)
     # print("CDn", CDn)
@@ -75,9 +76,9 @@ def calc_vectors():
     CEn = _rotate_XY(-(pi - cth + delta_12)) * CDn
     CE0 = CEn * d_11
     CE0 = simplify(CE0)
-    pE0 = pC0 + CE0
+    # pE0 = pC0 + CE0
     CE = R * CE0
-    AE = pC0 + CE
+    AE = AC + CE
     print('---- AE')
     print(latex(AE))
     print()
@@ -111,24 +112,27 @@ def calc_vectors():
         print()
 
     def calc_AEy2():
-        print(JIn)
+        # print(JIn)
 
-        ACy2n = JIn
-        ACy2 = ACy2n * sym.c_21
-        CDy2n = _rotate_XY(-(pi - cth + sym.eta_32)) * (-ACy2n)
-        CDy2n = simplify(CDy2n)
-        # print("CDy2n", CDy2n)
+        JIn
+        JI = JIn * sym.c_21
+        DIn = _rotate_XY(-(pi - cth + sym.eta_22)) * (-BDn)
+        DIn = simplify(DIn)
 
-        # Note that here we rotate by -omega!!! it seems to be consistent
-        Ry2 = _create_rotation_around_axis(-CDy2n, -sym.omega_21)
-        CEy2n = _rotate_XY(-(pi - cth + sym.delta_32)) * CDy2n
-        CEy2_0 = CEy2n * sym.d_21
-        CEy2_0 = simplify(CEy2_0)
-        CEy2 = Ry2 * CEy2_0
-        AEy2 = ACy2 + CEy2
+        # The rotating angle around DI should be -omega11 by the relation of
+        # folding angles around a vertex.
+        # Here the rotation is applied on the panel in clockwise direction, this gives
+        # another minus sign
+        Ry2 = _create_rotation_around_axis(DIn, omega11)
+        # Angle DIK = cth-eta32 (Kawasaki). + sign since it is counter clockwise rotation
+        IKn = _rotate_XY(+(cth - sym.eta_32)) * (-DIn)
+        IK_0 = IKn * sym.d_21
+        IK_0 = simplify(IK_0)
+        IK = Ry2 * IK_0
+        JK = JI + IK
 
-        rot_gamma11 = _create_rotation_around_axis(-BDn, -gamma11)
-        AEy2 = rot_gamma11 * AEy2
+        AEy2 = rot_gamma11 * JK
+        # AEy2 = simplify(AEy2)
 
         print('---- AEy2')
         print(latex(AEy2))
@@ -180,7 +184,7 @@ def calc_vectors():
         print(latex(AE2))
         print()
 
-    # calc_AEy2()
+    calc_AEy2()
     # calc_AJ2()
 
     return AE, AJ
@@ -217,6 +221,32 @@ def calc_omega12():
 
 
 def calc_gamma21():
+    # Note that here the indexes start from 0,0; as opposed to the rest of this file
+
+    def my_gamma2(o, a, b):
+        nom = (-1 - cos(a) * cos(b)) * cos(o) + sin(a) * sin(b)
+        deno = -1 - cos(a) * cos(b) + sin(a) * sin(b) * cos(o)
+        calculated_gamma = -acos(nom / deno)
+        return calculated_gamma
+
+    def my_gamma1(o, a, b):
+        return -gamma2(-1, a, b, o)
+
+    gamma_00 = sym.gamma_00
+    eta_11, delta_31, eta_31 = sym.eta_11, sym.delta_31, sym.eta_31
+    o00 = my_gamma1(gamma_00, pi-cth+delta_11, pi-cth+eta_11)
+    o10 = o00
+    gamma_10 = my_gamma2(o10, pi-cth+delta_31, pi-cth+eta_31)
+    print("before simplifying")
+    print(latex(gamma_10))
+    gamma_10 = simplify(gamma_10)
+    print('---- gamma10')
+    print(latex(gamma_10))
+    print()
+
+
+# This calculation is almost correct but it does not consider the sign appropriately
+def calc_gamma21_no_sign():
     s = -1
     a = cth - delta_22
     b = cth - eta_22
@@ -260,9 +290,10 @@ def test_rotate_around_axis():
 
 def main():
     # test_rotate_around_axis()
-    # calc_vectors()
+    calc_vectors()
     # calc_omega12()
-    calc_gamma21()
+    # calc_gamma21_no_sign()
+    # calc_gamma21()
 
 
 if __name__ == '__main__':

@@ -45,6 +45,12 @@ def set_labels_off(ax: Axes3D):
     ax.set_zlabel('')
 
 
+def remove_tick_labels(ax: Axes3D):
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
+
+
 def set_axis_scaled(ax: Axes3D):
     ax.set_aspect('equal')
 
@@ -108,27 +114,35 @@ class Arrow3D(FancyArrowPatch):
 
 # Based on
 # https://stackoverflow.com/a/38208040
-def draw_circular_arrow(ax: Axes, center, width, height, angle, theta1, theta2, color='black'):
+def draw_elliptic_arrow(ax: Axes, center, width, height, angle, theta_start, theta_end, color='black'):
+    # make counterclockwise for arc
+    theta1 = min(theta_start, theta_end)
+    theta2 = max(theta_start, theta_end)
     arc = mpatches.Arc(center, width, height, angle=angle,
                        theta1=theta1, theta2=theta2, capstyle='round', linestyle='-', lw=2, color=color,
                        zorder=15)
     ax.add_patch(arc)
 
+    end_theta = theta_end
+
     rad = np.radians
     # cent_x, cent_y = center
     # Create the arrow head
-    end_x = (width / 2) * np.cos(rad(theta2))
-    end_y = (height / 2) * np.sin(rad(theta2))
+    end_x = (width / 2) * np.cos(rad(end_theta))
+    end_y = (height / 2) * np.sin(rad(end_theta))
     cos_a, sin_a = np.cos(rad(angle)), np.sin(rad(angle))
     rot_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
     end_pos = center + rot_matrix @ np.array([end_x, end_y])
+
+    # Make sure the arrow points outwards
+    orientation = theta_end if theta_end > theta_start else np.pi - theta_start
 
     # Create triangle as arrow head
     head = mpatches.RegularPolygon(
         end_pos,
         3,
         radius=max(width, height) / 6,
-        orientation=rad(180 - (theta1 - angle)),
+        orientation=rad((orientation + angle)),
         color=color
     )
     ax.add_patch(head)

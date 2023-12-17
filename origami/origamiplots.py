@@ -106,14 +106,14 @@ def add_slider(ax, ori: RFFQM):
     return omega_slider
 
 
-def plot_interactive(origami: RFFQM):
+def plot_interactive(ori: RFFQM):
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
 
     # We need to assign the return value to variable slider for the slider object
     # stay alive and keep functioning
     # noinspection PyUnusedLocal
-    slider = add_slider(ax, origami)
+    slider = add_slider(ax, ori)
 
     plt.show()
 

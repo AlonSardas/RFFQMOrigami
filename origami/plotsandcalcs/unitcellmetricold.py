@@ -10,10 +10,9 @@ from sympy import *
 from origami import marchingalgorithm
 from origami.RFFQMOrigami import RFFQM
 from origami.origamiplots import plot_interactive
+from origami.plotsandcalcs.unitcellmetric import _create_rotation_around_axis, _outer
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import sympyutils
-from origami.plotsandcalcs.unitcellmetricold import _create_rotation_around_axis
-
 
 delta_11, delta_12, eta_12, eta_21, delta_22, eta_22 = symbols(
     r"\delta_11, \delta_12, \eta_12, \eta_21, \delta_22, \eta_22")

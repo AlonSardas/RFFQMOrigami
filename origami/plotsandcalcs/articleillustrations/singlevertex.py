@@ -50,7 +50,7 @@ def plot_single_vertex():
     def _draw_rotation_arrow(angle, name, text_pos=(0, 0)):
         pos = R * 0.8 * np.array([np.cos(angle), np.sin(angle)])
         ellipse_angle = 90 + np.rad2deg(angle)
-        plotutils.draw_circular_arrow(ax, pos, 0.2, 0.13, ellipse_angle, -20, 180 + 20)
+        plotutils.draw_elliptic_arrow(ax, pos, 0.2, 0.13, ellipse_angle, -20, 180 + 20)
         ax.text(pos[0] + text_pos[0], pos[1] + text_pos[1], name, fontsize=26, va='center', ha='center')
 
     _draw_rotation_arrow(at_1, '$\gamma_1$', (0, -0.2))

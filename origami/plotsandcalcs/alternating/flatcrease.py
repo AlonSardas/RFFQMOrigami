@@ -93,7 +93,7 @@ def plot_F_M_pert_notation():
     ori1.dots.dots = rot @ ori1.dots.dots
     dots = ori1.dots.dots
     indexes = ori1.dots.indexes
-    fig, ax = origamiplots.plot_crease_pattern(ori1, initial_MVA=-1)
+    fig, ax = origamiplots.plot_crease_pattern(ori1, initial_MVA=1)
 
     # plot_interactive(ori1)
 
@@ -393,7 +393,7 @@ def create_MARS_Barreto_using_alternating_angles():
     ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, None)
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-90, elev=90)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=0, elev=90)
     ori.dots.rotate_and_center()
     ori.dots.plot(ax)
     plotutils.set_axis_scaled(ax)
@@ -412,8 +412,8 @@ def create_MARS_Barreto_using_alternating_angles():
 
 def main():
     # create_MARS_Barreto_using_alternating_angles()
-    # plot_F_M_pert_notation()
-    plot_F_pert_on_vertex()
+    plot_F_M_pert_notation()
+    # plot_F_pert_on_vertex()
 
 
 if __name__ == '__main__':
