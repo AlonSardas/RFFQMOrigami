@@ -228,12 +228,12 @@ def plot_theta_vs_alpha_2_subplots():
 
     def plot_for_omega(ax, omega):
         s_a = np.sin(xs)
-        s_a_2 = s_a**2
+        s_a_2 = s_a ** 2
         c_o = np.cos(omega)
         ys = (
-            1
-            / 2
-            * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
+                1
+                / 2
+                * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
         )
 
         ax.plot(xs, ys)
@@ -262,12 +262,12 @@ def plot_theta_vs_alpha():
 
     def plot_for_omega(omega):
         s_a = np.sin(xs)
-        s_a_2 = s_a**2
+        s_a_2 = s_a ** 2
         c_o = np.cos(omega)
         ys = (
-            1
-            / 2
-            * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
+                1
+                / 2
+                * np.arccos((2 - 3 * s_a_2 + s_a_2 * c_o) / (-2 + s_a_2 + s_a_2 * c_o))
         )
 
         ax.plot(xs, ys, label=r"$ \omega=" + str(omega) + " $")
@@ -301,14 +301,14 @@ def plot_unit_cell():
 
     fig, ax = plot_flat_configuration(origami)
     edge_points = origami.dots[
-        :,
-        [
-            origami.indexes[0, 0],
-            origami.indexes[0, -1],
-            origami.indexes[-1, 0],
-            origami.indexes[-1, -1],
-        ],
-    ]
+                  :,
+                  [
+                      origami.indexes[0, 0],
+                      origami.indexes[0, -1],
+                      origami.indexes[-1, 0],
+                      origami.indexes[-1, -1],
+                  ],
+                  ]
     ax.scatter3D(
         edge_points[0, :], edge_points[1, :], edge_points[2, :], color="r", s=220
     )
@@ -316,13 +316,37 @@ def plot_unit_cell():
     plt.show()
 
 
+def plot_different_scaling():
+    n = 7
+
+    def plot_zigzag(base, F, rows, dx, dy):
+        angles = np.ones(rows) * base
+        angles[::2] += F
+        angles = np.pi - angles
+        dots = create_zigzag_dots(angles, n, dy, dx)
+        ori = ZigzagMiuraOri(dots, rows, n)
+
+        ori.set_omega(1.5)
+
+        fig: Figure = plt.figure()
+        ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-30, elev=21)
+        ori.plot(ax, alpha=0.7)
+        plotutils.set_3D_labels(ax)
+
+    plot_zigzag(0.1 * np.pi, 0.1 * np.pi, 10, 1, 4)
+    plot_zigzag(0.1 * np.pi, 0.1 * np.pi, 50, 1, 4)
+    plot_zigzag(0.1 * np.pi, 0.1 * np.pi / 5, 50, 1 / 5, 4 / 5)
+    plt.show()
+
+
 def main():
     # plot()
     # plot_spiral()
-    plot_full_cylinder()
+    # plot_full_cylinder()
     # plot_simple_example()
     # plot_theta_vs_alpha()
     # plot_unit_cell()
+    plot_different_scaling()
 
 
 if __name__ == "__main__":

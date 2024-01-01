@@ -45,10 +45,11 @@ def set_labels_off(ax: Axes3D):
     ax.set_zlabel('')
 
 
-def remove_tick_labels(ax: Axes3D):
+def remove_tick_labels(ax: Axes | Axes3D):
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.set_zticklabels([])
+    if isinstance(ax, Axes3D):
+        ax.set_zticklabels([])
 
 
 def set_axis_scaled(ax: Axes3D):
@@ -68,13 +69,15 @@ def set_axis_scaled_by_limits(ax: Axes3D):
     ax.set_zlim(min_lim, max_lim)
 
 
-def set_zoom_by_limits(ax: Axes3D, zoom: float):
+def set_zoom_by_limits(ax: Axes | Axes3D, zoom: float):
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
-    zlim = ax.get_zlim()
     ax.set_xlim(xlim[0] / zoom, xlim[1] / zoom)
     ax.set_ylim(ylim[0] / zoom, ylim[1] / zoom)
-    ax.set_zlim(zlim[0] / zoom, zlim[1] / zoom)
+
+    if isinstance(ax, Axes3D):
+        zlim = ax.get_zlim()
+        ax.set_zlim(zlim[0] / zoom, zlim[1] / zoom)
 
 
 def create_colorbar(fig: Figure, ax: Axes, im):

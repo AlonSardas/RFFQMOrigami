@@ -85,11 +85,11 @@ def plot_sff_vectors():
                 bbox={'facecolor': color, 'edgecolor': color}, zorder=30)
 
     # I added spacing \, before j because it looked connected to (
-    _plot_arrow((0, 0), (2, 0), r'$\mathbb{X}_{y}\left(\,j,i\right)$')
-    _plot_arrow((0, 0), (0, 2), r'$\mathbb{X}_{x}\left(\,j,i\right)$')
-    _plot_arrow((0, 2), (0, 4), r'$\mathbb{X}_{x}\left(\,j+1,i\right)$')
-    _plot_arrow((2, 0), (4, 0), r'$\mathbb{X}_{y}\left(\,j,i+1\right)$')
-    _plot_arrow((2, 0), (2, 2), r'$\mathbb{X}_{x}\left(\,j,i+1\right)$',
+    _plot_arrow((0, 0), (2, 0), r'$\mathbb{X}_{y}\left(\,x,y\right)$')
+    _plot_arrow((0, 0), (0, 2), r'$\mathbb{X}_{x}\left(\,x,y\right)$')
+    _plot_arrow((0, 2), (0, 4), r'$\mathbb{X}_{x}\left(\,x+\chi,y\right)$')
+    _plot_arrow((2, 0), (4, 0), r'$\mathbb{X}_{y}\left(\,x,y+\xi\right)$')
+    _plot_arrow((2, 0), (2, 2), r'$\mathbb{X}_{x}\left(\,x,y+\xi\right)$',
                 shift=(0.15, 0.35, 0))
 
     AE = dots[:, indexes[0, 2]] - dots[:, indexes[0, 0]]

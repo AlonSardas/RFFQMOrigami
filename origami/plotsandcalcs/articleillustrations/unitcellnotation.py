@@ -27,6 +27,7 @@ def plot_unit_cell():
     ls[2] = 0.5
     ls[5] = 0.5
     cs[1] = 0.5
+    cs[4] = 0.5
     angle = 1.1
     angles_left, angles_bottom = create_miura_angles(ls, cs, angle)
     marching = MarchingAlgorithm(angles_left, angles_bottom)
@@ -74,8 +75,9 @@ def plot_unit_cell():
     _draw_crease(C_ind, (C_ind[0] - 1, C_ind[1]), 1, '--')
     _draw_crease(A_ind, (A_ind[0], A_ind[1] - 1), -1, '--')
     _draw_crease(B_ind, (B_ind[0], B_ind[1] - 1), 1, '--')
-    # _draw_crease(E_ind, (E_ind[0], E_ind[1] + 1), 1, '--')
+    _draw_crease(E_ind, (E_ind[0], E_ind[1] + 1), 1, '--')
     _draw_crease(J_ind, (J_ind[0] + 1, J_ind[1]), 1, '--')
+    _draw_crease(J_ind, (J_ind[0], J_ind[1] - 1), -1, '--')
     _draw_crease(H_ind, (H_ind[0] + 1, H_ind[1]), -1, '--')
     _draw_crease(G_ind, (G_ind[0] + 1, G_ind[1]), 1, '--')
 
@@ -100,7 +102,19 @@ def plot_unit_cell():
 
     def plot_delta_eta(ind0, base_angle):
         i0, j0 = ind0
-        ij_text = f'{i0 - A_ind[0]}{j0 - A_ind[1]}'
+
+        text_with_mn = True
+        if text_with_mn:
+            ij_text = f'{i0 - A_ind[0]}{j0 - A_ind[1]}'
+            template = r'$ ' + base_angle + r'+\%s_{' + ij_text + '}$'
+        else:
+            ij_text = '00'
+            letter_dict = {(0, 0): 'A', (1, 0): 'B', (0, 1): 'C', (1, 1): 'D'}
+            letter = letter_dict[(i0 - A_ind[0], j0 - A_ind[1])]
+            template = r'$ ' + base_angle + r'+\bar{\%s}^' + letter + '_{' + ij_text + '}$'
+
+        delta_txt = template % 'delta'
+        eta_txt = template % 'eta'
 
         pad_x = 0.02
         if base_angle == r'\vartheta':
@@ -113,14 +127,16 @@ def plot_unit_cell():
             arc_size = 0.2
 
         _plot_angle((i0, j0 + 1), (i0, j0), (i0 + 1, j0),
-                    rf'$ ' + base_angle + r'+\delta_{' + ij_text + '}$', color, arc_size, pad_x, pad_y)
+                    delta_txt, color, arc_size, pad_x, pad_y)
         _plot_angle((i0 + 1, j0), (i0, j0), (i0, j0 - 1),
-                    rf'$ ' + base_angle + r'+\eta_{' + ij_text + '}$', color, arc_size, pad_x, pad_y)
+                    eta_txt, color, arc_size, pad_x, pad_y)
 
     plot_delta_eta(A_ind, r'\vartheta')
     plot_delta_eta(B_ind, r'\vartheta')
     plot_delta_eta(C_ind, r'\pi-\vartheta')
     plot_delta_eta(D_ind, r'\pi-\vartheta')
+    plot_delta_eta(J_ind, r'\vartheta')
+    plot_delta_eta(E_ind, r'\vartheta')
 
     p0 = dots[:2, indexes[C_ind]]
     p1 = dots[:2, indexes[D_ind]]
