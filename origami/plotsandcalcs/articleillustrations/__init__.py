@@ -7,3 +7,6 @@ FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures',
 VALLEY_COLOR = 'b'
 MOUNTAIN_COLOR = 'r'
 DOTS_ON_SURFACE_COLOR = 'g'
+
+ANGLE_COLOR1 = 'orangered'
+ANGLE_COLOR2 = 'grey'

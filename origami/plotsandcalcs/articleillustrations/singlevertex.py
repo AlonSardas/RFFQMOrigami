@@ -74,9 +74,9 @@ def plot_single_vertex():
 
     text_size = 28
     ax.text(0.05, 0.05,
-            r'$ \alpha $', ha='left', va='bottom', color=color, fontsize=text_size)
+            r'$ \alpha^R $', ha='left', va='bottom', color=color, fontsize=text_size)
     ax.text(-0.05, 0.05,
-            r'$ \beta $', ha='right', va='bottom', color=color, fontsize=text_size)
+            r'$ \alpha^L $', ha='right', va='bottom', color=color, fontsize=text_size)
 
     text_size = 30
     ax.text(0.48, 0.61,

@@ -5,14 +5,13 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.patches import FancyArrowPatch
 
-import origami.plotsandcalcs
 from origami.RFFQMOrigami import RFFQM
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
-from origami.plotsandcalcs.articleillustrations import panelcompatibility
+from origami.plotsandcalcs import articleillustrations
+from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
+from origami.plotsandcalcs.articleillustrations import panelcompatibility, ANGLE_COLOR1, ANGLE_COLOR2
 from origami.quadranglearray import dots_to_quadrangles, QuadrangleArray
 from origami.utils import linalgutils
-
-FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures', 'article-illustrations')
 
 
 def plot_marching_algorithm():
@@ -46,11 +45,11 @@ def plot_marching_algorithm():
 
     draw_creases(ax, quads)
 
-    pad_specific_params = {'eta01': {'pad_x': 0.07, 'pad_y': 0.25},
-                           'eta03': {'pad_x': -0.02, 'pad_y': 0.20},
-                           'delta01': {'pad_x': 0.07, 'pad_y': 0.1},
-                           'delta10': {'pad_x': 0.2, 'pad_y': -0.03},
-                           'delta00': {'pad_x': 0.25, 'pad_y': 0}}
+    pad_specific_params = {'beta^L01': {'pad_x': 0.07, 'pad_y': 0.25},
+                           'beta^L03': {'pad_x': -0.02, 'pad_y': 0.20},
+                           'beta^R01': {'pad_x': 0.07, 'pad_y': 0.1},
+                           'beta^R10': {'pad_x': 0.2, 'pad_y': -0.03},
+                           'beta^R00': {'pad_x': 0.25, 'pad_y': 0}}
 
     draw_angles(ax, quads, pad_specific_params)
 
@@ -145,23 +144,25 @@ def draw_angles(ax, quads, pad_specific_params):
     i = 1
     for j in range(1, cols - 1):
         angle_base_text = r'\pi-\vartheta' if j % 2 == 1 else r'\vartheta'
-        angle_color = 'grey' if j % 2 == 1 else 'orangered'
+        angle_color = ANGLE_COLOR2 if j % 2 == 1 else ANGLE_COLOR1
         _plot_angle((i, j + 1), (i, j), (i + 1, j),
-                    angle_base_text, r'delta')
+                    angle_base_text, r'beta^R')
         _plot_angle((i + 1, j), (i, j), (i, j - 1),
-                    angle_base_text, 'eta')
+                    angle_base_text, 'beta^L')
     j = 1
     for i in range(1, rows - 1):
         angle_base_text = r'\pi-\vartheta'
-        angle_color = 'grey'
+        angle_color = ANGLE_COLOR2
         _plot_angle((i, j + 1), (i, j), (i + 1, j),
-                    angle_base_text, 'delta')
+                    angle_base_text, 'beta^R')
         _plot_angle((i + 1, j), (i, j), (i, j - 1),
-                    angle_base_text, 'eta')
+                    angle_base_text, 'beta^L')
 
 
 def draw_creases(ax, quads):
-    MVA_to_color = {1: 'r', -1: 'b', 0: 'k'}
+    MVA_to_color = {1: articleillustrations.MOUNTAIN_COLOR,
+                    -1: articleillustrations.VALLEY_COLOR,
+                    0: 'k'}
 
     indexes = quads.indexes
     dots = quads.dots

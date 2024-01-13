@@ -41,7 +41,8 @@ def plot_panel_illustration():
     indexes = quads.indexes
 
     arc_size = 0.2
-    arc_pad = 0.08
+    arc_pad_x = 0.075
+    arc_pad_y = 0.06
     angle_color = 'orangered'
     plt.rcParams.update({'font.size': 30})
 
@@ -64,16 +65,16 @@ def plot_panel_illustration():
     plot_line(2, 2, 2, 3, '--b')
 
     def _plot_angle(ind1, ind0, ind2, name):
-        plot_angle(ax, quads, ind1, ind0, ind2, name, arc_size, angle_color, arc_pad, arc_pad)
+        plot_angle(ax, quads, ind1, ind0, ind2, name, arc_size, angle_color, arc_pad_x, arc_pad_y)
 
-    def plot_alpha_beta(i0, j0, letter):
-        _plot_angle((i0, j0 + 1), (i0, j0), (i0 + 1, j0), rf'$ \alpha_{letter} $')
-        _plot_angle((i0 + 1, j0), (i0, j0), (i0, j0 - 1), rf'$ \beta_{letter} $')
+    def plot_alpha_RL(i0, j0, letter):
+        _plot_angle((i0, j0 + 1), (i0, j0), (i0 + 1, j0), rf'$ \alpha^R_{letter} $')
+        _plot_angle((i0 + 1, j0), (i0, j0), (i0, j0 - 1), rf'$ \alpha^L_{letter} $')
 
-    plot_alpha_beta(1, 1, 'A')
-    plot_alpha_beta(1, 2, 'C')
-    plot_alpha_beta(2, 1, 'B')
-    plot_alpha_beta(2, 2, 'D')
+    plot_alpha_RL(1, 1, 'A')
+    plot_alpha_RL(1, 2, 'C')
+    plot_alpha_RL(2, 1, 'B')
+    plot_alpha_RL(2, 2, 'D')
 
     def plot_arrow(i0, j0, i1, j1, text, pad_x, pad_y):
         p0 = dots[:, indexes[i0, j0]]
@@ -81,17 +82,17 @@ def plot_panel_illustration():
         end = p0 + 0.3 * (p1 - p0)
         arrow = FancyArrowPatch(p0, end, linestyle='-', arrowstyle='->', mutation_scale=30, lw=2.0, zorder=5)
         ax.add_patch(arrow)
-        ax.text(end[0] + pad_x, end[1] + pad_y, text)
+        ax.text(end[0] + pad_x, end[1] + pad_y, text, fontsize=28)
 
-    plot_arrow(1, 1, 1, 2, r'$ t_2^A $', -0.10, -0.15)
-    plot_arrow(1, 1, 0, 1, r'$ t_1^A $', -0.15, 0.0)
-    plot_arrow(1, 2, 1, 1, r'$ t_4^C $', -0.05, -0.2)
-    plot_arrow(1, 2, 2, 2, r'$ t_3^C $', +0.05, 0.0)
-    plot_arrow(2, 2, 1, 2, r'$ t_1^D $', -0.15, 0.0)
-    plot_arrow(2, 1, 1, 1, r'$ t_1^B $', -0.15, 0.0)
-    plot_arrow(2, 1, 2, 2, r'$ t_2^B $', -0.0, 0.04)
-    plot_arrow(2, 2, 2, 1, r'$ t_4^D $', -0.05, 0.05)
-    plot_arrow(1, 1, 2, 1, r'$ t_3^A $', 0.03, 0.05)
+    plot_arrow(1, 1, 1, 2, r'$ \mathbf{t}_2^A $', -0.10, -0.15)
+    plot_arrow(1, 1, 0, 1, r'$ \mathbf{t}_1^A $', -0.15, 0.0)
+    plot_arrow(1, 2, 1, 1, r'$ \mathbf{t}_4^C $', -0.05, -0.2)
+    plot_arrow(1, 2, 2, 2, r'$ \mathbf{t}_3^C $', +0.05, 0.02)
+    plot_arrow(2, 2, 1, 2, r'$ \mathbf{t}_1^D $', -0.15, 0.0)
+    plot_arrow(2, 1, 1, 1, r'$ \mathbf{t}_1^B $', -0.15, 0.0)
+    plot_arrow(2, 1, 2, 2, r'$ \mathbf{t}_2^B $', -0.0, 0.04)
+    plot_arrow(2, 2, 2, 1, r'$ \mathbf{t}_4^D $', -0.05, 0.05)
+    plot_arrow(1, 1, 2, 1, r'$ \mathbf{t}_3^A $', 0.03, 0.05)
 
     ax.set_xlim(0.0, 2.4)
     ax.set_ylim(0.8, 3.0)
@@ -118,10 +119,10 @@ def plot_angle(ax: Axes, quads: QuadrangleArray, ind1: tuple[int, int],
     arc = Arc(v0, arc_size, arc_size, theta1=theta1, theta2=theta2,
               lw=1, zorder=-10, color=angle_color)
     ax.add_patch(arc)
-    if 'alpha' in name or 'delta' in name:
+    if '^R' in name or '^{R' in name:
         ax.text(v0[0] + text_pad_x, v0[1] + text_pad_y,
                 name, ha='left', va='bottom', color=angle_color, fontsize=fontsize)
-    elif 'beta' in name or 'eta' in name:
+    elif '^L' in name or '^{L' in name:
         ax.text(v0[0] - text_pad_x, v0[1] + text_pad_y,
                 name, ha='right', va='bottom', color=angle_color, fontsize=fontsize)
     else:

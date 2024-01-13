@@ -74,8 +74,8 @@ def plot_YZ_zigzag_cross_section():
     ax.text(middle01[0] - 0.07, middle01[1] + sign * 0.05,
             r'$ L_0 $', ha='center', va='center')
     middle12 = (p1 + p2) / 2
-    ax.text(middle12[0] + 0.07, middle01[1] + sign * 0.05,
-            r'$ L_0+M(y) $', ha='center', va='center')
+    ax.text(middle12[0] + 0.12, middle01[1] + sign * 0.05,
+            r'$ L_0+\Delta M(y) $', ha='center', va='center')
 
     # ax.set_aspect('equal', 'datalim')
     ax.set_aspect('equal', 'box')
@@ -125,7 +125,7 @@ def plot_XZ_cross_section():
     A1 = dots[:, indexes[0, 2]]
     E1 = dots[:, indexes[0, 4]]
 
-    _plot_arrow3D(ax, A1, E1, r'$ \vec{AJ} $', (-0.07, 0, +0.21))
+    _plot_arrow3D(ax, A1, E1, r'$ \vec{AE} $', (-0.07, 0, +0.21))
 
     AE = E1 - A1
     AEx = AE.copy()
@@ -225,8 +225,8 @@ def center_dots_by_first_unit_cell(quads: QuadrangleArray):
 
 
 def main():
-    # plot_YZ_zigzag_cross_section()
-    plot_XZ_cross_section()
+    plot_YZ_zigzag_cross_section()
+    # plot_XZ_cross_section()
 
 
 if __name__ == '__main__':

@@ -22,9 +22,6 @@ from origami.plotsandcalcs.alternating.utils import (create_F_from_list, create_
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import linalgutils, plotutils
 
-# FIGURES_PATH = os.path.join(
-#     origami.plotsandcalcs.BASE_PATH,
-#     'RFFQM', 'ContinuousMetric', 'AlternatingFigures', 'flat')
 FIGURES_PATH = articleillustrations.FIGURES_PATH
 
 
@@ -114,7 +111,7 @@ def plot_F_M_pert_notation():
 
     for i in range(1, rows, 2):
         center_of_line = 1 / 2 * (dots[:, indexes[i, 0]] + dots[:, indexes[i + 1, 0]])
-        ax.text(center_of_line[0], center_of_line[1], f'$L_0 + M({i // 2})$', ha='right')
+        ax.text(center_of_line[0] - 0.015, center_of_line[1], rf'$L_0 + \Delta L({i // 2})$', ha='right')
 
     for i in range(0, rows):
         bottom_dot = dots[:, indexes[i, 1]]
@@ -146,32 +143,22 @@ def plot_F_M_pert_notation():
         ax.add_patch(arc)
 
     pm = 1
+    angle_field_text = r'\delta'
     for i in range(0, 3):
         dot = dots[:, indexes[i, 1]]
         pm_text = '+' if pm == 1 else '-'
         color = 'C2' if pm == 1 else 'C3'
         # ax.text(dot[0]+0.1, dot[1]+0.05,
         #         '$ \delta_{'+str(i)+',0}=' + pm + 'F(0) $')
-        angle_text = r'$ \pi-\vartheta' + pm_text + f'F(1/2) $'
+        angle_text = r'$ \pi-\vartheta' + pm_text + angle_field_text + rf' (1/2) $'
         ax.text(dot[0] + 0.03, dot[1] - 0.06,
                 angle_text, rotation=-30, ha='left', va='bottom', fontsize=10, color=color)
         pm *= -1
         pm_text = '+' if pm == 1 else '-'
         color = 'C2' if pm == 1 else 'C3'
-        angle_text = r'$ \pi-\vartheta' + pm_text + f'F(1/2) $'
+        angle_text = r'$ \pi-\vartheta' + pm_text + angle_field_text + rf' (1/2) $'
         ax.text(dot[0] - 0.03, dot[1] - 0.05,
                 angle_text, ha='right', va='bottom', rotation=30, fontsize=10, color=color)
-    # pm = 1
-    # for i in range(0, 3):
-    #     dot = dots[:, indexes[i, 2]]
-    #     pm_text = '' if pm == 1 else '-'
-
-    #     ax.text(dot[0]+0.01, dot[1]+0.07,
-    #             '$ ' + pm_text + f'F(1) $', va='bottom', rotation=30)
-    #     pm *= -1
-    #     pm_text = '' if pm == 1 else '-'
-    #     ax.text(dot[0] - 0.02, dot[1] + 0.05,
-    #             '$ ' + pm_text + f'F(1) $', ha='right', va='bottom', rotation=-30)
 
     for i in range(0, rows):
         bottom_dot = dots[:, indexes[i, 2]]
@@ -179,10 +166,6 @@ def plot_F_M_pert_notation():
         up_dot = dots[:, indexes[i + 1, 2]]
         right_dot = dots[:, indexes[i, 3]]
 
-        # if i == 0:
-        #     size = 0.5
-        # else:
-        #     size=0.2
         size = 0.2
 
         if i % 2 == 0:
@@ -211,9 +194,9 @@ def plot_F_M_pert_notation():
 
     dot = dots[:, indexes[0, 2]]
     ax.text(dot[0] + 0.06, dot[1] + 0.09,
-            r'$ \vartheta+F(1) $', rotation=30, ha='left', va='bottom', fontsize=10, color='C5')
+            rf'$ \vartheta+{angle_field_text}(1) $', rotation=30, ha='left', va='bottom', fontsize=10, color='C5')
     ax.text(dot[0] - 0.06, dot[1] + 0.09,
-            r'$ \vartheta-F(1) $', ha='right', va='bottom', rotation=-30, fontsize=10, color='C0')
+            rf'$ \vartheta-{angle_field_text}(1) $', ha='right', va='bottom', rotation=-30, fontsize=10, color='C0')
     dot = dots[:, indexes[1, 2]]
     ax.text(dot[0] + 0.06, dot[1] + 0.09,
             r'$ \vartheta-F(1) $', rotation=30, ha='left', va='bottom', fontsize=10, color='C0')
@@ -234,13 +217,14 @@ def plot_F_pert_on_vertex():
     F = 0.4
     L = 1.0
 
+    valley_color, mountain_color = articleillustrations.VALLEY_COLOR, articleillustrations.MOUNTAIN_COLOR
+
     fig, ax = plt.subplots(figsize=(10, 5))
     ax: Axes = ax
-    ax.plot([-L, 0, L], [np.tan(np.pi / 2 - theta) * L, 0, np.tan(np.pi / 2 - theta) * L], 'r')
+    ax.plot([-L, 0, L], [np.tan(np.pi / 2 - theta) * L, 0, np.tan(np.pi / 2 - theta) * L], valley_color)
     ax.plot([0, 0], [0, L / 2.4], '--', color='C7')
-    ax.plot([0, -L * np.sin(F) / 2.1], [0, L * np.cos(F) / 2.1], '-', color='b')
+    ax.plot([0, -L * np.sin(F) / 2.1], [0, L * np.cos(F) / 2.1], '-', color=mountain_color)
 
-    # print(np.rad2deg(theta))
     arc = Arc(origin, 0.4, 0.4, theta1=90 - np.rad2deg(theta), theta2=90, lw=2)
     ax.add_patch(arc)
     arc = Arc(origin, 0.5, 0.5, theta1=90, theta2=90 + np.rad2deg(theta), lw=2)
@@ -249,7 +233,7 @@ def plot_F_pert_on_vertex():
 
     arc = Arc(origin, .7, 0.7, theta1=90, theta2=90 + np.rad2deg(F), lw=2, linestyle='--', color="C9")
     ax.add_patch(arc)
-    ax.text(origin[0] - 0.11, origin[1] + 0.37, r"$ F>0 $", va='bottom', color='C9')
+    ax.text(origin[0] - 0.11, origin[1] + 0.37, r"$ \delta>0 $", va='bottom', color='C9')
 
     ax.set_xlim(-0.6, 0.6)
     ax.set_aspect('equal')
@@ -257,7 +241,7 @@ def plot_F_pert_on_vertex():
     # ax.grid()
 
     fig.savefig(os.path.join(FIGURES_PATH, 'F-pert-on-vertex.pdf'),
-                bbox_inches=Bbox.from_extents(2, 0.5, 8, 3.2))
+                bbox_inches=Bbox.from_extents(2.5, 0.5, 7.5, 3.2))
 
     plt.show()
 
@@ -425,8 +409,8 @@ def create_MARS_Barreto_using_alternating_angles():
 
 def main():
     # create_MARS_Barreto_using_alternating_angles()
-    plot_F_M_pert_notation()
-    # plot_F_pert_on_vertex()
+    # plot_F_M_pert_notation()
+    plot_F_pert_on_vertex()
 
 
 if __name__ == '__main__':

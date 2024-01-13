@@ -65,24 +65,25 @@ def plot_M_only():
     omega = 0.8
     ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
 
-    fig: Figure = plt.figure(figsize=(7.5, 6))
+    fig: Figure = plt.figure(figsize=(8, 6))
     ax: Axes3D = fig.add_subplot(111, projection="3d",
-                                 elev=53, azim=-1596,
+                                 elev=53, azim=-161,
                                  computed_zorder=False)
 
     plot_flat(ax, ori)
 
     ori.set_gamma(ori.calc_gamma_by_omega(omega))
     ori.dots.dots[0, :] += 7
-    ori.dots.dots[1, :] -= 3
+    ori.dots.dots[1, :] -= 1
     ori.dots.dots[2, :] += 3
     panels, surf = ori.dots.plot(ax, alpha=1.0)
     surf.set_alpha(0.3)
 
     # plotutils.set_labels_off(ax)
     ax.set_aspect("equal")
+    ax.set_zlabel('Z', labelpad=-15)
 
-    ax.set_position([-0.1, -0.15, 1.15, 1.4])
+    ax.set_position([0.05, -0.2, 0.95, 1.5])
 
     # fig.patch.set_facecolor('xkcd:mint green')
     # ax.patch.set_facecolor('#4545FF')
@@ -136,6 +137,52 @@ def plot_F_change_M_const_column():
     mpl.rcParams["savefig.bbox"] = "standard"
     fig.savefig(os.path.join(FIGURES_PATH, "pert-F-change-M-const.svg"))
     fig.savefig(os.path.join(FIGURES_PATH, "pert-F-change-M-const.pdf"))
+
+    plt.show()
+
+
+def plot_F_change_M_const_2column():
+    Fs = np.array([0.15, 0.4, -0.3, -0.1, -0.2])
+    F = create_F_from_list(Fs)
+    Ms = np.append(0, np.cumsum([-0.5, -0.5, -0.5]))
+    MM = create_MM_from_list(Ms)
+
+    L0 = 1.3
+    C0 = 1.0
+
+    rows = 2 * (len(Ms) - 1)
+    cols = len(Fs) - 1
+    angle = 1.1
+    omega = 0.7
+    ori = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+
+    fig: Figure = plt.figure(figsize=(7, 6.5))
+    ax: Axes3D = fig.add_subplot(111, projection="3d",
+                                 elev=57, azim=-130,
+                                 computed_zorder=False)
+
+    plot_flat(ax, ori)
+
+    ori.set_gamma(ori.calc_gamma_by_omega(omega))
+    ori.dots.dots[0, :] += 2.5
+    ori.dots.dots[1, :] -= 1.3
+    ori.dots.dots[2, :] += 3
+    panels, surf = ori.dots.plot(ax, alpha=1.0)
+    surf.set_alpha(0.3)
+
+    # plotutils.set_labels_off(ax)
+    ax.set_aspect("equal")
+    # ax.set(zticks=[-0.5, 0, 0.5])
+
+    ax.set_position([-0.1, -0.15, 1.15, 1.4])
+
+    # fig.patch.set_facecolor('xkcd:mint green')
+    # ax.patch.set_facecolor('#4545FF')
+
+    # fig.tight_layout()
+    mpl.rcParams["savefig.bbox"] = "standard"
+    fig.savefig(os.path.join(FIGURES_PATH, "pert-F-change-M-const2.svg"))
+    fig.savefig(os.path.join(FIGURES_PATH, "pert-F-change-M-const2.pdf"))
 
     plt.show()
 
@@ -202,9 +249,10 @@ def _set_XY_labels(ax: Axes3D):
 
 def main():
     # plot_F_const()
-    # plot_M_only()
-    plot_F_change_M_const_column()
-    plot_M_change_F_const_row()
+    plot_M_only()
+    # plot_F_change_M_const_column()
+    # plot_F_change_M_const_2column()
+    # plot_M_change_F_const_row()
 
 
 if __name__ == '__main__':

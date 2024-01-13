@@ -104,7 +104,7 @@ def plot_sff_vectors():
                               arrowstyle='->,head_width=.25', mutation_scale=30, lw=4, zorder=30)
     ax.add_patch(arrow)
     ax.text(end[0], end[1] - 0.25, end[2] + 0.07,
-            'N', va='center', ha='center',
+            r'$\vec{N}$', va='center', ha='center',
             bbox={'facecolor': color, 'edgecolor': color}, zorder=30)
 
     plotutils.remove_tick_labels(ax)
