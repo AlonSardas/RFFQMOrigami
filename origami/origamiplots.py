@@ -77,7 +77,7 @@ def add_slider(ax, ori: RFFQM):
     init_omega = ori.gamma
 
     # dots.assert_valid()
-    dots.plot(ax)  # We plot to find the limits of the axis to use
+    dots.plot_with_wireframe(ax)  # We plot to find the limits of the axis to use
 
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
 
@@ -95,7 +95,7 @@ def add_slider(ax, ori: RFFQM):
         ax.clear()
         quads = ori.set_gamma(omega, should_center=True)
         # dots.center()
-        quads.plot(ax, alpha=0.85)
+        quads.plot_with_wireframe(ax, alpha=0.85)
 
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
@@ -281,4 +281,4 @@ def plot_smooth_interpolation(quads: QuadrangleArray, ax: Axes3D):
     Xs, Ys = np.meshgrid(xs, ys)
     Zs = interp(Xs, Ys, grid=False)
 
-    return ax.plot_surface(Xs, Ys, Zs, linewidth=0, antialiased=False)
+    return ax.plot_surface(Xs, Ys, Zs, linewidth=1, edgecolors='k', antialiased=True)

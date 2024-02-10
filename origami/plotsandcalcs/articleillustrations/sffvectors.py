@@ -18,21 +18,26 @@ def plot_sff_vectors():
     C0 = 1.4
 
     rows, cols = 4, 4
+    chi = 1 / 2
+    xi = 1 / 2
     angle = 1.0
-    ori = create_perturbed_origami(angle, rows, cols, L0, C0, None, None)
+    ori = create_perturbed_origami(angle, chi, xi, L0*2, C0*2, None, None)
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", elev=35, azim=-145)
 
-    ori.set_gamma(-2)
+    # print(ori.calc_gamma_by_omega(2))
+    ori.set_gamma(2)
     quads = ori.dots
     quads.dots = np.array(quads.dots, dtype='float64')
-    quads.dots[0, :] *= -1
+    # quads.dots[0, :] *= -1
     dots, indexes = quads.dots, quads.indexes
-    _, wire = quads.plot(ax, alpha=0.4)
-    # wire.remove()
-    wire.set_color("k")
-    wire.set_alpha(0.2)
+
+    quads.plot(ax, edge_color='k', alpha=0.4, edge_alpha=0.2)
+
+    # _, wire = quads.plot_with_wireframe(ax, alpha=0.4)
+    # wire.set_color("k")
+    # wire.set_alpha(0.2)
 
     # plotutils.set_labels_off(ax)
 
@@ -55,6 +60,7 @@ def plot_sff_vectors():
     #             name, fontsize=30)
 
     color = '#DDCCEEFF'
+
     def _plot_arrow(i0, i1, name, shift=None):
         p0 = dots[:, quads.indexes[i0]]
         p1 = dots[:, quads.indexes[i1]]
@@ -100,7 +106,7 @@ def plot_sff_vectors():
     end = start + Normal
     arrow = plotutils.Arrow3D((start[0], end[0]),
                               (start[1], end[1]),
-                              (start[2]+0.2, end[2]),
+                              (start[2] + 0.2, end[2]),
                               arrowstyle='->,head_width=.25', mutation_scale=30, lw=4, zorder=30)
     ax.add_patch(arrow)
     ax.text(end[0], end[1] - 0.25, end[2] + 0.07,
@@ -114,6 +120,7 @@ def plot_sff_vectors():
     xlim_shift = 0.3
     ax.set_xlim3d(xlim[0] + xlim_shift, xlim[1] + xlim_shift)
 
+    plotutils.set_3D_labels(ax)
     ax.set_zlabel('Z', labelpad=-10.4)
 
     # fig.tight_layout()

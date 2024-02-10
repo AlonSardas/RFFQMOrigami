@@ -5,7 +5,7 @@ Fan Feng, Xiangxin Dang, Richard D. James, Paul Plucinsky,
 The designs and deformations of rigidly and flat-foldable quadrilateral mesh origami
 https://doi.org/10.1016/j.jmps.2020.104018
 
-We assume a given crease pattern that must be valid as RFFQM. Then calculate the
+We assume the given crease pattern is a valid RFFQM. Then calculate the
 position of the quadrangles given an activation angle omega
 """
 import logging
@@ -22,7 +22,6 @@ cos = np.cos
 PI = np.pi
 
 logger = logging.getLogger('origami')
-logger.setLevel(logging.DEBUG)
 
 
 class RFFQM(object):
@@ -83,6 +82,8 @@ class RFFQM(object):
 
         gamma_1 = gamma
 
+        logger.info(f"setting gamma to {gamma}")
+
         i = 1
         # We fold first the bottom row
         for j in range(1, cols - 1):
@@ -134,14 +135,16 @@ class RFFQM(object):
 
     def calc_gamma_by_omega(self, omega):
         """
-        This is for convenient when there when sometime we want to determine gamma,
-        and sometime we want to determine omega of the first vertex.
+        This is for convenient since sometimes we want to determine gamma,
+        and sometimes we want to determine omega of the first vertex.
         It happened because of inconsistency in the naming of omega and gamma
         """
         i, j = 1, 1
         alpha, beta = self.angles[:, self.indexes[i, j]]
-        omega = calc_gamma2(-self.sigmas[i, j], omega, np.pi-beta, alpha)
+        omega = calc_gamma2(-self.sigmas[i, j], omega, np.pi - beta, alpha)
 
+        # This is just for following the convention of mountain vally assignment
+        omega = -omega
         return omega
 
     def calc_omegas_vs_x(self) -> np.ndarray:

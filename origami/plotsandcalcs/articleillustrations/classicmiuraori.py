@@ -5,14 +5,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import origami.plotsandcalcs
 from origami import origamiplots
 from origami.RFFQMOrigami import RFFQM
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
+from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import plotutils
-
-FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures', 'article-illustrations')
 
 
 def plot_placed_horizontally():
@@ -32,7 +30,7 @@ def plot_placed_horizontally():
                                  computed_zorder=False)
 
     ori.dots.center()
-    panels, surf = ori.dots.plot(ax, alpha=0.6)
+    panels, surf = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     surf.set_alpha(0)
     panels.set_fc('C7')
     panels.set_zorder(-10)
@@ -41,20 +39,21 @@ def plot_placed_horizontally():
     ori.set_gamma(ori.calc_gamma_by_omega(0.4))
     ori.dots.dots[0, :] += 8
     # ori.dots.dots[2, :] -= 2
-    panels, surf = ori.dots.plot(ax, alpha=1.0)
-    surf.set_alpha(0.3)
+    panel_color = 'C1'
+    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=0.4)
+    # surf.set_alpha(0.3)
 
     ori.set_gamma(ori.calc_gamma_by_omega(1.5))
     ori.dots.dots[0, :] += 15
     # ori.dots.dots[2, :] -= 4
-    panels, wire = ori.dots.plot(ax, color='C1', alpha=1.0)
-    wire.set_alpha(0.2)
+    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=0.4)
+    # wire.set_alpha(0.2)
 
     ori.set_gamma(ori.calc_gamma_by_omega((np.pi - 0.1)))
     ori.dots.dots[0, :] += 19
     # ori.dots.dots[2, :] -= 6
-    panels, surf = ori.dots.plot(ax, color='C0', alpha=0.9)
-    surf.set_alpha(0.1)
+    ori.dots.plot(ax, panel_color, alpha=0.9, edge_alpha=0.3)
+    # surf.set_alpha(0.1)
 
     plotutils.set_labels_off(ax)
     ax.set_aspect("equal")
@@ -94,25 +93,25 @@ def plot_stacked_in_layers():
     ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-60, elev=32, computed_zorder=False)
 
     ori.dots.center()
-    panels, surf = ori.dots.plot(ax, alpha=0.6)
+    panels, surf = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     surf.remove()
     panels.set_fc('C7')
     panels.set_zorder(-10)
     origamiplots.draw_creases(ori, 1, ax)
     ori.set_gamma(ori.calc_gamma_by_omega(0.5))
     ori.dots.dots[2, :] += 2
-    _, surf = ori.dots.plot(ax, alpha=0.6)
+    _, surf = ori.dots.plot_with_wireframe(ax, alpha=0.6)
 
     ori.set_gamma(ori.calc_gamma_by_omega(1.5))
     ori.dots.dots[2, :] += 5
-    panels, surf = ori.dots.plot(ax, alpha=0.5)
+    panels, surf = ori.dots.plot_with_wireframe(ax, alpha=0.5)
     panels.set_fc('C1')
     # surf.set_alpha(0.1)
     # panels.set_zorder(-10)
 
     ori.set_gamma(ori.calc_gamma_by_omega((np.pi - 0.01)))
     ori.dots.dots[2, :] += 13
-    panels, surf = ori.dots.plot(ax, alpha=0.3)
+    panels, surf = ori.dots.plot_with_wireframe(ax, alpha=0.3)
     panels.set_fc('C0')
     surf.set_alpha(0.1)
 

@@ -137,7 +137,7 @@ def reproduce_sphere():
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
-    ori.dots.plot(ax)
+    ori.dots.plot_with_wireframe(ax)
     plotutils.set_axis_scaled(ax)
 
     fig, ax = plt.subplots()

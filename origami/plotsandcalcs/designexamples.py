@@ -12,9 +12,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
+from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
-from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func
+from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami
 from origami.utils import plotutils
 
@@ -40,8 +40,8 @@ def plot_vase():
     W0 = 2.5
     theta = 1.0
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')
@@ -64,7 +64,7 @@ def plot_vase():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=50, elev=30)
     lim = 4.0
-    _, wire = ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
@@ -99,8 +99,8 @@ def plot_spherical_cap():
     W0 = 2.4
     theta = 1.1
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')
@@ -128,7 +128,7 @@ def plot_spherical_cap():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
     lim = 5.0
-    _, wire = ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     wire.set_alpha(0.0)
 
     ax.set_xlim(-lim, lim)
@@ -159,8 +159,8 @@ def plot_saddle():
     W0 = 2.4
     theta = 1.0
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')
@@ -181,7 +181,7 @@ def plot_saddle():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-60, elev=20)
     lim = 5.5
-    _, wire = ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
@@ -210,8 +210,8 @@ def plot_2D_sinusoid():
     W0 = 2.3
     theta = 0.99
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')
@@ -233,7 +233,7 @@ def plot_2D_sinusoid():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-66, elev=29)
     lim = 6.0
-    _, wire = ori.dots.plot(ax, alpha=0.6)
+    _, wire = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     wire.set_alpha(0)
 
     ax.set_xlim(-lim, lim)
@@ -270,8 +270,8 @@ def plot_cap_different_curvatures():
         F0 = 0.0
         M0 = -0.5
 
-        xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
-        ys, MMs = betterapproxcurvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+        xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+        ys, MMs = curvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
         # Make Fs symmetric
         Fs = np.append(-Fs[1::][::-1], Fs)
@@ -330,7 +330,7 @@ def plot_cap_different_curvatures():
             fig: Figure = plt.figure()
             ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
             lim = 1.8
-            ori.dots.plot(ax, alpha=0.6)
+            ori.dots.plot_with_wireframe(ax, alpha=0.6)
 
             ax.set_xlim(-lim, lim)
             ax.set_ylim(-lim, lim)
@@ -372,8 +372,8 @@ def plot_cap_different_curvatures_ugly():
         F0 = 0.0
         M0 = -0.1
 
-        xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
-        ys, MMs = betterapproxcurvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+        xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+        ys, MMs = curvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
         # Make Fs symmetric
         Fs = np.append(-Fs[1::][::-1], Fs)
@@ -400,7 +400,7 @@ def plot_cap_different_curvatures_ugly():
         fig: Figure = plt.figure()
         ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
         lim = 1.8
-        ori.dots.plot(ax, alpha=0.6)
+        ori.dots.plot_with_wireframe(ax, alpha=0.6)
 
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
@@ -442,8 +442,8 @@ def plot_cap_different_curvatures_large_angle():
         F0 = 0.0
         M0 = -0.1
 
-        xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
-        ys, MMs = betterapproxcurvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+        xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+        ys, MMs = curvatures.get_MM_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
         print(ys, MMs)
 
         # Make Fs symmetric
@@ -469,7 +469,7 @@ def plot_cap_different_curvatures_large_angle():
         fig: Figure = plt.figure()
         ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
         lim = 5.0
-        ori.dots.plot(ax, alpha=0.6)
+        ori.dots.plot_with_wireframe(ax, alpha=0.6)
 
         # ax.set_xlim(-lim, lim)
         # ax.set_ylim(-lim, lim)

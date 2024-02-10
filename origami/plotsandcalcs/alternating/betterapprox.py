@@ -21,8 +21,8 @@ from scipy.optimize import fsolve
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
-from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_kx_ky_funcs, create_expected_K_func, \
+from origami.plotsandcalcs.alternating import curvatures
+from origami.plotsandcalcs.alternating.curvatures import create_kx_ky_funcs, create_expected_K_func, \
     create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \
     create_MM_from_list
@@ -59,7 +59,7 @@ def test_constant():
     fig, axes = plt.subplots(1, 2)
     compare_G_curvatures(fig, axes, Ks, expected_K_func)
     fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'constant.png'))
+    # fig.savefig(os.path.join(FIGURES_PATH, 'constant.png'))
 
     angle = theta
     dF0 = dFF(1)
@@ -440,8 +440,8 @@ def compare_to_old():
     # M0 = 0.125
     theta = angle
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, FF(xs), '.', label='old')
@@ -470,13 +470,13 @@ def compare_to_old():
 
 
 def main():
-    # test_constant()
+    test_constant()
     # test_hills()
     # test_constant_angle_factor()
     # test_IP_constant()
     # compare_y_curvature_discrete_to_continuous()
     # test_x_constant()
-    compare_to_old()
+    # compare_to_old()
     plt.show()
 
 

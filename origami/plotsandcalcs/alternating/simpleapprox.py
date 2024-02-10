@@ -13,7 +13,7 @@ from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
 from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
+from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.utils import sin, cos, tan, csc, sec, compare_curvatures, get_FF_dFF_dMM_ddMM, \
     create_perturbed_origami, create_F_from_list
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
@@ -367,7 +367,7 @@ def plot_cylinders():
 
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
-    ori.dots.plot(ax, alpha=0.3)
+    ori.dots.plot_with_wireframe(ax, alpha=0.3)
     fig.savefig(os.path.join(FIGURES_PATH, 'cylinder-in-x.png'))
 
     # plot_interactive(ori)
@@ -393,7 +393,7 @@ def plot_cylinders():
 
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-33, elev=6)
-    ori.dots.plot(ax, alpha=0.5)
+    ori.dots.plot_with_wireframe(ax, alpha=0.5)
     fig.savefig(os.path.join(FIGURES_PATH, 'cylinder-in-y.png'))
 
     plot_interactive(ori)
@@ -532,8 +532,8 @@ def test_M_vs_zigzag():
     if should_plot_Ks:
         fig: Figure = plt.figure()
         ax: Axes3D = fig.add_subplot(111, projection='3d')
-        ori.dots.plot(ax, alpha=0.3)
-        ori_zigzag.dots.plot(ax, alpha=0.3)
+        ori.dots.plot_with_wireframe(ax, alpha=0.3)
+        ori_zigzag.dots.plot_with_wireframe(ax, alpha=0.3)
         plotutils.set_axis_scaled(ax)
         plotutils.set_3D_labels(ax)
 
@@ -850,7 +850,7 @@ def test_zigzag_in_angles():
     kx = -0.5
     F0 = 0.0
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
 
     # Make Fs symmetric
     Fs = np.append(-Fs[1::][::-1], Fs)

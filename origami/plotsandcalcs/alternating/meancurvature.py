@@ -6,9 +6,9 @@ import numpy as np
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
+from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
-from origami.plotsandcalcs.alternating.betterapproxcurvatures import create_expected_curvatures_func
+from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
 from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_F_from_list, create_MM_from_list
 from origami.quadranglearray import plot_flat_quadrangles
 
@@ -108,8 +108,8 @@ def test_saddle():
     W0 = 2.3
     theta = 0.99
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')

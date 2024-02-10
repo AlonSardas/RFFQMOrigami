@@ -4,71 +4,83 @@ Plot an example pattern with an interpolating surface that the origami is suppos
 
 import os
 
-import matplotlib as mpl
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.transforms import Bbox
+from mpl_toolkits.mplot3d import Axes3D
 
-import origami.plotsandcalcs
 from origami import origamiplots
-from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
-from origami.plotsandcalcs.alternating.utils import (create_F_from_list,
-                                                     create_MM_from_list,
-                                                     create_perturbed_origami)
+from origami.plotsandcalcs.alternating import curvatures
+from origami.plotsandcalcs.alternating.utils import (create_perturbed_origami_by_list)
+from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.utils import plotutils
-
-FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH, 'RFFQM', 'Figures', 'article-illustrations')
 
 
 def plot_pattern_and_smooth_surface():
     rows, cols = 14, 16
+    # kx_func = lambda t: -0.30 * np.tanh((t - 0.5) * 3)
+    # ky_func=lambda t: -0.1
+    kx_func = lambda t: 0.5 * np.tanh(-(t - 0.5) * 3)
+    ky_func = lambda t: 0.15
 
-    def kx_func(t): return -0.30 * np.tanh((t - cols / 4) * 3)
+    F0 = 0.40
+    M0 = 4.0
 
-    def ky_func(t): return -0.1
-
-    F0 = -0.5
-    M0 = 0.5
-
-    L0 = 1.0
-    C0 = 1.0
-    W0 = -2.0
+    W0 = -2.1
     theta = 1.1
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
+    L0 = 7
+    C0 = 8.5
 
-    # fig, axes = plt.subplots(1, 2)
-    # axes[0].plot(xs, Fs, '.')
-    # axes[1].plot(ys, np.diff(MMs), '.')
+    print(L0, C0)
 
-    F = create_F_from_list(Fs)
-    MM = create_MM_from_list(MMs)
+    chi = 1 / cols * 2
+    xi = 1 / rows * 2
 
-    ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+    xs, deltas = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx_func, F0, chi)
+    ys, DeltaLs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky_func, M0, xi)
+
+    should_plot_pert = False
+    if should_plot_pert:
+        fig, axes = plt.subplots(1, 2)
+        axes[0].plot(xs, deltas, '.')
+        axes[1].plot(ys, DeltaLs, '.')
+        plt.show()
+
+    ori = create_perturbed_origami_by_list(
+        theta, L0, C0, deltas, DeltaLs)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=19, azim=-110, computed_zorder=False)
-    surf, wire = ori.dots.plot(ax, alpha=0.5)
-    wire.set_alpha(alpha=0.6)
-    wire.set_linewidth(0.8)
-    wire.set_antialiased(False)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=17, azim=-110, computed_zorder=False)
+    surf = ori.dots.plot(ax, alpha=0.5, edge_alpha=0.7)
+    surf.set_linewidth(1.1)
+    # surf.set_alpha(alpha=0.7)
+    # surf.set_edgecolor(surf.get_edgecolor())
+    # surf.set_alpha(0.5)
+    # wire.set_antialiased(False)
+    # surf.set_antialiased(False)
 
     dots_color = '#FF0000'
     interp_color = '#FF6530'
 
     ori.dots.dots = np.array(ori.dots.dots, np.float64)
     surface_dots = ori.dots.dots[:, ori.dots.indexes[::2, ::2]]
-    ax.scatter(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=15)
+    ax.scatter(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=25)
 
     ori.dots.dots[2, :] += 3.4
     interp = origamiplots.plot_smooth_interpolation(ori.dots, ax)
     interp.set_color(interp_color)
+    interp.set_edgecolor(None)
+    interp.set_linewidth(0)
     interp.set_alpha(0.6)
+
+    # interp.set_edgecolor(None)
+    # print(interp.get_linestyle())
+    # interp.set_linestyle(':')
+    # interp.set_linewidth(0.001)
+    # print(interp.get_edgecolor())
 
     surface_dots = ori.dots.dots[:, ori.dots.indexes[::2, ::2]]
     ax.scatter(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=5)
@@ -101,28 +113,8 @@ def plot_pattern_and_smooth_surface():
     # origamiplots.plot_interactive(ori)
 
 
-def test_axes3d():
-    angle = 1.1
-
-    ori = create_perturbed_origami(angle, 7, 9, 1.5, 1, None, None)
-    fig = plt.figure(figsize=(10, 5))
-    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-60, elev=32, computed_zorder=False)
-
-    ori.set_gamma(1)
-    # ori.dots.center()
-    panels, surf = ori.dots.plot(ax, alpha=0.6)
-
-    # print(ax.get_box_aspect())
-    # plotutils.set_axis_scaled(ax)
-    # print(ax.get_box_aspect())
-    # ax.set_box_aspect(ax.get_box_aspect(), zoom=1.5)
-    ax.set_box_aspect((4, 4, 3), zoom=1.0)
-    plt.show()
-
-
 def main():
     plot_pattern_and_smooth_surface()
-    # test_axes3d()
 
 
 if __name__ == '__main__':

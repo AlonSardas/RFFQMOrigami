@@ -155,6 +155,15 @@ class OrigamiGeometry(object):
         Hs = 1 / 2 * (c11 + c22)
         return Ks, Hs
 
+    def get_principal_curvatures(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculate the principal curvatures
+        """
+        Ks, Hs = self.get_curvatures_by_shape_operator()
+        k1 = Hs - np.sqrt(Hs ** 2 - Ks)
+        k2 = Hs + np.sqrt(Hs ** 2 - Ks)
+        return k1, k2
+
     def get_metric_determinant(self) -> np.ndarray:
         if self._g_dets is not None:
             return self._g_dets

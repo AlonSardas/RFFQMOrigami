@@ -147,6 +147,11 @@ class MarchingAlgorithm(object):
         else:
             cs_bottom = np.ones(cols - 1) * cs_bottom
 
+        if np.any(ls_left <= 0):
+            raise ValueError("Got a non-positive left boundary crease length")
+        if np.any(cs_bottom <= 0):
+            raise ValueError("Got a non-positive bottom boundary crease length")
+
         # Calculate position for bottom boundary
         angle = np.pi / 2 - self.alphas[0, 0]
         for j in range(1, cols):

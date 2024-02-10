@@ -4,7 +4,7 @@ import numpy as np
 import numpy.linalg as la
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.quadranglearray import plot_dots, center_dots
+from origami.quadranglearray import plot_panels_and_edges_with_wireframe, center_dots
 from origami.utils import linalgutils
 
 logger = logging.getLogger('origami')
@@ -51,7 +51,7 @@ class SimpleMiuraOri(object):
             sign *= -1
 
     def plot(self, ax: Axes3D, alpha=1):
-        return plot_dots(self.dots, self.indexes, ax, alpha=alpha)
+        return plot_panels_and_edges_with_wireframe(self.dots, self.indexes, ax, alpha=alpha)
 
     def plot_normals(self, ax: Axes3D):
         dots = self.dots

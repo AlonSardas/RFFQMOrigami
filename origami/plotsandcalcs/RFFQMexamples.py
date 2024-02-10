@@ -80,7 +80,7 @@ def create_radial():
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-156, elev=-140)
 
     ori.set_gamma(1.5)
-    ori.dots.plot(ax, alpha=0.4)
+    ori.dots.plot_with_wireframe(ax, alpha=0.4)
     
     # ax.set_ylim(-10, 15)
     # ax.set_box_aspect(None, zoom=2)

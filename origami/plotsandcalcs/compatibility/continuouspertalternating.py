@@ -136,7 +136,7 @@ def plot_pattern_with_G():
     ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-159, azim=103)
 
     ori.set_gamma(2.8)
-    ori.dots.plot(ax, alpha=0.4)
+    ori.dots.plot_with_wireframe(ax, alpha=0.4)
 
     ax.dist = 8.5
     ax.set_aspect('equal')

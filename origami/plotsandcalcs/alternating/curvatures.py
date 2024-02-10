@@ -1,3 +1,4 @@
+import logging
 import numbers
 from typing import Tuple, Callable, Union
 
@@ -7,16 +8,18 @@ from matplotlib import pyplot as plt
 from scipy.integrate import solve_ivp
 from sympy import Expr
 
-from origami.plotsandcalcs.alternating.utils import get_FF_dFF_dMM_ddMM
+from origami.plotsandcalcs.alternating.utils import get_FF_dFF_dMM_ddMM, csc, tan, sec, cos, sin
 from origami.utils import sympyutils
 
 # We initialize these values on demand since parsing latex takes long time
 _kx, _ky = None, None
 
-Ft = sympyutils.from_latex("F(t)")
-Ftt = sympyutils.from_latex("F'(t)")
-Mt = sympyutils.from_latex("M'(t)")
-Mtt = sympyutils.from_latex("M''(t)")
+Ft = sympyutils.from_latex("F(x)")
+Ftt = sympyutils.from_latex("F'(x)")
+Mt = sympyutils.from_latex("M'(y)")
+Mtt = sympyutils.from_latex("M''(y)")
+
+logger = logging.getLogger('origami.alternating.curvatures')
 
 
 def sub_values(expr: sympy.Expr, L0, C0, W0, theta) -> sympy.Expr:
@@ -24,52 +27,76 @@ def sub_values(expr: sympy.Expr, L0, C0, W0, theta) -> sympy.Expr:
     C0sym = sympy.Symbol("C_{0}")
     W0sym = sympy.Symbol("W_{0}")
     theta_sym = sympy.Symbol(r"vartheta")
-    F0sym = sympy.Symbol("F_{0}")
-    chi_sym = sympy.Symbol(r"chi")
+    s_sym = sympy.Symbol("s")
+    t_sym = sympy.Symbol("t")
 
     subs = [(L0sym, L0),
             (C0sym, C0),
             (W0sym, W0),
             (theta_sym, theta),
-            (F0sym, 1), (chi_sym, 1)]
+            (s_sym, 1), (t_sym, 1)]
     return expr.subs(subs)
 
 
 def get_ky_kx_for_values(L0, C0, W0, theta) -> Tuple[Expr, Expr]:
-    global _kx, _ky
-    if _ky is None:
-        _ky = sympyutils.from_latex(
-            r"-\frac{L_{0}\sin\left(\frac{W_{0}}{2}\right)\sin(\vartheta)\cos(\vartheta)M''(t)\sqrt{-2\cos\left(W_{"
-            r"0}\right)\sin^{2}(\vartheta)+\cos(2\vartheta)+3}}{\left(4L_{0}\cos^{2}(\vartheta)M'(t)+4L_{0}^{2}\cos^{2}("
-            r"\vartheta)+M'(t)^{2}\left(\sin^{2}\left(\frac{W_{0}}{2}\right)\sin^{2}(\vartheta)+\cos^{2}("
-            r"\vartheta)\right)\right)^{3/2}}")
-    if _kx is None:
-        _kx = sympyutils.from_latex(
-            r"-\frac{2F_{0}\chi\cos\left(\frac{W_{0}}{2}\right)\sin(\vartheta)\cos(\vartheta)F'(t)\left(\sin\left(W_{"
-            r"0}\right)(\cos(2\vartheta)+3)-\sin\left(2W_{0}\right)\sin^{2}(\vartheta)\right)}{C_{0}\sqrt{\sin^{2}\left("
-            r"W_{0}\right)\sin^{2}(2\vartheta)+16\cos^{2}\left(\frac{W_{0}}{2}\right)\cos^{4}(\vartheta)}\left(\cos^{"
-            r"2}\left(\frac{W_{0}}{2}\right)\sin^{2}(\vartheta)\left(F_{0}^{2}F(t)^{2}\sin^{2}\left(\frac{W_{0}}{"
-            r"2}\right)+2\right)^{2}+\frac{F_{0}^{2}F(t)^{2}\cos^{2}(\vartheta)\left(4F_{0}F(t)\sin\left(\frac{W_{0}}{"
-            r"2}\right)\cos^{3}\left(\frac{W_{0}}{2}\right)\sin(\vartheta)\cos(\vartheta)+\sin\left(2W_{0}\right)\sin^{"
-            r"2}(\vartheta)-\sin\left(W_{0}\right)(\cos(2\vartheta)+3)\right)^{2}}{\sin^{2}\left(W_{0}\right)\sin^{2}("
-            r"2\vartheta)+16\cos^{2}\left(\frac{W_{0}}{2}\right)\cos^{4}(\vartheta)}\right)^{3/2}}")
-
-    kx_sub = sub_values(_kx, L0, C0, W0, theta)
-    ky_sub = sub_values(_ky, L0, C0, W0, theta)
+    kx, ky = _get_kx_ky_expr()
+    kx_sub = sub_values(kx, L0, C0, W0, theta)
+    ky_sub = sub_values(ky, L0, C0, W0, theta)
     return kx_sub, ky_sub
+
+
+def _get_kx_ky_expr():
+    global _kx, _ky
+
+    def replace_latex(txt):
+        # txt.replace(r"\widetilde{\Delta L}", "M")
+        return (txt.replace("M", "M'")
+                .replace(r"\tilde{\delta}", "F")
+                .replace(r"\omega_{0,0}", "W_{0}"))
+
+    if _ky is None:
+        _ky = sympyutils.from_latex(replace_latex(
+            r"\frac{16L_{0}t\sin\left(\frac{W_{0}}{2}\right)\sin\left(2\vartheta\right)M'\left(y\right)\sqrt{"
+            r"-\cos\left(W_{0}\right)\sin^{2}(\vartheta)+\cos^{2}(\vartheta)+1}}{\left(32L_{0}tM(y)\cos^{2}("
+            r"\vartheta)+32L_{0}^{2}\cos^{2}(\vartheta)+t^{2}M\left(y\right)^{2}\left(\cos\left(2\vartheta-W_{"
+            r"0}\right)+\cos\left(W_{0}+2\vartheta\right)-2\cos\left(W_{0}\right)+2\cos(2\vartheta)+6\right)\right)^{"
+            r"3/2}}"))
+    if _kx is None:
+        _kx = sympyutils.from_latex(replace_latex(
+            r"\frac{s\sin\left(\omega_{0,0}\right)\sin^{2}(\vartheta)\tilde{\delta}'(x)\sqrt{2}\sqrt{2\csc^{2}\left("
+            r"\vartheta\right)-\cos\left(\omega_{0,0}\right)-1}}{C_{0} \cdot \left(2s^{2}\sin^{2}\left(\frac{"
+            r"\omega_{0,"
+            r"0}}{2}\right)\sin^{2}\left(\vartheta\right)\tilde{\delta}(x)^{2}\left(2\csc^{2}\left("
+            r"\vartheta\right)-\cos\left(\omega_{0,0}\right)-1\right)+4\cos^{2}\left(\frac{\omega_{0,"
+            r"0}}{2}\right)\sin^{2}(\vartheta)\right)^{3/2}}"))
+
+    return _kx, _ky
 
 
 def create_kx_ky_funcs(L0, C0, W0, theta) -> Tuple[Callable, Callable]:
     kx_sub, ky_sub = get_ky_kx_for_values(L0, C0, W0, theta)
+    logger.debug(f"kx func: {kx_sub}")
+    logger.debug(f"ky func: {ky_sub}")
     kx_func = sympy.lambdify([Ft, Ftt], kx_sub)
     ky_func = sympy.lambdify([Mt, Mtt], ky_sub)
 
     return kx_func, ky_func
 
 
-def get_F_for_kx(L0, C0, W0, theta,
-                 kx: Union[float, Callable[[float], float]],
-                 F0: float, t0: int, tf: int) -> Tuple[np.ndarray, np.ndarray]:
+def create_kx_ky_funcs_linearized(L0, C0, W0, theta) -> Tuple[Callable, Callable]:
+    sqrt = np.sqrt
+    th = theta
+    kx_factor = csc(th) * tan(W0 / 2) * sec(W0 / 2) * sqrt(2) * sqrt(2 * csc(th) ** 2 - cos(W0) - 1) / 4
+    ky_factor = tan(th) ** 2 * sin(W0 / 2) * sqrt(2) * sqrt(2 * csc(th) ** 2 - cos(W0) - 1) / 8
+
+    kx_func = lambda ddelta: kx_factor * ddelta / C0
+    ky_func = lambda dDeltaL: ky_factor * dDeltaL / L0 ** 2
+    return kx_func, ky_func
+
+
+def get_delta_for_kx(L0, C0, W0, theta,
+                     kx: Union[float, Callable[[float], float]],
+                     F0: float, chi: float) -> Tuple[np.ndarray, np.ndarray]:
     kx_sub, _ = get_ky_kx_for_values(L0, C0, W0, theta)
     kx_symbol = sympy.Symbol('k_x')
     eq = kx_sub - kx_symbol
@@ -83,9 +110,8 @@ def get_F_for_kx(L0, C0, W0, theta,
     def d_func(t, ft):
         return dfdt_func(ft, kx(t))
 
-    # We look at F every half step, since there are 2 perturbations for
-    # each step in F
-    ts = np.arange(t0, tf + 0.1, 0.5)
+    t0, tf = 0, 1
+    ts = np.arange(t0, tf + 0.1 * chi, 0.5 * chi)
     sol = solve_ivp(d_func, (t0, tf), [F0], t_eval=ts)
     if not sol.success:
         raise RuntimeError(f"Could not solve the ODE. Error: {sol.message}")
@@ -93,14 +119,16 @@ def get_F_for_kx(L0, C0, W0, theta,
     return sol.t, sol.y[0, :]
 
 
-def get_MM_for_ky(L0, C0, W0, theta,
-                  ky: Union[float, Callable[[float], float]],
-                  M0: float, t0: int, tf: int):
+def get_DeltaL_for_ky(L0, C0, W0, theta,
+                      ky: Union[float, Callable[[float], float]],
+                      DeltaL0: float, xi) -> Tuple[np.ndarray, np.ndarray]:
     _, ky_sub = get_ky_kx_for_values(L0, C0, W0, theta)
     ky_symbol = sympy.Symbol('k_y')
     eq = ky_sub - ky_symbol
     ddMdt = sympy.solve(eq, Mtt)[0]
     dMdt_func = sympy.lambdify([Mt, ky_symbol], ddMdt)
+
+    logger.debug(f"Solving equation DeltaL'={ddMdt}, for initial condition {DeltaL0} on range [0,1]")
 
     if isinstance(ky, numbers.Number):
         ky_num = ky
@@ -109,12 +137,13 @@ def get_MM_for_ky(L0, C0, W0, theta,
     def d_func(t, mt):
         return dMdt_func(mt, ky(t))
 
-    sol = solve_ivp(d_func, (t0, tf), [M0], t_eval=np.arange(t0, tf + 1))
+    t0, tf = 0, 1
+    ts = np.arange(t0, tf, xi)
+    sol = solve_ivp(d_func, (t0, tf), [DeltaL0], t_eval=ts)
     if not sol.success:
         raise RuntimeError(f"Could not solve the ODE. Error: {sol.message}")
 
-    ys = np.append(0, np.cumsum(sol.y[0, :]))
-    return sol.t, ys
+    return sol.t, sol.y[0, :]
 
 
 def get_MM_for_ky_by_recurrence(L0, C0, W0, theta,
@@ -141,7 +170,7 @@ def test_F_for_const():
     C0 = 0.5
     L0 = 0.2
     M0 = 0.5
-    ts, fs = get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, 30)
+    ts, fs = get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, 30)
     fig, ax = plt.subplots()
     ax.plot(ts, fs, '.')
 

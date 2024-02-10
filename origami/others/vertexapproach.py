@@ -33,7 +33,7 @@ def plot_vertices_example():
     quads = vertices_to_quad_array(Vs)
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    quads.plot(ax, alpha=0.4)
+    quads.plot_with_wireframe(ax, alpha=0.4)
     plt.show()
 
 
@@ -102,7 +102,7 @@ def test_miura_ori():
     print(quads.dots[0, quads.indexes[0, :]])
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    quads.plot(ax, alpha=0.4)
+    quads.plot_with_wireframe(ax, alpha=0.4)
     dots = quads.dots
     ax.scatter(
         dots[0, :],
@@ -140,7 +140,7 @@ def test_cylinder_design():
     quads = vertices_to_quad_array(Vs)
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    quads.plot(ax, alpha=0.4)
+    quads.plot_with_wireframe(ax, alpha=0.4)
     dots = quads.dots
     ax.scatter(dots[0, :], dots[1, :],        dots[2, :],        alpha=0.4)
     plotutils.set_axis_scaled(ax)
@@ -173,7 +173,7 @@ def plot_with_intersection():
     quads = vertices_to_quad_array(Vs)
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    quads.plot(ax, alpha=0.4)
+    quads.plot_with_wireframe(ax, alpha=0.4)
     dots = quads.dots
     ax.scatter(dots[0, :], dots[1, :],        dots[2, :],        alpha=0.4)
     plotutils.set_axis_scaled(ax)

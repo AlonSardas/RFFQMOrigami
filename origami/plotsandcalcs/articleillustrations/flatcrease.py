@@ -49,7 +49,7 @@ def plot_simple_flat_old():
 
     fig: Figure = plt.figure(figsize=(10, 6))
     ax: Axes3D = fig.add_subplot(121, projection='3d', azim=-90, elev=90)
-    ori1.dots.plot(ax)
+    ori1.dots.plot_with_wireframe(ax)
     # plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
     ax.set_box_aspect((1, 1, 1), zoom=1.7)
@@ -57,7 +57,7 @@ def plot_simple_flat_old():
     ax.set_title('F<0')
 
     ax: Axes3D = fig.add_subplot(122, projection='3d', azim=-90, elev=90)
-    ori2.dots.plot(ax)
+    ori2.dots.plot_with_wireframe(ax)
     ax.set_title('F>0')
     # ax.set_zlim(0, 0.01)
     ax.set_axis_off()
@@ -206,7 +206,14 @@ def plot_F_M_pert_notation():
     # ax.set_axis_on()
     # ax.grid()
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'M-F-pert-notation.pdf'))
+    # fig.set_constrained_layout({'h_pad':-2.5})
+    bbox = fig.get_tightbbox()
+    bbox = bbox.padded(0.02, -0.25)
+    print(bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'M-F-pert-notation.pdf'),
+                bbox_inches=bbox, )
+                # pad_inches=(-0.2, -0.2, -0.2, 0))
+
 
     plt.show()
 
@@ -392,7 +399,7 @@ def create_MARS_Barreto_using_alternating_angles():
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', azim=0, elev=90)
     ori.dots.rotate_and_center()
-    ori.dots.plot(ax)
+    ori.dots.plot_with_wireframe(ax)
     plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
     #     ax.set_box_aspect(None, zoom=1.5)
@@ -409,8 +416,8 @@ def create_MARS_Barreto_using_alternating_angles():
 
 def main():
     # create_MARS_Barreto_using_alternating_angles()
-    # plot_F_M_pert_notation()
-    plot_F_pert_on_vertex()
+    plot_F_M_pert_notation()
+    # plot_F_pert_on_vertex()
 
 
 if __name__ == '__main__':

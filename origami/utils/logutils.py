@@ -7,4 +7,5 @@ def enable_logger():
     stream_handler.setFormatter(formatter)
     stream_handler.setLevel(logging.DEBUG)
     logger = logging.getLogger('origami')
+    logger.setLevel(logging.DEBUG)
     logger.addHandler(stream_handler)

@@ -75,7 +75,7 @@ def plot_YZ_zigzag_cross_section():
             r'$ L_0 $', ha='center', va='center')
     middle12 = (p1 + p2) / 2
     ax.text(middle12[0] + 0.12, middle01[1] + sign * 0.05,
-            r'$ L_0+\Delta M(y) $', ha='center', va='center')
+            r'$ L_0+\Delta L(y) $', ha='center', va='center')
 
     # ax.set_aspect('equal', 'datalim')
     ax.set_aspect('equal', 'box')
@@ -117,7 +117,7 @@ def plot_XZ_cross_section():
     quads.dots = np.array(quads.dots, dtype='float64')
     quads.dots[0, :] *= -1
     dots, indexes = quads.dots, quads.indexes
-    _, wire = quads.plot(ax, alpha=0.4)
+    _, wire = quads.plot_with_wireframe(ax, alpha=0.4)
     # wire.remove()
     wire.set_color("k")
     wire.set_alpha(0.2)

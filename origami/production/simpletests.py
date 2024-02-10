@@ -14,7 +14,7 @@ from matplotlib.lines import Line2D
 import origami.plotsandcalcs
 from origami import origamiplots
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
-from origami.plotsandcalcs.alternating import betterapproxcurvatures
+from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami
 from origami.quadranglearray import QuadrangleArray
 from origami.RFFQMOrigami import RFFQM
@@ -82,8 +82,8 @@ def draw_wavy_pattern():
     W0 = -2.0
     theta = 1.1
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
 
     F = create_F_from_list(Fs)
     MM = create_MM_from_list(MMs)
@@ -155,8 +155,8 @@ def draw_spherical_cap():
     W0 = 2.4
     theta = 1.1
 
-    xs, Fs = betterapproxcurvatures.get_F_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = betterapproxcurvatures.get_MM_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
+    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
 
     F = create_F_from_list(Fs)
     MM = create_MM_from_list(MMs)
