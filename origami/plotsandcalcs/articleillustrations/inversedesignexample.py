@@ -20,72 +20,74 @@ from origami.utils.plotutils import imshow_with_colorbar
 
 
 def plot_spherical_cap_compare_methods():
-    chi = 1 / 16
-    xi = 1 / 16
+    Nx = 16
+    Ny = 16
+    chi = 1 / Nx
+    xi = 1 / Ny
     theta = 1.40
     W0 = 2.4
-    L0 = 2
-    C0 = 1
+    L_tot = 2
+    C_tot = 1
 
     logutils.enable_logger()
     logging.getLogger('origami').setLevel(logging.WARNING)
     logging.getLogger('origami.alternating').setLevel(logging.DEBUG)
 
     delta0 = -0.15
-    DeltaL0 = -0.2
+    Delta0 = -0.1
 
     kx = ky = 1
 
     def calc_Ks_linear():
-        s = 0.293
-        t = 0.269
+        s = 0.292927
+        t = 0.269383
         sign = 1
-        # delta = lambda x: sign * (x - 0.5) * s
-        # DeltaL = lambda y: sign * L0 * (y - 0.5) * t
         delta = lambda x: sign * (s * x + delta0)
-        DeltaL = lambda y: sign * (L0 * y * t + DeltaL0)
+        Delta = lambda y: sign * (t * y + Delta0)
         ddelta = lambda x: (delta(x + 0.01) - delta(x - 0.01)) / 0.02
-        dDeltaL = lambda y: (DeltaL(y + 0.01) - DeltaL(y - 0.01)) / 0.02
+        dDelta = lambda y: (Delta(y + 0.01) - Delta(y - 0.01)) / 0.02
 
-        xs = np.arange(0, 1 / chi, 0.5) * chi
-        ys = np.arange(0, 1 / xi, 1, ) * xi
-        print(xs, ys)
-        # _plot_perturbations(xs, delta(xs), ys, DeltaL(ys) * xi)
-        # plt.show()
+        should_plot_pert = False
+        if should_plot_pert:
+            xs = np.arange(0, 1 / chi, 0.5) * chi
+            ys = np.arange(0, 1 / xi, 1, ) * xi
+            print(xs, ys)
+            # _plot_perturbations(xs, delta(xs), ys, Delta(ys) * xi)
+            # plt.show()
 
-        angle = theta
         ddelta0 = ddelta(1)
-        dDeltaL0 = dDeltaL(1)
-        K_factor = 1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * 1 * \
-                   1 * (2 * csc(angle) ** 2 - cos(W0) - 1)
+        dDelta0 = dDelta(1)
+        K_factor = (1 / (16 * C_tot * L_tot) * tan(theta) * sec(theta) * tan(W0 / 2) ** 2 *
+                    (2 * csc(theta) ** 2 - cos(W0) - 1))
 
-        expectedK = K_factor * ddelta0 * dDeltaL0
+        expectedK = K_factor * ddelta0 * dDelta0
         print(f"Kfactor={K_factor}, expected K {expectedK}")
 
-        kx_func, ky_func = curvatures.create_kx_ky_funcs_linearized(L0, C0, W0, theta)
-        print(f"kx={kx_func(ddelta0)}, ky={ky_func(dDeltaL0)}, K={kx_func(ddelta0) * ky_func(dDeltaL0)}")
-        print(f"needed s={1 / kx_func(1)}, needed t={1 / ky_func(1) / L0}")
+        kx_func, ky_func = curvatures.create_kx_ky_funcs_linearized(L_tot, C_tot, W0, theta)
+        print(f"kx={kx_func(ddelta0)}, ky={ky_func(dDelta0)}, K={kx_func(ddelta0) * ky_func(dDelta0)}")
+        print(f"needed s={1 / kx_func(1)}, needed t={1 / ky_func(1)}")
 
-        ori = create_perturbed_origami(theta, chi, xi, L0, C0, delta, DeltaL)
+        ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta, Delta)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
         geometry = origamimetric.OrigamiGeometry(ori.dots)
         Ks, Hs = geometry.get_curvatures_by_shape_operator()
 
-        kx_func, ky_func = create_kx_ky_funcs(L0, C0, W0, theta)
-        expected_K_func = lambda j, i: kx_func(delta(j * chi), ddelta(j * chi)) * ky_func(DeltaL(i * xi),
-                                                                                          dDeltaL(i * xi))
+        kx_func, ky_func = create_kx_ky_funcs(L_tot, C_tot, W0, theta)
+        expected_K_func = lambda j, i: kx_func(delta(j * chi), ddelta(j * chi)) * ky_func(Delta(i * xi),
+                                                                                          dDelta(i * xi))
         # print(expected_K_func(2, 2), expected_K_func(5, 5))
 
-        return delta, DeltaL, Ks
+        return delta, Delta, Ks
 
     def calc_Ks_better():
-        xs, deltas = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, delta0, chi)
-        ys, DeltaLs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, DeltaL0, xi)
+        xs, deltas = curvatures.get_deltas_for_kx(L_tot, C_tot, W0, theta, kx, delta0, chi)
+        ys, Deltas = curvatures.get_Deltas_for_ky(L_tot, C_tot, W0, theta, ky, Delta0, xi)
 
-        # _plot_perturbations(xs, deltas, ys, DeltaLs * xi)
+        # _plot_perturbations(xs, deltas, ys, Deltas)
 
-        ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, DeltaLs)
+        C0, L0 = C_tot*chi, L_tot * xi
+        ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, Deltas)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
         geometry = origamimetric.OrigamiGeometry(ori.dots)
@@ -93,13 +95,14 @@ def plot_spherical_cap_compare_methods():
 
         # origamiplots.plot_interactive(ori)
 
-        return xs, deltas, ys, DeltaLs, ori, Ks
+        return xs, deltas, ys, Deltas, ori, Ks
 
     delta_func, DeltaL_func, Ks_linear = calc_Ks_linear()
     xs, deltas, ys, DeltaLs, ori, Ks_better = calc_Ks_better()
+
     plot_perturbations_comparison(xs, deltas, DeltaLs, ys, delta_func, DeltaL_func)
     # plt.show()
-    plot_results(ori, Ks_linear, Ks_better)
+    plot_curvatures_comparison(ori, Ks_linear, Ks_better)
     plt.show()
 
     # fig, axes = plt.subplots(2)
@@ -118,16 +121,16 @@ def _other_plots(ori: RFFQM):
     mlab.show()
 
 
-def plot_perturbations_comparison(xs, deltas, DeltaLs, ys, delta_func, DeltaL_func):
+def plot_perturbations_comparison(xs, deltas, Deltas, ys, delta_func, DeltaL_func):
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
     axes[0].plot(xs, deltas, '.', label='improved approx')
     axes[0].plot(xs, delta_func(xs), '.', label='linearized approx')
-    axes[1].plot(ys, DeltaLs, '.', label='improved approx')
+    axes[1].plot(ys, Deltas, '.', label='improved approx')
     axes[1].plot(ys, DeltaL_func(ys), '.', label='linearized approx')
     axes[0].set_xlabel('x coordinate')
-    axes[0].set_ylabel(r'$\tilde{\delta}(x)$')
+    axes[0].set_ylabel(r'$s \tilde{\delta}(x)$')
     axes[1].set_xlabel('y coordinate')
-    axes[1].set_ylabel(r'$\widetilde{\Delta L}(y)$')
+    axes[1].set_ylabel(r'$t \tilde{\Delta}(y)$')
     axes[1].set_xlim(axes[0].get_xlim())
     axes[0].legend(fontsize=11)
     fig.tight_layout()
@@ -141,59 +144,7 @@ def _plot_perturbations(xs, deltas, ys, DeltaLs):
     return fig, axes
 
 
-def plot_spherical_cap_by_old_and_compare_to_new():
-    chi = 1 / 16
-    xi = 1 / 16
-    theta = 1.40
-    W0 = 2.4
-    L0 = 2
-    C0 = 1
-
-    s = 0.293
-    t = 0.269
-    sign = 1
-    delta = lambda x: sign * (x - 0.5) * s
-    # delta = lambda x: np.sin(x / (2 * np.pi)) * s
-    DeltaL = lambda y: sign * L0 * (y - 0.5) * t
-    ddelta = lambda x: (delta(x + 0.01) - delta(x - 0.01)) / 0.02
-    dDeltaL = lambda y: (DeltaL(y + 0.01) - DeltaL(y - 0.01)) / 0.02
-
-    angle = theta
-    ddelta0 = ddelta(1)
-    dDeltaL0 = dDeltaL(1)
-    K_factor = 1 / (16 * C0 * L0 ** 2) * tan(W0 / 2) ** 2 * tan(angle) * sec(angle) * 1 * \
-               1 * (2 * csc(angle) ** 2 - cos(W0) - 1)
-
-    expectedK = K_factor * ddelta0 * dDeltaL0
-    print(f"Kfactor={K_factor}, expected K {expectedK}")
-
-    kx_func, ky_func = curvatures.create_kx_ky_funcs_linearized(L0, C0, W0, theta)
-    print(f"kx={kx_func(ddelta0)}, ky={ky_func(dDeltaL0)}, K={kx_func(ddelta0) * ky_func(dDeltaL0)}")
-    print(f"needed s={1 / kx_func(1)}, needed t={1 / ky_func(1) / L0}")
-
-    logutils.enable_logger()
-    logging.getLogger('origami').setLevel(logging.WARNING)
-    logging.getLogger('origami.alternating').setLevel(logging.DEBUG)
-
-    ori = create_perturbed_origami(theta, chi, xi, L0, C0, delta, DeltaL)
-    ori.set_gamma(ori.calc_gamma_by_omega(W0))
-
-    geometry = origamimetric.OrigamiGeometry(ori.dots)
-    Ks, Hs = geometry.get_curvatures_by_shape_operator()
-
-    kx_func, ky_func = create_kx_ky_funcs(L0, C0, W0, theta)
-    expected_K_func = lambda j, i: kx_func(delta(j * chi), ddelta(j * chi)) * ky_func(DeltaL(i * xi), dDeltaL(i * xi))
-    # print(expected_K_func(2, 2), expected_K_func(5, 5))
-
-    expected_Ks = calc_expected_Ks(Ks, expected_K_func)
-
-    # origamiplots.plot_interactive(ori)
-
-    plot_results_1(ori, Ks, expected_Ks)
-    plt.show()
-
-
-def plot_results(ori: RFFQM, Ks_linearized: np.ndarray, Ks_better: np.ndarray):
+def plot_curvatures_comparison(ori: RFFQM, Ks_linearized: np.ndarray, Ks_better: np.ndarray):
     mpl.rcParams['font.size'] = 28
 
     vmin = min(Ks_linearized.min(), Ks_better.min())
@@ -203,11 +154,15 @@ def plot_results(ori: RFFQM, Ks_linearized: np.ndarray, Ks_better: np.ndarray):
     im = ax.imshow(Ks_linearized, vmin=vmin, vmax=vmax)
     ax.invert_yaxis()
     fig.colorbar(im, ax=ax)
+    ax.set_xlabel('j')
+    # ax.set_ylabel('i')
     fig.savefig(os.path.join(FIGURES_PATH, 'inverse-design-comparison-linearized.pdf'))
 
     fig, ax = plt.subplots()
     im = ax.imshow(Ks_better, vmin=vmin, vmax=vmax)
     ax.invert_yaxis()
+    ax.set_xlabel('j')
+    ax.set_ylabel('i')
     fig.savefig(os.path.join(FIGURES_PATH, 'inverse-design-comparison-better.pdf'))
 
     mpl.rcParams['font.size'] = 20
@@ -337,7 +292,6 @@ def compare_curvatures(Ks, expected_Ks):
 
 def main():
     plot_spherical_cap_compare_methods()
-    # plot_spherical_cap_by_old_and_compare_to_new()
 
 
 if __name__ == '__main__':

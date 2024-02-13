@@ -77,7 +77,8 @@ def add_slider(ax, ori: RFFQM):
     init_omega = ori.gamma
 
     # dots.assert_valid()
-    dots.plot_with_wireframe(ax)  # We plot to find the limits of the axis to use
+    # dots.plot_with_wireframe(ax)
+    dots.plot(ax)  # We plot to find the limits of the axis to use
 
     lim = np.max([ax.get_xlim()[1], ax.get_ylim()[1]])
 

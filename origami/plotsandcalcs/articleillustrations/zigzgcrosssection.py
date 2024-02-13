@@ -23,12 +23,12 @@ def plot_YZ_zigzag_cross_section():
 
     phi = 0.6
     L0 = 1
-    M = 0.4
+    Delta = 0.4
     sign = 1
 
     p0 = np.array((0, 0))
     p1 = L0 * np.array((np.sin(phi), sign * np.cos(phi)))
-    p2 = p1 + (L0 + M) * np.array((np.sin(phi), -sign * np.cos(phi)))
+    p2 = p1 + (L0 + L0 * Delta) * np.array((np.sin(phi), -sign * np.cos(phi)))
 
     ax.plot((p0[0], p1[0]), (p0[1], p1[1]), color=articleillustrations.MOUNTAIN_COLOR)
     ax.plot((p1[0], p2[0]), (p1[1], p2[1]), color=articleillustrations.VALLEY_COLOR)
@@ -74,8 +74,8 @@ def plot_YZ_zigzag_cross_section():
     ax.text(middle01[0] - 0.07, middle01[1] + sign * 0.05,
             r'$ L_0 $', ha='center', va='center')
     middle12 = (p1 + p2) / 2
-    ax.text(middle12[0] + 0.12, middle01[1] + sign * 0.05,
-            r'$ L_0+\Delta L(y) $', ha='center', va='center')
+    ax.text(middle12[0] + 0.16, middle01[1] + sign * 0.05,
+            r'$ L_0+ t L_0 \tilde{\Delta} (y) $', ha='center', va='center')
 
     # ax.set_aspect('equal', 'datalim')
     ax.set_aspect('equal', 'box')
@@ -89,6 +89,7 @@ def plot_YZ_zigzag_cross_section():
 
     fig.savefig(os.path.join(articleillustrations.FIGURES_PATH, 'YZ-zigzag-cross-section.pdf'))
     fig.savefig(os.path.join(articleillustrations.FIGURES_PATH, 'YZ-zigzag-cross-section.svg'))
+    # fig.savefig(os.path.join(articleillustrations.FIGURES_PATH, 'YZ-zigzag-cross-section.png'), dpi=0.1*fig.dpi)
 
     plt.show()
 

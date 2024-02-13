@@ -850,7 +850,7 @@ def test_zigzag_in_angles():
     kx = -0.5
     F0 = 0.0
 
-    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 4 + 1)
+    xs, Fs = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, F0, 0)
 
     # Make Fs symmetric
     Fs = np.append(-Fs[1::][::-1], Fs)

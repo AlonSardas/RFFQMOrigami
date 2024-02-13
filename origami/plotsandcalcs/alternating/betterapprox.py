@@ -377,11 +377,14 @@ def compare_curvatures(Ks, Hs, expected_K_func, expected_H_func) -> Tuple[Figure
     fig, axes = plt.subplots(2, 2)
 
     len_ys, len_xs = Ks.shape
-    xs, ys = np.arange(len_xs), np.arange(len_ys)
+    Nx, Ny = len_xs + 1, len_ys + 1
+    xs, ys = np.arange(Nx - 1) / Nx, np.arange(Ny - 1) / Ny
     Xs, Ys = np.meshgrid(xs, ys)
 
     im = imshow_with_colorbar(fig, axes[0, 0], Ks, "K")
     vmin, vmax = im.get_clim()
+
+    print(ys)
 
     if expected_K_func is not None:
         im2 = imshow_with_colorbar(fig, axes[1, 0], expected_K_func(Xs, Ys), "expected K")
@@ -404,7 +407,7 @@ def compare_to_old():
 
     F = lambda x: 0.004 / 2 * (x - cols / 2)
     MMt = lambda y: 0.02 * ((y - rows / 4) / 2) ** 2
-    MM = lambda y: MMt(y)-MMt(0)
+    MM = lambda y: MMt(y) - MMt(0)
     FF, dFF, dMM, ddMM = get_FF_dFF_dMM_ddMM(F, MM)
 
     L0 = 1 / 2
@@ -432,7 +435,7 @@ def compare_to_old():
     kx = -1.5
     ky = -0.26
 
-    print(kx*ky)
+    print(kx * ky)
 
     # F0 = -0.048
     F0 = -0.055
@@ -440,8 +443,8 @@ def compare_to_old():
     # M0 = 0.125
     theta = angle
 
-    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, F0, 0)
+    ys, MMs = curvatures.get_Deltas_for_ky(L0, C0, W0, theta, ky, M0, 0)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, FF(xs), '.', label='old')

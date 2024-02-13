@@ -108,8 +108,8 @@ def test_saddle():
     W0 = 2.3
     theta = 0.99
 
-    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    xs, Fs = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, F0, 0)
+    ys, MMs = curvatures.get_Deltas_for_ky(L0, C0, W0, theta, ky, M0, 0)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].plot(xs, Fs, '.')

@@ -18,7 +18,7 @@ from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs import articleillustrations
 from origami.plotsandcalcs.alternating.utils import (create_F_from_list, create_MM_from_list,
                                                      create_perturbed_origami,
-                                                     csc, sin)
+                                                     csc, sin, create_perturbed_origami_by_list)
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import linalgutils, plotutils
 
@@ -73,8 +73,9 @@ def plot_simple_flat_old():
     plt.show()
 
 
-def plot_F_M_pert_notation():
+def plot_alternating_pert_notation():
     mpl.rcParams['font.size'] = 14
+    # mpl.use("Qt5cairo")
 
     # F = lambda x: -0.2 + 0.2 * (x >= 6) + 0.2 * (x >= 12)
     rows = 6
@@ -83,12 +84,9 @@ def plot_F_M_pert_notation():
 
     L0 = 0.3
     C0 = 0.5
-    MM_list = np.append(0, np.cumsum(np.array([0.1, 0.05, -0.1])))
-    MM = create_MM_from_list(MM_list)
-
-    F_list = np.array([0.15, 0.2, -0.15, 0.2])
-    F = create_F_from_list(F_list)
-    ori1 = create_perturbed_origami(angle, rows, cols, L0, C0, F, MM)
+    Deltas = np.array([0.1, 0.05, -0.1])
+    deltas = np.array([0.15, 0.2, -0.15, 0.2])
+    ori1 = create_perturbed_origami_by_list(angle, L0, C0, deltas, Deltas)
 
     rot_angle = 0.15
     rot = linalgutils.create_XY_rotation_matrix(rot_angle)
@@ -100,26 +98,30 @@ def plot_F_M_pert_notation():
     # plot_interactive(ori1)
 
     # Plot C_0 text
-    for j in range(0, cols):
-        center_of_line = 1 / 2 * (dots[:, indexes[0, j]] + dots[:, indexes[0, j + 1]])
+    for n in range(0, cols):
+        center_of_line = 1 / 2 * (dots[:, indexes[0, n]] + dots[:, indexes[0, n + 1]])
         ax.text(center_of_line[0] - 0.00, center_of_line[1] - 0.015, '$C_0$', ha='center', va='top')
 
     # Plot L_0 text
-    for i in range(0, rows, 2):
-        center_of_line = 1 / 2 * (dots[:, indexes[i, 0]] + dots[:, indexes[i + 1, 0]])
+    for m in range(0, rows, 2):
+        center_of_line = 1 / 2 * (dots[:, indexes[m, 0]] + dots[:, indexes[m + 1, 0]])
         ax.text(center_of_line[0] - 0.01, center_of_line[1], '$L_0$', ha='right')
 
-    for i in range(1, rows, 2):
-        center_of_line = 1 / 2 * (dots[:, indexes[i, 0]] + dots[:, indexes[i + 1, 0]])
-        ax.text(center_of_line[0] - 0.015, center_of_line[1], rf'$L_0 + \Delta L({i // 2})$', ha='right')
+    for m in range(1, rows, 2):
+        Delta_txt = rf"$ L_0+L_0\cdot\Delta\left({m // 2}\right) $"
+        # Delta_txt = rf'$L_0 \left(1 + \Delta \left({m // 2}\right) \right)$'
+        # Delta_txt = rf"$ \left(1+\Delta\left({m // 2}\right)\right) L_0 $"
+        center_of_line = 1 / 2 * (dots[:, indexes[m, 0]] + dots[:, indexes[m + 1, 0]])
+        ax.text(center_of_line[0] - 0.015, center_of_line[1],
+                Delta_txt, ha='right')
 
-    for i in range(0, rows):
-        bottom_dot = dots[:, indexes[i, 1]]
-        left_dot = dots[:, indexes[i, 0]]
-        up_dot = dots[:, indexes[i + 1, 1]]
-        right_dot = dots[:, indexes[i, 2]]
+    for m in range(0, rows):
+        bottom_dot = dots[:, indexes[m, 1]]
+        left_dot = dots[:, indexes[m, 0]]
+        up_dot = dots[:, indexes[m + 1, 1]]
+        right_dot = dots[:, indexes[m, 2]]
 
-        if i % 2 == 0:
+        if m % 2 == 0:
             left_style = {'linestyle': '--', 'color': 'C3'}
             right_style = {'linestyle': '-', 'color': 'C2'}
         else:
@@ -144,8 +146,8 @@ def plot_F_M_pert_notation():
 
     pm = 1
     angle_field_text = r'\delta'
-    for i in range(0, 3):
-        dot = dots[:, indexes[i, 1]]
+    for m in range(0, 3):
+        dot = dots[:, indexes[m, 1]]
         pm_text = '+' if pm == 1 else '-'
         color = 'C2' if pm == 1 else 'C3'
         # ax.text(dot[0]+0.1, dot[1]+0.05,
@@ -160,15 +162,15 @@ def plot_F_M_pert_notation():
         ax.text(dot[0] - 0.03, dot[1] - 0.05,
                 angle_text, ha='right', va='bottom', rotation=30, fontsize=10, color=color)
 
-    for i in range(0, rows):
-        bottom_dot = dots[:, indexes[i, 2]]
-        left_dot = dots[:, indexes[i, 1]]
-        up_dot = dots[:, indexes[i + 1, 2]]
-        right_dot = dots[:, indexes[i, 3]]
+    for m in range(0, rows):
+        bottom_dot = dots[:, indexes[m, 2]]
+        left_dot = dots[:, indexes[m, 1]]
+        up_dot = dots[:, indexes[m + 1, 2]]
+        right_dot = dots[:, indexes[m, 3]]
 
         size = 0.2
 
-        if i % 2 == 0:
+        if m % 2 == 0:
             left_style = {'linestyle': ':', 'color': 'C0'}
             right_style = {'linestyle': (0, (3, 1, 1, 1, 1, 1)), 'color': 'C5'}
         else:
@@ -209,19 +211,18 @@ def plot_F_M_pert_notation():
     # fig.set_constrained_layout({'h_pad':-2.5})
     bbox = fig.get_tightbbox()
     bbox = bbox.padded(0.02, -0.25)
-    print(bbox)
-    fig.savefig(os.path.join(FIGURES_PATH, 'M-F-pert-notation.pdf'),
+    # print(bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'alternating-pert-notation.pdf'),
                 bbox_inches=bbox, )
                 # pad_inches=(-0.2, -0.2, -0.2, 0))
-
 
     plt.show()
 
 
-def plot_F_pert_on_vertex():
+def plot_delta_pert_on_vertex():
     theta = 1
     origin = (0, 0)
-    F = 0.4
+    delta = 0.4
     L = 1.0
 
     valley_color, mountain_color = articleillustrations.VALLEY_COLOR, articleillustrations.MOUNTAIN_COLOR
@@ -230,7 +231,7 @@ def plot_F_pert_on_vertex():
     ax: Axes = ax
     ax.plot([-L, 0, L], [np.tan(np.pi / 2 - theta) * L, 0, np.tan(np.pi / 2 - theta) * L], valley_color)
     ax.plot([0, 0], [0, L / 2.4], '--', color='C7')
-    ax.plot([0, -L * np.sin(F) / 2.1], [0, L * np.cos(F) / 2.1], '-', color=mountain_color)
+    ax.plot([0, -L * np.sin(delta) / 2.1], [0, L * np.cos(delta) / 2.1], '-', color=mountain_color)
 
     arc = Arc(origin, 0.4, 0.4, theta1=90 - np.rad2deg(theta), theta2=90, lw=2)
     ax.add_patch(arc)
@@ -238,7 +239,7 @@ def plot_F_pert_on_vertex():
     ax.add_patch(arc)
     ax.text(origin[0] + 0.15, origin[1] + 0.2, r"$ \vartheta $", va='bottom', )
 
-    arc = Arc(origin, .7, 0.7, theta1=90, theta2=90 + np.rad2deg(F), lw=2, linestyle='--', color="C9")
+    arc = Arc(origin, .7, 0.7, theta1=90, theta2=90 + np.rad2deg(delta), lw=2, linestyle='--', color="C9")
     ax.add_patch(arc)
     ax.text(origin[0] - 0.11, origin[1] + 0.37, r"$ \delta>0 $", va='bottom', color='C9')
 
@@ -247,7 +248,7 @@ def plot_F_pert_on_vertex():
     ax.set_axis_off()
     # ax.grid()
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'F-pert-on-vertex.pdf'),
+    fig.savefig(os.path.join(FIGURES_PATH, 'delta-pert-on-vertex.pdf'),
                 bbox_inches=Bbox.from_extents(2.5, 0.5, 7.5, 3.2))
 
     plt.show()
@@ -416,8 +417,8 @@ def create_MARS_Barreto_using_alternating_angles():
 
 def main():
     # create_MARS_Barreto_using_alternating_angles()
-    plot_F_M_pert_notation()
-    # plot_F_pert_on_vertex()
+    # plot_alternating_pert_notation()
+    plot_delta_pert_on_vertex()
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ def plot_sff_vectors():
     chi = 1 / 2
     xi = 1 / 2
     angle = 1.0
-    ori = create_perturbed_origami(angle, chi, xi, L0*2, C0*2, None, None)
+    ori = create_perturbed_origami(angle, chi, xi, L0 * 2, C0 * 2, None, None)
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", elev=35, azim=-145)

@@ -15,7 +15,8 @@ import origami.plotsandcalcs
 from origami import origamiplots
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.plotsandcalcs.alternating import curvatures
-from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami
+from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami, \
+    create_perturbed_origami_by_list
 from origami.quadranglearray import QuadrangleArray
 from origami.RFFQMOrigami import RFFQM
 from origami.utils import linalgutils
@@ -69,38 +70,39 @@ def draw_miura_ori():
 
 def draw_wavy_pattern():
     rows, cols = 14, 16
+    L0 = 7
+    C0 = 8.5
+    chi = 1 / cols * 2
+    xi = 1 / rows * 2
+    L_tot = L0 / xi
+    C_tot = C0 / chi
 
-    def kx_func(t): return -0.30 * np.tanh((t - cols / 4) * 3)
+    kx_func = lambda t: 1 / C_tot * 4.2 * np.tanh(-(t - 0.5) * 3)
+    ky_func = lambda t: 1 / L_tot * 1.2
 
-    def ky_func(t): return -0.1
+    delta0 = 0.40
+    Delta0 = 4.0
 
-    F0 = -0.5
-    M0 = 0.5
-
-    L0 = 1.0
-    C0 = 1.0
-    W0 = -2.0
+    W0 = -2.1
     theta = 1.1
 
-    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx_func, F0, 0, cols // 2)
-    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky_func, M0, 0, rows // 2)
+    xs, deltas = curvatures.get_deltas_for_kx(L_tot, C_tot, W0, theta, kx_func, delta0, chi)
+    ys, Deltas = curvatures.get_Deltas_for_ky(L_tot, C_tot, W0, theta, ky_func, Delta0 / L0, xi)
 
-    F = create_F_from_list(Fs)
-    MM = create_MM_from_list(MMs)
-
-    ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
+    ori = create_perturbed_origami_by_list(
+        theta, L0, C0, deltas, Deltas)
     quads = ori.dots
 
-    rot_angle = -0.5
+    rot_angle = 0.41
     rot = linalgutils.create_XY_rotation_matrix(rot_angle)
     quads.dots = rot @ quads.dots
-    quads.dots = np.array(quads.dots, 'float64')
+    quads.dots = quads.dots.astype('float64')
 
     plot_for_printing(ori)
     plt.show()
 
     prepare_patterns_for_printing(ori.dots, 'wavy')
-    # plt.show()
+    plt.show()
 
 
 def draw_MARS_pattern():
@@ -132,7 +134,6 @@ def draw_MARS_pattern():
     origamiplots.plot_interactive(ori)
     return
 
-
     plot_for_printing(ori)
     plt.show()
 
@@ -141,35 +142,36 @@ def draw_MARS_pattern():
 
 def draw_spherical_cap():
     rows, cols = 20, 30
-    # kx_func = lambda t: 3.5 * 1 / (80 / 2)
-    # ky_func = lambda t: 0.2 * (t - 10) / (rows / 2)
-    # ky_func = lambda t: -0.2 * np.tanh((t - rows / 4) * 3)
+
     kx = 0.10
     ky = 0.10
-
-    F0 = 0.2
-    M0 = 0.5
 
     L0 = 1.0
     C0 = 1
     W0 = 2.4
     theta = 1.1
 
-    xs, Fs = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx, F0, 0, cols // 2)
-    ys, MMs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    Delta0 = -0.5
+    delta0 = -0.2
 
-    F = create_F_from_list(Fs)
-    MM = create_MM_from_list(MMs)
+    Nx, Ny = cols // 2, rows // 2
+    L_tot, C_tot = L0 * Ny, C0 * Nx
 
-    ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
-    
+    delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, delta0)
+    Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
+
+    # xs, deltas, ys, Deltas = get_pert_list_by_func(delta_func, Delta_func, Nx, Ny)
+    # plot_perturbations_by_list(xs, deltas, ys, Deltas)
+
+    ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
+
     quads = ori.dots
-    rot_angle = Fs[0]
+    rot_angle = delta0
     rot = linalgutils.create_XY_rotation_matrix(rot_angle)
     quads.dots = rot @ quads.dots
     quads.dots = np.array(quads.dots, 'float64')
     
-    prepare_patterns_for_printing(ori.dots, 'spherical-cap', 'svg')
+    prepare_patterns_for_printing(ori.dots, 'spherical-cap-2')
 
 
 def prepare_patterns_for_printing(quads: QuadrangleArray, name, format='ps'):
@@ -222,7 +224,7 @@ def plot_for_printing(ori: RFFQM) -> Tuple[Figure, Axes]:
     ax: Axes = fig.add_subplot(111)
     origamiplots.draw_inner_creases(ori.dots, ax, -1)
 
-    origamiplots.draw_frame_creases(ori.dots, ax, 'r')
+    origamiplots.draw_frame_creases(ori.dots, ax, 'k')
 
     ax.set_aspect('equal')
     ax.set_axis_off()
@@ -233,9 +235,9 @@ def plot_for_printing(ori: RFFQM) -> Tuple[Figure, Axes]:
 def main():
     # draw_miura_cell()
     # draw_miura_ori()
-    draw_wavy_pattern()
+    # draw_wavy_pattern()
     # draw_MARS_pattern()
-    # draw_spherical_cap()
+    draw_spherical_cap()
 
 
 if __name__ == '__main__':

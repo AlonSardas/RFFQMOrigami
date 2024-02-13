@@ -1,7 +1,7 @@
 """
 Plot an example pattern with an interpolating surface that the origami is supposed to approximate
 """
-
+import logging
 import os
 
 import numpy as np
@@ -14,15 +14,29 @@ from origami import origamiplots
 from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.utils import (create_perturbed_origami_by_list)
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
-from origami.utils import plotutils
+from origami.utils import plotutils, logutils
 
 
 def plot_pattern_and_smooth_surface():
+    logutils.enable_logger()
+    logging.getLogger('origami').setLevel(logging.WARNING)
+    logging.getLogger('origami.alternating').setLevel(logging.DEBUG)
+
     rows, cols = 14, 16
+    L0 = 7
+    C0 = 8.5
+    chi = 1 / cols * 2
+    xi = 1 / rows * 2
+    L_tot = L0 / xi
+    C_tot = C0 / chi
+
+    print(C_tot, L_tot)
+
     # kx_func = lambda t: -0.30 * np.tanh((t - 0.5) * 3)
     # ky_func=lambda t: -0.1
-    kx_func = lambda t: 0.5 * np.tanh(-(t - 0.5) * 3)
-    ky_func = lambda t: 0.15
+    kx_func = lambda t: 1 / C_tot * 4.2 * np.tanh(-(t - 0.5) * 3)
+    ky_func = lambda t: 1 / L_tot * 1.2
+    print(ky_func(0.5))
 
     F0 = 0.40
     M0 = 4.0
@@ -30,26 +44,22 @@ def plot_pattern_and_smooth_surface():
     W0 = -2.1
     theta = 1.1
 
-    L0 = 7
-    C0 = 8.5
+    xs, deltas = curvatures.get_deltas_for_kx(L_tot, C_tot, W0, theta, kx_func, F0, chi)
+    ys, Deltas = curvatures.get_Deltas_for_ky(L_tot, C_tot, W0, theta, ky_func, M0 / L0, xi)
 
-    print(L0, C0)
-
-    chi = 1 / cols * 2
-    xi = 1 / rows * 2
-
-    xs, deltas = curvatures.get_delta_for_kx(L0, C0, W0, theta, kx_func, F0, chi)
-    ys, DeltaLs = curvatures.get_DeltaL_for_ky(L0, C0, W0, theta, ky_func, M0, xi)
-
-    should_plot_pert = False
+    should_plot_pert = True
     if should_plot_pert:
         fig, axes = plt.subplots(1, 2)
         axes[0].plot(xs, deltas, '.')
-        axes[1].plot(ys, DeltaLs, '.')
+        axes[0].set_xlabel(r'$ x $')
+        axes[0].set_ylabel(r'$ \tilde{\delta}(x)$')
+        axes[1].plot(ys, Deltas, '.')
+        axes[1].set_xlabel(r'$ y $')
+        axes[1].set_ylabel(r'$ \tilde{\Delta}(y)$')
         plt.show()
 
     ori = create_perturbed_origami_by_list(
-        theta, L0, C0, deltas, DeltaLs)
+        theta, L0, C0, deltas, Deltas)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
     fig: Figure = plt.figure()
@@ -69,7 +79,8 @@ def plot_pattern_and_smooth_surface():
     surface_dots = ori.dots.dots[:, ori.dots.indexes[::2, ::2]]
     ax.scatter(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=25)
 
-    ori.dots.dots[2, :] += 3.4
+    SMOOTH_SURFACE_SHIFT_Z = 24
+    ori.dots.dots[2, :] += SMOOTH_SURFACE_SHIFT_Z
     interp = origamiplots.plot_smooth_interpolation(ori.dots, ax)
     interp.set_color(interp_color)
     interp.set_edgecolor(None)
@@ -89,11 +100,9 @@ def plot_pattern_and_smooth_surface():
     # interp.set_edgecolor(('r', 0.1))
     # interp.set_linewidth(0)
 
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_zticklabels([])
+    plotutils.remove_tick_labels(ax)
 
-    plotutils.set_labels_off(ax)
+    # plotutils.set_labels_off(ax)
 
     plotutils.set_axis_scaled(ax)
 
