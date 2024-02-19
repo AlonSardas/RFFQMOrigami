@@ -7,7 +7,9 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.transforms import Bbox
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami
@@ -16,7 +18,7 @@ from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami, \
+from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, \
     plot_perturbations_by_list, create_perturbed_origami_by_list, get_pert_list_by_func, plot_perturbations
 from origami.utils import plotutils, logutils
 from origami.utils.plotutils import imshow_with_colorbar
@@ -38,7 +40,7 @@ def plot_vase():
     theta = 1.0
 
     delta0 = -0.3
-    Delta0 = 0.3
+    Delta0 = -0.6
 
     Nx, Ny = cols // 2, rows // 2
     L_tot, C_tot = L0 * Ny, C0 * Nx
@@ -46,13 +48,22 @@ def plot_vase():
     kx_func = lambda t: 7 * 1 / (80 / 2)
     # ky_func = lambda t: -0.2 * np.tanh((t - rows / 4) * 3)
     # kx_func = lambda t: -1 / C_tot
-    ky_func = lambda t: +0.25 * np.tanh((t - 0.5) * 3)
+    # ky_func = lambda t: +0.25 * np.tanh((t - 0.5) * 3)
+    f_y = lambda t: 0.02 * np.sin(np.pi * (t - 0.5))
+    eps = 0.001
+    df_dy = lambda t: (f_y(t + eps) - f_y(t - eps)) / (2 * eps)
+    ddf_dy2 = lambda t: (df_dy(t + eps) - df_dy(t - eps)) / (2 * eps)
+    k_extra_factor = 1
+    ky_func = lambda t: k_extra_factor * ddf_dy2(t) / (1 + df_dy(t) ** 2) ** (3 / 2)
+    print(ky_func(0.2), ky_func(0.5), ky_func(1))
+    # ky_func = lambda t: +0.7 * (t - 0.5)
 
     delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx_func, delta0)
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky_func, Delta0)
 
     xs, deltas, ys, Deltas = get_pert_list_by_func(delta_func, Delta_func, Nx, Ny)
-    plot_perturbations_by_list(xs, deltas, ys, Deltas)
+    fig, axes = plt.subplots(2)
+    plot_perturbations_by_list(axes, xs, deltas, ys, Deltas)
 
     ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, Deltas)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
@@ -66,20 +77,38 @@ def plot_vase():
     # fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.pdf'))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=50, elev=30)
-    lim = 4.0
-    panels = ori.dots.plot(ax, alpha=0.6, edge_alpha=0)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=39, azim=-140,
+                                 computed_zorder=False)
 
-    ax.set_xlim(-lim, lim)
-    ax.set_ylim(-lim, lim)
-    ax.set_zlim(-lim, lim)
+    smooth_limits_x = 4.2
+    smooth_limits_y = 6
+    xs = np.linspace(-smooth_limits_x, smooth_limits_x, 50)
+    ys = np.linspace(-smooth_limits_y, smooth_limits_y, 50)
+    xs, ys = np.meshgrid(xs, ys)
+    R0 = 1 / kx_func(0)
+    Rs = R0 - 70 * f_y((ys + smooth_limits_y) / (2 * smooth_limits_y)) + 0.0
+    # _, temp_ax = plt.subplots()
+    # temp_ax.plot(Rs[:, 0], '.')
+    # temp_ax.plot(f_y(np.linspace(0, 1)), '.')
+    # print(Rs)
+    sphere_Z_shift = 0.3
+    zs = np.sqrt(Rs ** 2 - xs ** 2) - R0 + sphere_Z_shift
+    zs += 0.3 * ys
+    ax.plot_surface(xs, ys, zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
 
-    # fig.tight_layout(rect=(0.3, 0, 0.7, 1))
-    # fig.savefig(os.path.join(FIGURES_PATH, 'vase.svg'), pad_inches=0.4)
-    # fig.savefig(os.path.join(FIGURES_PATH, 'vase.pdf'), pad_inches=0.4)
+    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k', panel_color='C1')
+
+    plotutils.set_axis_scaled(ax)
+    ax.set_axis_off()
+
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(0.95, 0.65)
+    # new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.05, new_bbox.y0, new_bbox.width, new_bbox.height - 0.5)
+    fig.savefig(os.path.join(FIGURES_PATH, 'vase.svg'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'vase.pdf'), bbox_inches=new_bbox)
     plt.show()
 
-    plot_interactive(ori)
+    # plot_interactive(ori)
 
 
 def plot_spherical_cap():
@@ -93,6 +122,19 @@ def plot_spherical_cap():
     # ky_func = lambda t: -0.2 * np.tanh((t - rows / 4) * 3)
     kx = 0.10
     ky = 0.10
+
+    fig: Figure = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=29, azim=-118,
+                                 computed_zorder=False)
+
+    smooth_limits = 5.3
+    xs = np.linspace(-smooth_limits, smooth_limits, 50)
+    ys = np.linspace(-smooth_limits, smooth_limits, 50)
+    xs, ys = np.meshgrid(xs, ys)
+    R = 1 / kx
+    sphere_Z_shift = -0.8
+    sphere_zs = np.sqrt(R ** 2 - xs ** 2 - ys ** 2) - R + sphere_Z_shift
+    ax.plot_surface(xs, ys, sphere_zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
 
     L0 = 1.0
     C0 = 1
@@ -111,7 +153,8 @@ def plot_spherical_cap():
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
     xs, deltas, ys, Deltas = get_pert_list_by_func(delta_func, Delta_func, Nx, Ny)
-    plot_perturbations_by_list(xs, deltas, ys, Deltas)
+    pert_fig, pert_axes = plt.subplots(2)
+    plot_perturbations_by_list(pert_axes, xs, deltas, ys, Deltas)
 
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
     ori.set_gamma(0)
@@ -126,22 +169,23 @@ def plot_spherical_cap():
     Ks, Hs = geometry.get_curvatures_by_shape_operator()
     Hs *= -1
     expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
-    fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+    geo_fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
     # fig.savefig(os.path.join(FIGURES_PATH, 'spherical_cap-curvatures.svg'))
 
-    fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
-    lim = 5.0
-    _, wire = ori.dots.plot_with_wireframe(ax, alpha=0.6)
-    wire.set_alpha(0.0)
+    quads = ori.dots
+    quads.dots[2, :] -= np.max(quads.dots[2, :])
+    panels = quads.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k')
 
     plotutils.set_axis_scaled(ax)
-    # ax.set_xlim(-lim, lim)
-    # ax.set_ylim(-lim, lim)
-    # ax.set_zlim(-lim, lim)
+    ax.set_axis_off()
 
-    # fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.svg'), pad_inches=0.4)
-    # fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.pdf'), pad_inches=0.4)
+    # fig.tight_layout(h_pad=-5)
+    # fig.subplots_adjust(0, 0, 1, 1)
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(0.9, 0.65)
+    new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.05, new_bbox.y0, new_bbox.width, new_bbox.height - 0.5)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.svg'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.pdf'), bbox_inches=new_bbox)
     plt.show()
     plot_interactive(ori)
 
@@ -153,29 +197,23 @@ def plot_saddle():
     """
     L_tot, C_tot = 15, 18
 
-    rows, cols = 20, 30
-    # rows, cols = 80, 40
-    kx = -0.07
-    ky = 0.07
+    kappa = 0.08
+    kx = -kappa
+    ky = kappa
 
-    Nx, Ny = cols // 2, rows // 2
-    # L0 = 1.5
-    # C0 = 1.2
-    L0 = L_tot / Ny
-    C0 = C_tot / Nx
-    print(L0, C0)
+    # Nx, Ny = cols // 2, rows // 2
+    Nx, Ny = 14, 16
     W0 = 2.4
-    theta = 1.0
+    theta = 1.2
 
-    F0 = 0.18
-    delta0 = F0
-    Delta0 = -0.9
+    delta0 = 0.2
+    Delta0 = -0.3
 
     delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, delta0)
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
-    fig, axes = plt.subplots(2)
-    plot_perturbations(axes, delta_func, Delta_func, Nx, Ny)
+    pert_fig, pert_axes = plt.subplots(2)
+    plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
 
     # fig, ax = plt.subplots()
     # xs = np.linspace(0, 1, 50)
@@ -185,13 +223,6 @@ def plot_saddle():
     # plt.show()
 
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
-
-    # xs, deltas = curvatures.get_delta_for_kx(L_tot, C_tot, W0, theta, kx, delta0, 1/Nx)
-    # ys, Deltas = curvatures.get_Delta_for_ky_by_recurrence(L_tot, C_tot, W0, theta, ky, Delta0, Ny)
-    # fig, axes = plt.subplots(2)
-    # plot_perturbations_by_list(axes, xs, deltas, ys, Deltas)
-    # ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, Deltas)
-
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
     geometry = origamimetric.OrigamiGeometry(ori.dots)
@@ -202,17 +233,30 @@ def plot_saddle():
     fig.savefig(os.path.join(FIGURES_PATH, 'saddle-curvatures.pdf'))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-60, elev=20)
-    lim = 5.5
-    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.0)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=39, azim=-129,
+                                 computed_zorder=False)
 
-    ax.set_xlim(-lim, lim)
-    ax.set_ylim(-lim, lim)
-    ax.set_zlim(-lim, lim)
+    smooth_limits = 7.9
+    xs = np.linspace(-smooth_limits, smooth_limits, 50)
+    ys = np.linspace(-smooth_limits, smooth_limits, 50)
+    xs, ys = np.meshgrid(xs, ys)
+    R = 1 / np.abs(kx)
+    saddle_Z_shift = -0.64
+    saddle_zs = -np.sqrt(R ** 2 - xs ** 2 + ys ** 2) + R + saddle_Z_shift
+    ax.plot_surface(xs, ys, saddle_zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
 
-    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.pdf'), pad_inches=0.4)
+    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k')
+
+    plotutils.set_axis_scaled(ax)
+    ax.set_axis_off()
+
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(0.95, 0.65)
+    # new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.05, new_bbox.y0, new_bbox.width, new_bbox.height - 0.5)
+    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.pdf'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.svg'), bbox_inches=new_bbox)
     plt.show()
-    plot_interactive(ori)
+    # plot_interactive(ori)
 
 
 def plot_2D_sinusoid():
@@ -255,91 +299,85 @@ def plot_2D_sinusoid():
     # fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid-curvatures.pdf'))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-66, elev=29)
-    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.1)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=36, azim=-113)
+    ori.dots.plot(ax, alpha=0.8, edge_alpha=0.8, edge_color='k', panel_color='C1')
 
     plotutils.set_axis_scaled(ax)
+    ax.set_axis_off()
 
-    # fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid.pdf'), pad_inches=0.4)
+    _save_fig(fig, '2D-sinusoid', 0.8, 0.6, 0.2)
     plt.show()
-    plot_interactive(ori)
+    # plot_interactive(ori)
+
+
+def _save_fig(fig, name, expand_w=1.0, expand_h=1.0,
+              extra_x0=0.0, extra_y0=0.0, extra_width=0.0, extra_height=0.0):
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(expand_w, expand_h)
+    new_bbox = Bbox.from_bounds(new_bbox.x0 + extra_x0, new_bbox.y0 + extra_y0,
+                                new_bbox.width + extra_width, new_bbox.height + extra_height)
+    fig.savefig(os.path.join(FIGURES_PATH, f'{name}.pdf'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, f'{name}.svg'), bbox_inches=new_bbox)
 
 
 def plot_cap_different_curvatures():
-    rows, cols = 40, 30
+    Nx, Ny = 10, 14
 
-    L0 = 0.5
-    C0 = 1
     W0 = 2.4
-    theta = 1.1
+    theta = 1.2
 
-    Nx, Ny = cols // 2, rows // 2
-    L_tot, C_tot = L0 * Ny, C0 * Nx
-    chi, xi = 1 / Nx, 1 / Ny
+    L_tot, C_tot = 6, 6
 
-    # K = 0.007
-    K = 0.0040
-    K_factor = 1.3
+    K = 0.05
+    K_factor = 1.4
     # kxs = [-np.sqrt(K) * 1.7, -np.sqrt(K) / 1.7, -np.sqrt(K)]
     kxs = [np.sqrt(K) * K_factor, np.sqrt(K) / K_factor]
 
     fig_all: Figure = plt.figure()
     ax_all: Axes3D = fig_all.add_subplot(111, projection='3d', elev=25, azim=-130)
 
+    pert_fig, pert_axes = plt.subplots(2)
+
+    Delta0s = [-0.6, -0.6]
+
     for i, kx in enumerate(kxs):
         ky = K / kx
         print(f"Plot for kx={kx}, ky={ky}")
 
-        delta0 = 0.0
-        Delta0 = -0.4
+        # delta0 = 0.0
+        Delta0 = Delta0s[i]
 
-        delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, delta0)
+        # Make delta symmetric
+        delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot / 2, W0, theta, kx, 0)
+        new_delta0 = -delta_func(1)
+        delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, new_delta0)
+
         Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
-        # Make Fs symmetric
-        # deltas = np.append(-deltas[1::][::-1], deltas)
-        # C0 /= 2
-        old_delta_func = delta_func
-
-        def new_delta_func(x):
-            above_sign = x > 0.5
-            return above_sign * old_delta_func(2 * x - 1) - (1 - above_sign) * (old_delta_func(1 - 2 * x))
-
-        delta_func = new_delta_func
-        fig, axes = plt.subplots(2)
-        Nx *= 2
-        C0 /= 2
-        plot_perturbations(axes, delta_func, Delta_func, Nx, Ny)
+        plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
 
         ori = create_perturbed_origami(theta, Nx, Ny, L_tot, C_tot, delta_func, Delta_func)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
-        dots, indexes = ori.dots.dots, ori.dots.indexes
-        dots = dots.astype('float64')
-        r, c = indexes.shape
-        # ax_all.plot_surface(
-        #     dots[0, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)),
-        #     dots[1, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)),
-        #     dots[2, indexes[::2, ::2]].reshape((rows // 2 + 1, cols // 2 + 1)), alpha=0.3, linewidth=100)
+        # r, c = indexes.shape
         z_shift = i * 2.1
-        ax_all.plot_surface(
-            dots[0, :].reshape((r, c)),
-            dots[1, :].reshape((r, c)),
-            z_shift + dots[2, :].reshape((r, c)),
-            alpha=0.3, linewidth=100)
-        # wire = ax_all.plot_wireframe(
+        quads = ori.dots
+        quads.dots[2, :] += z_shift
+        quads.plot(ax_all, edge_color='k', edge_width=1, alpha=0.7)
+        # ax_all.plot_surface(
         #     dots[0, :].reshape((r, c)),
         #     dots[1, :].reshape((r, c)),
         #     z_shift + dots[2, :].reshape((r, c)),
-        #     alpha=0.1, color='g', linewidth=2)
+        #     alpha=1.0, linewidth=4)
+        dots, indexes = quads.dots, quads.indexes
         l1 = ax_all.plot(
             dots[0, indexes[::2, 0]],
             dots[1, indexes[::2, 0]],
-            dots[2, indexes[::2, 0]] + z_shift, '--g', linewidth=3)[0]
+            dots[2, indexes[::2, 0]], '--', linewidth=5, color='#26c423')[0]
         l2 = ax_all.plot(
             dots[0, indexes[0, ::2]],
             dots[1, indexes[0, ::2]],
-            dots[2, indexes[0, ::2]] + z_shift, '--r', linewidth=3)[0]
+            dots[2, indexes[0, ::2]], '--r', linewidth=5)[0]
         l1.set_zorder(30)
         l2.set_zorder(30)
 
@@ -367,145 +405,148 @@ def plot_cap_different_curvatures():
 
             # fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}.svg'), pad_inches=0.4)
         # plot_interactive(ori)
-    ax_all.set_aspect('equal')
+    plotutils.set_axis_scaled(ax_all)
     plotutils.set_3D_labels(ax_all)
-    ax_all.dist = 8.0
-    fig_all.subplots_adjust(left=0.4)
-    # fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.svg'), pad_inches=0.3)
-    # fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'), pad_inches=0.3)
+    ax_all.set_zlabel('')
+    plotutils.remove_tick_labels(ax_all)
+    # ax_all.dist = 8.0
+    # fig_all.subplots_adjust(left=0.4)
+
+    # fig_all.tight_layout()
+    # bbox = fig_all.get_tightbbox()
+    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.svg'), pad_inches=-0.3)
+    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'))
     plt.show()
 
 
-def plot_cap_different_curvatures_ugly():
+def plot_periodic():
     """
-    Here we try to plot the same cap with constant Gaussian curvature
-    but with different principal curvatures
+    We reproduce the fig. 4.c from:
+    https://doi.org/10.1016/j.ijsolstr.2021.111224.
     """
-    rows, cols = 20, 26
-    # rows, cols = 4, 4
-    K = 0.01
-    kxs = [-np.sqrt(K) / 2, -np.sqrt(K), -np.sqrt(K) * 2]
+    C_tot, L_tot = 14, 16
 
-    rows = 26
-    cols = 40
-    theta = 0.8
-    W0 = 2.1
-    L0 = 0.2
-    C0 = 0.1
+    Nx, Ny = 46, 56
 
-    for i, kx in enumerate(kxs):
-        ky = K / kx
-        print(f"Plot for kx={kx}, ky={ky}")
+    s, t = 13 / C_tot, 12 / L_tot
+    # s, t = 8 / C_tot, 8 / L_tot
 
-        F0 = 0.0
-        M0 = -0.1
+    W0 = 2.4
+    theta = 1.3
 
-        xs, Fs = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, F0, 0)
-        ys, MMs = curvatures.get_Delta_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
+    delta0 = -0.0
+    Delta0 = -0.0
 
-        # Make Fs symmetric
-        Fs = np.append(-Fs[1::][::-1], Fs)
+    ox, oy = 3.0, 3.0
+    kx_func = lambda x: s * np.cos(2 * np.pi * x * ox)
+    ky_func = lambda y: t * np.cos(2 * np.pi * y * oy)
+    shifted_kx_func = lambda x: kx_func((x + 1 / (4 * ox)) % 1)
+    shifted_ky_func = lambda y: ky_func((y + 1 / (4 * oy)) % 1)
 
-        fig, axes = plt.subplots(1, 2)
-        axes[0].plot(Fs, '.')
-        axes[1].plot(ys, np.diff(MMs), '.')
+    delta_func_orig = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx_func, delta0)
+    Delta_func_orig = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky_func, Delta0)
+
+    def shifted_delta_func(x):
+        return delta_func_orig((x + 1 / (4 * ox)) % 1)
+
+    def shifted_Delta_func(y):
+        return Delta_func_orig((y + 1.18 / (4 * oy)) % 1)
+
+    delta_func, Delta_func = shifted_delta_func, shifted_Delta_func
+    # delta_func, Delta_func = delta_func_orig, Delta_func_orig
+
+    fig, axes = plt.subplots(2)
+    plot_perturbations(axes, delta_func, Delta_func, Nx, Ny)
+
+    ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
+
+    # origamiplots.plot_crease_pattern(ori, 0)
+    # plt.show()
+
+    ori.set_gamma(ori.calc_gamma_by_omega(W0))
+    geometry = origamimetric.OrigamiGeometry(ori.dots)
+    Ks, Hs = geometry.get_curvatures_by_shape_operator()
+    Hs *= -1  # I'm still not sure where we were inconsistent about the orientation...
+    # expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
+    target_K = lambda x, y: kx_func(x) * ky_func(y)
+    expected_H = lambda x, y: -1 / 2 * (kx_func(x) + ky_func(y))
+
+    target_K = lambda x, y: shifted_kx_func(x) * shifted_ky_func(y)
+    target_H = lambda x, y: 1 / 2 * (shifted_kx_func(x) + shifted_ky_func(y))
+
+    # fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+    # fig.savefig(os.path.join(FIGURES_PATH, 'periodic-curvatures.pdf'))
+
+    def _compare_curvatures():
+        import matplotlib as mpl
+        mpl.rcParams['font.size'] = 30
+        fig, axes = plt.subplots(1, 2, sharey=True, layout='compressed')
+        len_ys, len_xs = Ks.shape
+        xs, ys = np.arange(Nx - 1) / Nx, np.arange(Ny - 1) / Ny
+        Xs, Ys = np.meshgrid(xs, ys)
+        target_Ks = target_K(Xs, Ys)
+
+        vmin = min(np.min(target_Ks), np.min(Ks))
+        vmax = max(np.max(target_Ks), np.max(Ks))
+
+        ax: Axes = axes[0]
+        im = ax.imshow(target_Ks, vmin=vmin, vmax=vmax)
+        ax.invert_yaxis()
+        ax.set_title('Target K')
+        ax.set_xlabel('j')
+        ax.set_ylabel('i')
+
+        ax: Axes = axes[1]
+        im = ax.imshow(Ks, vmin=vmin, vmax=vmax)
+        ax.invert_yaxis()
+        ax.set_title('Actual K')
+        ax.set_xlabel('j')
+
+        fig.colorbar(im, ax=axes, location='bottom')
+        fig.savefig(os.path.join(FIGURES_PATH, 'periodic-K-comparison.svg'))
+        fig.savefig(os.path.join(FIGURES_PATH, 'periodic-K-comparison.pdf'))
+
+        fig, axes = plt.subplots(1, 2, sharey=True, layout='compressed')
+        target_Hs = target_H(Xs, Ys)
+
+        vmin = min(np.min(target_Hs), np.min(Hs))
+        vmax = max(np.max(target_Hs), np.max(Hs))
+
+        ax: Axes = axes[0]
+        im = ax.imshow(target_Hs, vmin=vmin, vmax=vmax)
+        ax.invert_yaxis()
+        ax.set_title('Target H')
+        ax.set_xlabel('j')
+        ax.set_ylabel('i')
+
+        ax: Axes = axes[1]
+        im = ax.imshow(Hs, vmin=vmin, vmax=vmax)
+        ax.invert_yaxis()
+        ax.set_title('Actual H')
+        ax.set_xlabel('j')
+
+        fig.colorbar(im, ax=axes, location='bottom')
+
+        fig.savefig(os.path.join(FIGURES_PATH, 'periodic-H-comparison.svg'))
+        fig.savefig(os.path.join(FIGURES_PATH, 'periodic-H-comparison.pdf'))
         plt.show()
 
-        F = create_F_from_list(Fs)
-        MM = create_MM_from_list(MMs)
+    _compare_curvatures()
 
-        ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
-        ori.set_gamma(ori.calc_gamma_by_omega(W0))
+    fig: Figure = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=29, azim=-128)
+    ori.dots.plot(ax, alpha=1.0, edge_alpha=0.5, edge_width=0.2, edge_color='k')
 
-        geometry = origamimetric.OrigamiGeometry(ori.dots)
-        Ks, Hs = geometry.get_curvatures_by_shape_operator()
-        expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
-        fig, axes = compare_curvatures(Ks, Hs, expected_K, expected_H)
-        axes[1, 0].set_title(f'K={kx * ky:.3f}')
-        axes[1, 1].set_title(f'H={-(kx + ky) / 2:.3f}')
-        fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}-curvatures.svg'))
+    plotutils.set_axis_scaled(ax)
+    # plotutils.set_3D_labels(ax)
+    ax.set_axis_off()
 
-        fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
-        lim = 1.8
-        ori.dots.plot_with_wireframe(ax, alpha=0.6)
-
-        ax.set_xlim(-lim, lim)
-        ax.set_ylim(-lim, lim)
-        # ax.set_zlim(-lim, lim)
-
-        fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}.svg'), pad_inches=0.4)
-        plt.show()
-        plot_interactive(ori)
-
-
-def plot_cap_different_curvatures_large_angle():
-    """
-    Here we try to plot the same cap with constant Gaussian curvature
-    but with different principal curvatures
-    """
-    rows, cols = 20, 26
-    # rows, cols = 4, 4
-    K = 0.005
-    kxs = [-np.sqrt(K) / 2, -np.sqrt(K), -np.sqrt(K) * 2]
-
-    rows = 40
-    cols = 90
-    theta = 0.8
-    W0 = 3.0
-    L0 = 0.2
-    C0 = 0.5
-
-    """
-    L0 = 0.6
-    C0 = 0.5
-    W0 = 2.9
-    theta = 1.4
-    """
-
-    for i, kx in enumerate(kxs):
-        ky = K / kx
-        print(f"Plot for kx={kx}, ky={ky}")
-
-        F0 = 0.0
-        M0 = -0.1
-
-        xs, Fs = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, F0, 0)
-        ys, MMs = curvatures.get_Delta_for_ky_by_recurrence(L0, C0, W0, theta, ky, M0, 0, rows // 2)
-        print(ys, MMs)
-
-        # Make Fs symmetric
-        Fs = np.append(-Fs[1::][::-1], Fs)
-
-        fig, axes = plt.subplots(1, 2)
-        axes[0].plot(Fs, '.')
-        axes[1].plot(ys, np.diff(MMs), '.')
-        plt.show()
-
-        F = create_F_from_list(Fs)
-        MM = create_MM_from_list(MMs)
-
-        ori = create_perturbed_origami(theta, rows, cols, L0, C0, F, MM)
-        ori.set_gamma(ori.calc_gamma_by_omega(W0))
-
-        geometry = origamimetric.OrigamiGeometry(ori.dots)
-        Ks, Hs = geometry.get_curvatures_by_shape_operator()
-        expected_K, expected_H = create_expected_curvatures_func(L0, C0, W0, theta, F, MM)
-        fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-        # fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}-curvatures.svg'))
-
-        fig: Figure = plt.figure()
-        ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-50, elev=20)
-        lim = 5.0
-        ori.dots.plot_with_wireframe(ax, alpha=0.6)
-
-        # ax.set_xlim(-lim, lim)
-        # ax.set_ylim(-lim, lim)
-        # ax.set_zlim(-lim, lim)
-
-        # fig.savefig(os.path.join(FIGURES_PATH, f'cap-{i}.svg'), pad_inches=0.4)
-        plt.show()
-        plot_interactive(ori)
+    fig.tight_layout()
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(sw=0.95, sh=0.5)
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic.pdf'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic.svg'), bbox_inches=new_bbox)
+    plt.show()
 
 
 def plot_cone_like():
@@ -536,7 +577,8 @@ def plot_cone_like():
     xs, deltas = curvatures.get_deltas_for_kx(L0, C0, W0, theta, kx, delta0, chi)
     ys, DeltaLs = curvatures.get_Deltas_for_ky(L0, C0, W0, theta, ky, DeltaL0, xi)
 
-    plot_perturbations_by_list(xs, deltas, ys, DeltaLs)
+    fig, axes = plt.subplots(2)
+    plot_perturbations_by_list(axes, xs, deltas, ys, DeltaLs)
 
     ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, DeltaLs)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
@@ -552,12 +594,12 @@ def plot_cone_like():
 
 def main():
     # plot_vase()
-    plot_spherical_cap()
+    # plot_spherical_cap()
     # plot_saddle()
     # plot_2D_sinusoid()
-    plot_cap_different_curvatures()
-    # plot_cap_different_curvatures_ugly()
+    # plot_cap_different_curvatures()
     # plot_cone_like()
+    plot_periodic()
 
 
 if __name__ == '__main__':

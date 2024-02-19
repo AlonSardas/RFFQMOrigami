@@ -1,3 +1,8 @@
+"""
+Calculate the kinematics of the perturbed unit cell to find its tangent vectors.
+These are used to calculate the metric of the cell.
+"""
+
 import numpy as np
 from sympy import *
 
@@ -47,6 +52,7 @@ def _outer(v1: Matrix, v2: Matrix) -> Matrix:
     return v1 * v2.transpose()
 
 
+# Note: the indexes here start from 1,1
 def calc_vectors():
     pA0 = Matrix([0, 0, 0])
     pB0 = Matrix([0, l_11, 0])
@@ -83,11 +89,11 @@ def calc_vectors():
     print(latex(AE))
     print()
 
-    JIn = _rotate_XY(pi - (cth + sym.eta_31)) * (-1 * BJn)
-    JIn.simplify()
+    JHn = _rotate_XY(pi - (cth + sym.eta_31)) * (-1 * BJn)
+    JHn.simplify()
 
     def calc_AJ2():
-        AC2n = JIn
+        AC2n = JHn
         AB2n = _rotate_XY(cth + sym.delta_31) * AC2n
         # print(AB2n)
         AB2n.simplify()
@@ -102,9 +108,9 @@ def calc_vectors():
         BJ2 = rot_gamma21 * BJ2_0
         AJ2 = AB2_0 + BJ2
 
-        rot_gammat = _create_rotation_around_axis(-JIn, -gammat)
+        rot_gammat = _create_rotation_around_axis(-JHn, -gammat)
         AJ2 = rot_gammat * AJ2
-        rot_gamma11 = _create_rotation_around_axis(-BDn, -gamma11)
+        # rot_gamma11 = _create_rotation_around_axis(-BDn, -gamma11)
         AJ2 = rot_gamma11 * AJ2
 
         print('---- AJ2')
@@ -113,25 +119,23 @@ def calc_vectors():
 
     def calc_AEy2():
         # print(JIn)
+        JH = JHn * sym.c_21
+        DHn = _rotate_XY(-(pi - cth + sym.eta_22)) * (-BDn)
+        DHn = simplify(DHn)
 
-        JIn
-        JI = JIn * sym.c_21
-        DIn = _rotate_XY(-(pi - cth + sym.eta_22)) * (-BDn)
-        DIn = simplify(DIn)
-
-        # The rotating angle around DI should be -omega11 by the relation of
+        # The rotating angle around DH should be -omega11 by the relation of
         # folding angles around a vertex.
         # Here the rotation is applied on the panel in clockwise direction, this gives
         # another minus sign
-        Ry2 = _create_rotation_around_axis(DIn, omega11)
-        # Angle DIK = cth-eta32 (Kawasaki). + sign since it is counter clockwise rotation
-        IKn = _rotate_XY(+(cth - sym.eta_32)) * (-DIn)
-        IK_0 = IKn * sym.d_21
-        IK_0 = simplify(IK_0)
-        IK = Ry2 * IK_0
-        JK = JI + IK
+        Ry2 = _create_rotation_around_axis(DHn, omega11)
+        # Angle DIG = cth-eta32 (Kawasaki). + sign since it is counter clockwise rotation
+        HGn = _rotate_XY(+(cth - sym.eta_32)) * (-DHn)
+        HG_0 = HGn * sym.d_21
+        HG_0 = simplify(HG_0)
+        HG = Ry2 * HG_0
+        JG = JH + HG
 
-        AEy2 = rot_gamma11 * JK
+        AEy2 = rot_gamma11 * JG
         # AEy2 = simplify(AEy2)
 
         print('---- AEy2')
@@ -150,8 +154,7 @@ def calc_vectors():
         CD2n = _rotate_XY(-(pi - cth + sym.eta_14)) * (-AC2n)
         print("Simplify CD2n")
         CD2n = simplify(CD2n)
-        R = _create_rotation_around_axis(CD2n, sym.omega_12)
-        R = R.transpose()  # Just for a convention of the sign of omega
+        R = _create_rotation_around_axis(-CD2n, sym.omega_12)
         CE2n = _rotate_XY(-(pi - cth + sym.delta_14)) * CD2n
         # print(CE2n)
         # print()
@@ -163,8 +166,7 @@ def calc_vectors():
         # AE2 = pC2_0 + CE2 - pA2_0
         AE2 = AC2 + CE2
 
-        R = _create_rotation_around_axis(EFn, omegat)
-        R = R.transpose()  # Just for a convention of the sign of omega
+        R = _create_rotation_around_axis(-EFn, omegat)
         AE2 = R * AE2
         """ This is a bit more explicit calculations, but it is not necessary
         AE2 = AE2

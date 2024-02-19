@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami
+from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_perturbed_origami_by_list
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.utils import plotutils
 
@@ -17,11 +17,9 @@ def plot_sff_vectors():
     L0 = 1
     C0 = 1.4
 
-    rows, cols = 4, 4
-    chi = 1 / 2
-    xi = 1 / 2
-    angle = 1.0
-    ori = create_perturbed_origami(angle, chi, xi, L0 * 2, C0 * 2, None, None)
+    Ny, Nx = 2, 2
+    theta = 1.0
+    ori = create_perturbed_origami(theta, Ny, Nx, L0 * Ny, C0 * Nx, None, None)
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", elev=35, azim=-145)
@@ -33,7 +31,7 @@ def plot_sff_vectors():
     # quads.dots[0, :] *= -1
     dots, indexes = quads.dots, quads.indexes
 
-    quads.plot(ax, edge_color='k', alpha=0.4, edge_alpha=0.2)
+    quads.plot(ax, edge_color='k', alpha=0.5, edge_alpha=0.5)
 
     # _, wire = quads.plot_with_wireframe(ax, alpha=0.4)
     # wire.set_color("k")

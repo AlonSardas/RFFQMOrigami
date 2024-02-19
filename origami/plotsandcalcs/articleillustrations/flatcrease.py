@@ -416,9 +416,9 @@ def create_MARS_Barreto_using_alternating_angles():
 
 
 def main():
-    # create_MARS_Barreto_using_alternating_angles()
+    create_MARS_Barreto_using_alternating_angles()
     # plot_alternating_pert_notation()
-    plot_delta_pert_on_vertex()
+    # plot_delta_pert_on_vertex()
 
 
 if __name__ == '__main__':

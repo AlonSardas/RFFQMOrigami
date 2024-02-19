@@ -86,7 +86,7 @@ def plot_spherical_cap_compare_methods():
 
         # _plot_perturbations(xs, deltas, ys, Deltas)
 
-        C0, L0 = C_tot*chi, L_tot * xi
+        C0, L0 = C_tot * chi, L_tot * xi
         ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, Deltas)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
@@ -97,8 +97,11 @@ def plot_spherical_cap_compare_methods():
 
         return xs, deltas, ys, Deltas, ori, Ks
 
-    delta_func, DeltaL_func, Ks_linear = calc_Ks_linear()
     xs, deltas, ys, DeltaLs, ori, Ks_better = calc_Ks_better()
+    plot_folded_pattern(ori)
+    plt.show()
+
+    delta_func, DeltaL_func, Ks_linear = calc_Ks_linear()
 
     plot_perturbations_comparison(xs, deltas, DeltaLs, ys, delta_func, DeltaL_func)
     # plt.show()
@@ -165,24 +168,44 @@ def plot_curvatures_comparison(ori: RFFQM, Ks_linearized: np.ndarray, Ks_better:
     ax.set_ylabel('i')
     fig.savefig(os.path.join(FIGURES_PATH, 'inverse-design-comparison-better.pdf'))
 
+
+def plot_folded_pattern(ori: RFFQM):
     mpl.rcParams['font.size'] = 20
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=35, azim=-129, computed_zorder=False)
-    panels = ori.dots.plot(ax, alpha=0.05, edge_alpha=0.35, edge_width=0.5)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=20, azim=-133, computed_zorder=True)
+    # panels = ori.dots.plot(ax, alpha=0.05, edge_alpha=0.35, edge_width=0.5)
+    panels = ori.dots.plot(ax, alpha=0.8, edge_alpha=0.9, edge_width=1.0, panel_color='C1', edge_color='k')
     # panels.set_facecolor(np.random.random((3, 32, 32)))
 
-    dots_color = '#FF0000'
+    # dots_color = 'g'
+    dots_color = '#26c423'
 
-    surface_dots = ori.dots.dots[:, ori.dots.indexes[::2, ::2]]
+    quads = ori.dots
+    dots, indexes = quads.dots, quads.indexes
+    surface_dots = ori.dots.dots[:, indexes[0::2, 0::2]]
     surface_dots = surface_dots.astype('float64')
-    ax.scatter3D(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=5, s=6)
+    Z_SHIFT = - 0.25
+    ax.plot3D(surface_dots[0, :].flatten(), surface_dots[1, :].flatten(), surface_dots[2, :].flatten() + Z_SHIFT,
+              'o',
+              color=dots_color, markeredgecolor='k', markersize=5.0)
+
+    def draw_projection_line(i, j):
+        dot = dots[:, indexes[i, j]]
+        ax.plot([dot[0]] * 2, [dot[1]] * 2, [dot[2], dot[2] + Z_SHIFT], '--r', linewidth=3)
+    draw_projection_line(0, 0)
+    draw_projection_line(-1, 0)
+    draw_projection_line(0, -1)
+    draw_projection_line(18, 0)
+    draw_projection_line(0, 18)
 
     plotutils.set_axis_scaled(ax)
     ax.set_xlabel('X', labelpad=30)
     ax.set_ylabel('Y', labelpad=30)
     ax.set_zlabel('')
     ax.set_zticklabels([])
+    ax.set_xticks([-0.2, 0, 0.2])
+    ax.set_yticks([-0.2, 0, 0.2])
 
     # ax.set_position(top=1.0, bottom=0.0, left=0.0, right=1.0)
     # ax.set_position([0, 0, 1, 1])

@@ -2,13 +2,12 @@ import logging
 import numbers
 from typing import Tuple, Callable, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
 import sympy
 from scipy.integrate import solve_ivp
 from sympy import Expr
 
-from origami.plotsandcalcs.alternating.utils import csc, tan, sec, cos, sin, plot_perturbations
+from origami.plotsandcalcs.alternating.utils import csc, tan, sec, cos, sin
 from origami.utils import sympyutils
 
 # We initialize these values on demand since parsing latex takes long time
@@ -99,7 +98,6 @@ def get_delta_func_for_kx(L_tot, C_tot, W0, theta,
                           kx: Union[float, Callable[[float], float]],
                           delta0: float) -> Callable[[float], float]:
     d_func = _create_ddelta_func(L_tot, C_tot, W0, theta, kx)
-    logger.debug(f"Solving equation delta'={d_func}, for initial condition {delta0} on range [0,1]")
     t0, tf = 0, 1
     sol = solve_ivp(d_func, (t0, tf), [delta0], dense_output=True)
     if not sol.success:
@@ -126,7 +124,6 @@ def get_deltas_for_kx(L_tot, C_tot, W0, theta,
                       kx: Union[float, Callable[[float], float]],
                       delta0: float, chi: float) -> Tuple[np.ndarray, np.ndarray]:
     d_func = _create_ddelta_func(L_tot, C_tot, W0, theta, kx)
-    logger.debug(f"Solving equation delta'={d_func}, for initial condition {delta0} on range [0,1]")
     t0, tf = 0, 1
     ts = np.arange(t0, tf + 0.1 * chi, 0.5 * chi)
     sol = solve_ivp(d_func, (t0, tf), [delta0], t_eval=ts)
@@ -168,7 +165,6 @@ def get_Deltas_for_ky(L_tot, C_tot, W0, theta,
                       ky: Union[float, Callable[[float], float]],
                       Delta0: float, xi) -> Tuple[np.ndarray, np.ndarray]:
     d_func = _create_dDelta_eq(L_tot, C_tot, W0, theta, ky)
-    logger.debug(f"Solving equation Delta'={d_func}, for initial condition {Delta0} on range [0,1]")
     t0, tf = 0, 1
     ts = np.arange(t0, tf, xi)
     sol = solve_ivp(d_func, (t0, tf), [Delta0], t_eval=ts)

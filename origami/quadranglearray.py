@@ -34,7 +34,7 @@ class QuadrangleArray(object):
         return plot_panels_and_edges_with_wireframe(self.dots, self.indexes, ax, color, alpha, lightsource)
 
     def plot(self, ax: Axes3D, panel_color=None, edge_color='g',
-             alpha=1.0, edge_alpha=1.0, edge_width=1.5, lightsource=None) -> Poly3DCollection:
+             alpha=1.0, edge_alpha=1.0, edge_width=1.0, lightsource=None) -> Poly3DCollection:
         return plot_panels(self.dots, self.indexes, ax, panel_color,
                            edge_color, alpha, edge_alpha, edge_width, lightsource)
 
@@ -76,10 +76,12 @@ def plot_panels(dots: np.ndarray, indexes: np.ndarray,
         dots[2, :].reshape((rows, cols)),
         alpha=0.4,
         linewidth=edge_width,
-        # antialiased=False
+        # antialiased=True,
         color=panels_color,
         edgecolor=edge_color,
-        lightsource=None
+        lightsource=lightsource,
+        rstride=1,
+        cstride=1
     )
 
     # This is a patch to make the panels and edges have different alphas

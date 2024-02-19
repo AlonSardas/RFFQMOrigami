@@ -141,7 +141,7 @@ def plot_unit_cell():
     p0 = dots[:2, indexes[C_ind]]
     p1 = dots[:2, indexes[D_ind]]
     middle = (p0 + p1) / 2
-    plotutils.draw_elliptic_arrow(ax, (middle[0], middle[1] + 0.08), 0.2, 0.13, 0, -240, 40)
+    plotutils.draw_elliptic_arrow(ax, (middle[0], middle[1] + 0.08), 0.2, 0.13, 0, 40, -240)
     ax.text(middle[0] + 0.1, middle[1], r'$\omega_{00}$')
 
     p0 = dots[:2, indexes[B_ind]]
@@ -328,7 +328,7 @@ def _draw_panel_type(ax: Axes, x, y, type_index):
 
 
 def main():
-    plot_angles_only()
+    # plot_angles_only()
     plot_unit_cell()
 
 
