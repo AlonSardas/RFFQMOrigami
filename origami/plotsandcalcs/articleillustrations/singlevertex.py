@@ -42,10 +42,10 @@ def plot_single_vertex():
     at_2 = angle0 + alpha
     at_3 = angle0 + alpha + beta
     at_4 = angle0 - (np.pi - beta)
-    _draw_vec(at_1, r'$\mathbf{t}_1$', MOUNTAIN_COLOR)
-    _draw_vec(at_2, r'$\mathbf{t}_2$', VALLEY_COLOR)
-    _draw_vec(at_3, r'$\mathbf{t}_3$', MOUNTAIN_COLOR)
-    _draw_vec(at_4, r'$\mathbf{t}_4$', MOUNTAIN_COLOR)
+    _draw_vec(at_1, r'$\mathbf{t}_2$', MOUNTAIN_COLOR)
+    _draw_vec(at_2, r'$\mathbf{t}_3$', VALLEY_COLOR)
+    _draw_vec(at_3, r'$\mathbf{t}_4$', MOUNTAIN_COLOR)
+    _draw_vec(at_4, r'$\mathbf{t}_1$', MOUNTAIN_COLOR)
 
     def _draw_rotation_arrow(angle, name, text_pos=(0, 0)):
         pos = R * 0.8 * np.array([np.cos(angle), np.sin(angle)])
@@ -53,10 +53,10 @@ def plot_single_vertex():
         plotutils.draw_elliptic_arrow(ax, pos, 0.2, 0.13, ellipse_angle, -20, 180 + 20)
         ax.text(pos[0] + text_pos[0], pos[1] + text_pos[1], name, fontsize=26, va='center', ha='center')
 
-    _draw_rotation_arrow(at_1, '$\gamma_1$', (0, -0.2))
-    _draw_rotation_arrow(at_2, '$\gamma_2$', (0.2, -0.0))
-    _draw_rotation_arrow(at_3, '$\gamma_3$', (0, 0.2))
-    _draw_rotation_arrow(at_4, '$\gamma_4$', (-0.20, -0.0))
+    _draw_rotation_arrow(at_1, r'$\gamma_2$', (0, -0.2))
+    _draw_rotation_arrow(at_2, r'$\gamma_3$', (0.2, -0.0))
+    _draw_rotation_arrow(at_3, r'$\gamma_4$', (0, 0.2))
+    _draw_rotation_arrow(at_4, r'$\gamma_1$', (-0.20, -0.0))
 
     arc_size = 0.55
     lw = 3
@@ -80,13 +80,13 @@ def plot_single_vertex():
 
     text_size = 30
     ax.text(0.48, 0.61,
-            r'$ \mathbf{R}_1(\gamma_1) $', ha='center', va='center', fontsize=text_size)
-    ax.text(-0.39, 0.51,
             r'$ \mathbf{R}_2(\gamma_2) $', ha='center', va='center', fontsize=text_size)
-    ax.text(-0.59, -0.32,
+    ax.text(-0.39, 0.51,
             r'$ \mathbf{R}_3(\gamma_3) $', ha='center', va='center', fontsize=text_size)
-    ax.text(0.367, -0.42,
+    ax.text(-0.59, -0.32,
             r'$ \mathbf{R}_4(\gamma_4) $', ha='center', va='center', fontsize=text_size)
+    ax.text(0.367, -0.42,
+            r'$ \mathbf{R}_1(\gamma_1) $', ha='center', va='center', fontsize=text_size)
 
     ax.set_xlim(-1.2 * R, 1.2 * R)
     ax.set_ylim(-1.2 * R, 1.2 * R)

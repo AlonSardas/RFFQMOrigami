@@ -320,7 +320,7 @@ def plot_flat(ax, ori: RFFQM):
     ori.set_gamma(ori.calc_gamma_by_omega(0))
     panels, surf = ori.dots.plot_with_wireframe(ax, alpha=0.6)
     surf.set_alpha(0)
-    panels.set_fc('C7')
+    panels.set_fc(articleillustrations.FLAT_PANELS_COLOR)
     panels.set_zorder(-10)
     origamiplots.draw_creases(ori, 1, ax)
     _set_XY_labels(ax)

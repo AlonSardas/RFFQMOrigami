@@ -96,6 +96,15 @@ def imshow_with_colorbar(fig: Figure, ax: Axes, data: np.ndarray, ax_title) -> A
     return im
 
 
+def save_fig_cropped(fig: Figure, file_path, expand_x, expand_y, pad_x=0.0, pad_y=0.0,
+                     translate_x=0.0, translate_y=0.0, **kwargs):
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(expand_x, expand_y)
+    new_bbox = new_bbox.padded(pad_x, pad_y)
+    new_bbox = new_bbox.translated(translate_x, translate_y)
+    fig.savefig(file_path, bbox_inches=new_bbox, **kwargs)
+
+
 class Arrow3D(FancyArrowPatch):
     """
     A class used to draw arrows in 3D plots.

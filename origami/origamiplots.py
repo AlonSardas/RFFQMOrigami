@@ -13,7 +13,7 @@ from scipy import interpolate
 from origami.miuraori import SimpleMiuraOri
 from origami.quadranglearray import QuadrangleArray
 from origami.RFFQMOrigami import RFFQM
-from origami.utils import plotutils
+from origami.utils import plotutils, linalgutils
 
 
 def add_slider_miuraori(ax, ori: SimpleMiuraOri, should_plot_normals=False):
@@ -96,7 +96,7 @@ def add_slider(ax, ori: RFFQM):
         ax.clear()
         quads = ori.set_gamma(omega, should_center=True)
         # dots.center()
-        quads.plot_with_wireframe(ax, alpha=0.85)
+        quads.plot(ax, alpha=0.85)
 
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
@@ -119,7 +119,7 @@ def plot_interactive(ori: RFFQM):
     plt.show()
 
 
-def plot_crease_pattern(ori: RFFQM, initial_MVA=1) -> Tuple[Figure, Axes]:
+def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0) -> Tuple[Figure, Axes]:
     """
     Plot the crease lines on a flat 2D axes.
 
@@ -127,6 +127,7 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1) -> Tuple[Figure, Axes]:
         ori (RFFQM): The origami the plot
         initial_MVA (int, optional): The first mountain-valley assignment (MVA) to use
             1,-1 flip between them. 0 to ignore the MVA
+        rotate_angle (float): Angle to rotate the entire pattern before plotting
 
     Returns:
         Tuple[Figure, Axes]: The figure and axes created
@@ -139,7 +140,12 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1) -> Tuple[Figure, Axes]:
     # ax: Axes3D = fig.add_subplot(111, projection='3d', elev=90, azim=-90)
     ax: Axes = fig.add_subplot(111)
 
-    draw_creases(ori, initial_MVA, ax)
+    quads = ori.dots
+    if rotate_angle is not None:
+        rot = linalgutils.create_XY_rotation_matrix(rotate_angle)
+        quads.dots = rot @ quads.dots
+
+    draw_creases(quads, initial_MVA, ax)
 
     ax.set_aspect('equal')
     ax.set_axis_off()
@@ -147,24 +153,26 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1) -> Tuple[Figure, Axes]:
     return fig, ax
 
 
-def draw_creases(ori: RFFQM, initial_MVA, ax: Axes | Axes3D):
-    indexes = ori.dots.indexes
-    dots = ori.dots.dots
+def draw_creases(quads: QuadrangleArray, initial_MVA, ax: Axes | Axes3D):
+    dots, indexes = quads.dots, quads.indexes
 
     rows, cols = indexes.shape
 
     MVA_to_color = {1: 'r', -1: 'b', 0: 'k'}
 
+    creases = []
+
     def draw_crease(dot, i, j, _MVA):
         if isinstance(ax, Axes3D):
-            ax.plot([dot[0], dots[0, indexes[i, j]]],
-                    [dot[1], dots[1, indexes[i, j]]],
-                    [dot[2], dots[2, indexes[i, j]]],
-                    color=MVA_to_color[_MVA])
+            l = ax.plot([dot[0], dots[0, indexes[i, j]]],
+                        [dot[1], dots[1, indexes[i, j]]],
+                        [dot[2], dots[2, indexes[i, j]]],
+                        color=MVA_to_color[_MVA])[0]
         else:
-            ax.plot([dot[0], dots[0, indexes[i, j]]],
-                    [dot[1], dots[1, indexes[i, j]]],
-                    color=MVA_to_color[_MVA])
+            l = ax.plot([dot[0], dots[0, indexes[i, j]]],
+                        [dot[1], dots[1, indexes[i, j]]],
+                        color=MVA_to_color[_MVA])[0]
+        creases.append(l)
 
     MVA = initial_MVA
     for j in range(1, cols):
@@ -188,6 +196,8 @@ def draw_creases(ori: RFFQM, initial_MVA, ax: Axes | Axes3D):
             draw_crease(dot, i - 1, j, vertical_MVA * MVA)
         MVA *= -1
 
+    return creases
+
 
 def draw_inner_creases_no_MVA(quads: QuadrangleArray, ax: Axes, color):
     creases = draw_inner_creases(quads, 0)
@@ -196,7 +206,7 @@ def draw_inner_creases_no_MVA(quads: QuadrangleArray, ax: Axes, color):
     return creases
 
 
-def draw_inner_creases(quads, ax: Axes, initial_MVA=-1) -> Sequence[Line2D]:
+def draw_inner_creases(quads, ax: Axes, initial_MVA=-1):
     creases = []
 
     indexes = quads.indexes
@@ -205,33 +215,37 @@ def draw_inner_creases(quads, ax: Axes, initial_MVA=-1) -> Sequence[Line2D]:
 
     MVA_to_color = {1: 'r', -1: 'b', 0: 'k'}
 
-    def draw_crease(dot, i, j, MVA):
+    def draw_crease(i0, j0, i1, j1, MVA):
         color = MVA_to_color[MVA]
-        crease = ax.plot([dot[0], dots[0, indexes[i, j]]],
-                         [dot[1], dots[1, indexes[i, j]]],
+        crease = ax.plot((dots[0, indexes[i0, j0]], dots[0, indexes[i1, j1]]),
+                         (dots[1, indexes[i0, j0]], dots[1, indexes[i1, j1]]),
                          color)[0]
-        creases.append(crease)
+        HV = None
+        if abs(j1 - j0) == 1:
+            HV = 'H'
+        elif abs(i1 - i0) == 1:
+            HV = 'V'
+        else:
+            raise RuntimeError("Crease should be between 2 adjacent dots")
+
+        creases.append((crease, MVA, HV))
 
     MVA = initial_MVA
     for j in range(1, cols - 1):
-        dot = dots[:, indexes[0, j]]
-        draw_crease(dot, 1, j, MVA)
+        draw_crease(0, j, 1, j, MVA)
         MVA *= -1
 
     MVA = -initial_MVA
     for i in range(1, rows - 1):
-        dot = dots[:, indexes[i, 0]]
-        draw_crease(dot, i, 1, MVA)
+        draw_crease(i, 0, i, 1, MVA)
         MVA *= -1
 
     MVA = -initial_MVA
     for i in range(1, rows - 1):
         for j in range(1, cols - 1):
             vertical_MVA = -1 if j % 2 == 0 else 1
-            dot_index = indexes[i, j]
-            dot = dots[:, dot_index]
-            draw_crease(dot, i, j + 1, MVA)
-            draw_crease(dot, i + 1, j, vertical_MVA * MVA)
+            draw_crease(i, j, i, j + 1, MVA)
+            draw_crease(i, j, i + 1, j, vertical_MVA * MVA)
         MVA *= -1
 
     return creases
@@ -282,4 +296,4 @@ def plot_smooth_interpolation(quads: QuadrangleArray, ax: Axes3D):
     Xs, Ys = np.meshgrid(xs, ys)
     Zs = interp(Xs, Ys, grid=False)
 
-    return ax.plot_surface(Xs, Ys, Zs, linewidth=1, edgecolors='k', antialiased=True)
+    return ax.plot_surface(Xs, Ys, Zs, linewidth=1, edgecolors='k', antialiased=False)

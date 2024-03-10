@@ -22,6 +22,12 @@ class QuadrangleArray(object):
         :param rows: the number of rows in the quadrangle array
         :param cols: the number of columns in the quadrangle array
         """
+        if len(dots.shape) != 2:
+            raise ValueError("The array of dots should be 2 dimensional, with rows as the number of dots")
+
+        if dots.shape[1] != rows * cols:
+            raise ValueError(f"There should be {rows}x{cols} dots, got {dots.shape[1]}")
+
         if dots.shape[0] == 2:
             dots3D = np.zeros((3, dots.shape[1]), dtype=dots.dtype)
             dots3D[:2, :] = dots
@@ -59,6 +65,16 @@ class QuadrangleArray(object):
     def copy(self):
         new_dots = self.dots.copy()
         return QuadrangleArray(new_dots, self.rows, self.cols)
+
+
+def from_mesh_gird(Xs: np.ndarray, Ys: np.ndarray, Zs: np.ndarray):
+    if Xs.shape != Ys.shape:
+        raise ValueError("Data size must be the same")
+    if Xs.shape != Zs.shape:
+        raise ValueError("Data size must be the same")
+    rows, cols = Xs.shape
+    dots = np.array((Xs.flat, Ys.flat, Zs.flat))
+    return QuadrangleArray(dots, rows, cols)
 
 
 def plot_panels(dots: np.ndarray, indexes: np.ndarray,

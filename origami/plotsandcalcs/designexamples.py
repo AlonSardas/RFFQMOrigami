@@ -7,13 +7,16 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import patches as mpatches
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami
-from origami import origamimetric, origamiplots
+from origami import origamimetric, origamiplots, quadranglearray
 from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
@@ -55,6 +58,14 @@ def plot_vase():
     ddf_dy2 = lambda t: (df_dy(t + eps) - df_dy(t - eps)) / (2 * eps)
     k_extra_factor = 1
     ky_func = lambda t: k_extra_factor * ddf_dy2(t) / (1 + df_dy(t) ** 2) ** (3 / 2)
+
+    fig, ax = plt.subplots()
+    ys = np.linspace(0, 1)
+    ax.plot(ys, ky_func(ys))
+    ax.plot(ys, np.cos(ys * np.pi) * 0.2, '--')
+    plt.show()
+    return
+
     print(ky_func(0.2), ky_func(0.5), ky_func(1))
     # ky_func = lambda t: +0.7 * (t - 0.5)
 
@@ -298,8 +309,30 @@ def plot_2D_sinusoid():
     fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
     # fig.savefig(os.path.join(FIGURES_PATH, '2D-sinusoid-curvatures.pdf'))
 
+    smooth_limits_x = 7.8
+    smooth_limits_y = 9.5
+    xs = np.linspace(-smooth_limits_x, smooth_limits_x, 50)
+    ys = np.linspace(-smooth_limits_y, smooth_limits_y, 50)
+    xs, ys = np.meshgrid(xs, ys)
+    Z_shift = -0.2
+    A = 1.06
+    By = 1.15
+    Bx = 1.10
+    smooth_zs = Z_shift - A * (np.sin(np.pi * xs / smooth_limits_x * Bx) + np.sin(np.pi * ys / smooth_limits_y * By))
+
+    should_plot_smooth_geometry = False
+    if should_plot_smooth_geometry:
+        quads = quadranglearray.from_mesh_gird(xs, ys, smooth_zs)
+        geometry = origamimetric.OrigamiGeometry(quads)
+        Ks, Hs = geometry.get_curvatures_by_shape_operator()
+        Hs *= -1
+        fig, _ = compare_curvatures(Ks, Hs, None, None)
+
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=36, azim=-113)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=36, azim=-113, computed_zorder=False)
+
+    ax.plot_surface(xs, ys, smooth_zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
+
     ori.dots.plot(ax, alpha=0.8, edge_alpha=0.8, edge_color='k', panel_color='C1')
 
     plotutils.set_axis_scaled(ax)
@@ -455,13 +488,15 @@ def plot_periodic():
     delta_func, Delta_func = shifted_delta_func, shifted_Delta_func
     # delta_func, Delta_func = delta_func_orig, Delta_func_orig
 
-    fig, axes = plt.subplots(2)
-    plot_perturbations(axes, delta_func, Delta_func, Nx, Ny)
+    # fig, axes = plt.subplots(2)
+    # plot_perturbations(axes, delta_func, Delta_func, Nx, Ny)
 
+    # Nx = Nx // 4
+    # Ny = Ny // 4
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
 
-    # origamiplots.plot_crease_pattern(ori, 0)
-    # plt.show()
+    plot_flat(ori, shifted_delta_func(0))
+    return
 
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
     geometry = origamimetric.OrigamiGeometry(ori.dots)
@@ -531,10 +566,10 @@ def plot_periodic():
         fig.savefig(os.path.join(FIGURES_PATH, 'periodic-H-comparison.pdf'))
         plt.show()
 
-    _compare_curvatures()
+    # _compare_curvatures()
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=29, azim=-128)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=27, azim=-124)
     ori.dots.plot(ax, alpha=1.0, edge_alpha=0.5, edge_width=0.2, edge_color='k')
 
     plotutils.set_axis_scaled(ax)
@@ -544,9 +579,103 @@ def plot_periodic():
     fig.tight_layout()
     bbox = fig.get_tightbbox()
     new_bbox = bbox.expanded(sw=0.95, sh=0.5)
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic.png'), bbox_inches=new_bbox, transparent=True)
     fig.savefig(os.path.join(FIGURES_PATH, 'periodic.pdf'), bbox_inches=new_bbox)
     fig.savefig(os.path.join(FIGURES_PATH, 'periodic.svg'), bbox_inches=new_bbox)
+    return
     plt.show()
+
+
+def plot_flat(ori, rotate_angle):
+    fig, ax = origamiplots.plot_crease_pattern(ori, 0, rotate_angle)
+    fig.set_layout_engine("constrained")
+    zoomed_ax = inset_axes(ax, width='85%', height='85%', )
+    make_axis_frame_circular(zoomed_ax)
+
+    dots, indexes = ori.dots.dots, ori.dots.indexes
+    zoomed_cells = dots[:, indexes[0:17, 0:17].flat]
+    zoomed_quads = quadranglearray.QuadrangleArray(zoomed_cells, 17, 17)
+    origamiplots.draw_creases(zoomed_quads, 0, zoomed_ax)
+
+    # unit_cell_x, unit_cell_y = 1,1
+    unit_cell_x, unit_cell_y = 4, 4
+    dots, indexes = ori.dots.dots, ori.dots.indexes
+    cell_dots = dots[:, indexes[unit_cell_y:unit_cell_y + 3, unit_cell_x:unit_cell_x + 3].flat]
+    cell_quads = quadranglearray.QuadrangleArray(cell_dots, 3, 3)
+    creases = origamiplots.draw_creases(cell_quads, 1, zoomed_ax)
+    for line in creases:
+        line.set_linewidth(4)
+
+    x0, y0, width, height = 0.7, 0.7, 3, 3
+    zoomed_ax.set_xlim(x0, x0 + width)
+    zoomed_ax.set_ylim(y0, y0 + width)
+    # pp, l1, l2 = mark_inset(ax, zoomed_ax, loc1=2, loc2=4, fc="none", ec="k", linewidth=2)
+    # pp.remove()
+    # l1.remove()
+    # l2.remove()
+    # bbox = pp.bbox
+    # print(bbox.extents)
+    # print(bbox)
+    # print((bbox.x0, bbox.y0), bbox.width, bbox.height)
+    # print(ax.transData, zoomed_ax.viewLim)
+    # print(ax.transData.extents, zoomed_ax.viewLim.extents)
+    # rect = TransformedBbox(zoomed_ax.viewLim, ax.transData)
+    # print(ax.transData.inverted().transform(rect))
+
+    # plt.draw()  # This is necessary for the zoomed axis to
+    zoomed_ax.redraw_in_frame()  # This is necessary for the zoomed axis to
+
+    # print(ax.transData.inverted().transform(ax.transAxes.transform(zoomed_ax.get_position())))
+    print(zoomed_ax.bbox.extents)
+    print(ax.transData.inverted().transform(zoomed_ax.bbox))
+    (zoomed_x0, zoomed_y0), (zoomed_x1, zoomed_y1) = ax.transData.inverted().transform(
+        zoomed_ax.patch.get_extents())
+    zoomed_width = zoomed_x1 - zoomed_x0
+    zoomed_height = zoomed_y1 - zoomed_y0
+
+    linewidth = 5
+
+    my_bbox = FancyBboxPatch((x0, y0), width, height,
+                             boxstyle=f"round,pad=-0.0040,rounding_size={0.2 * width}",
+                             ec="red", fc="dodgerblue", clip_on=False, lw=linewidth,
+                             mutation_aspect=1,
+                             )
+    ax.add_patch(my_bbox)
+    factor = 0.8
+    start = x0 + width * factor, y0
+    end = zoomed_x0 + factor * zoomed_width, zoomed_y0
+    arrow = mpatches.FancyArrowPatch(start, end, color='r', lw=linewidth, zorder=5)
+    ax.add_patch(arrow)
+    start = x0, y0 + height * factor
+    end = zoomed_x0, zoomed_y0 + zoomed_height * factor
+    arrow = mpatches.FancyArrowPatch(start, end, color='r', lw=linewidth, zorder=5)
+    ax.add_patch(arrow)
+
+    # zoomed_ax.add_patch(arrow)
+    # matplotlib.patches.Arrow
+    # line = plt.Line2D((0.1, 0.2), (0.9, 0.4), color='r')
+    # ax.add_patch(line)
+
+    # fig.savefig(os.path.join(FIGURES_PATH, 'periodic-flat.png'), transparent=True)
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic-flat.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'periodic-flat.pdf'))
+    # plt.show()
+    print(zoomed_ax.bbox.extents)
+
+
+def make_axis_frame_circular(ax, lw=3):
+    # Based on https://stackoverflow.com/questions/70041798/how-to-round-connection-for-matplotlib-axis-spines
+    p_bbox = FancyBboxPatch((0, 0), 1, 1,
+                            boxstyle="round,pad=-0.0040,rounding_size=0.2",
+                            ec="black", fc="white", clip_on=False, lw=lw,
+                            mutation_aspect=1,
+                            transform=ax.transAxes)
+    # zoomed_ax.add_patch(p_bbox)
+    ax.patch = p_bbox
+    ax.set_yticks([])
+    ax.set_xticks([])
+    for s in ax.spines:
+        ax.spines[s].set_visible(False)
 
 
 def plot_cone_like():
