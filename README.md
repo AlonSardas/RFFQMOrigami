@@ -5,6 +5,7 @@ Utility for generating and folding *rigidly and flat-foldable quadrilateral mesh
 | <img src="./img/cylinder-folded.png" width="300" /> | <img src="./img/radial-example-folded.png" width="300" /> |
 |-----------------------------------------------------|-----------------------------------------------------------|
 | <img src="./img/spherical-cap.png" width="300" />   | <img src="./img/saddle.png" width="300" />                |
+
 <img src="./img/classical-miura-ori.png" />
 
 ## Installation
