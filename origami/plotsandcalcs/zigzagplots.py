@@ -167,9 +167,9 @@ def plot_simple_example():
 
 def plot_full_cylinder():
     dots, rows, cols = create_full_cylinder()
-    origami = ZigzagMiuraOri(dots, rows, cols)
+    ori = ZigzagMiuraOri(dots, rows, cols)
 
-    fig, ax = plot_flat_configuration(origami)
+    fig, ax = plot_flat_configuration(ori)
     # ax.set_axis_off()
     # ax.zaxis.set_label_position('none')
     # ax.zaxis.set_ticks_position('none')
@@ -180,15 +180,17 @@ def plot_full_cylinder():
     ax.tick_params(axis='y', which='major', pad=10)
     fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat.png"), pad_inches=-0.3)
 
-    origami.set_omega(1.85)
+    ori.set_omega(1.85)
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-30, elev=21)
-    origami.plot(ax, alpha=0.7)
+    quads = ori.get_quads()
+    quads.plot(ax, panel_color='C1', alpha=0.9)
     plotutils.set_3D_labels(ax)
     ax.set_xlabel('X', labelpad=10)
 
-    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-folded.png"))
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-folded.png"), pad_inches=0.3, dpi=300)
 
     plt.show()
 
@@ -342,11 +344,11 @@ def plot_different_scaling():
 def main():
     # plot()
     # plot_spiral()
-    # plot_full_cylinder()
+    plot_full_cylinder()
     # plot_simple_example()
     # plot_theta_vs_alpha()
     # plot_unit_cell()
-    plot_different_scaling()
+    # plot_different_scaling()
 
 
 if __name__ == "__main__":

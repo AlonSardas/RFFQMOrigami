@@ -146,6 +146,10 @@ class MarchingAlgorithm(object):
             assert len(cs_bottom) == cols - 1
         else:
             cs_bottom = np.ones(cols - 1) * cs_bottom
+        if isinstance(ls_left, list):
+            ls_left = np.array(ls_left)
+        if isinstance(cs_bottom, list):
+            cs_bottom = np.array(cs_bottom)
 
         if np.any(ls_left <= 0):
             raise ValueError("Got a non-positive left boundary crease length")

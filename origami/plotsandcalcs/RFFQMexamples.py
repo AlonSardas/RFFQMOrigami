@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import origami
 import origami.plotsandcalcs
-from origami import origamimetric
+from origami import origamimetric, origamiplots
 from origami.RFFQMOrigami import RFFQM
 from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
@@ -76,11 +76,14 @@ def create_radial():
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat.svg'))
 
+    fig, ax = origamiplots.plot_crease_pattern(ori)
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat2.svg'))
+
     fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', azim=-156, elev=-140)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=45, azim=149)
 
     ori.set_gamma(1.5)
-    ori.dots.plot_with_wireframe(ax, alpha=0.4)
+    ori.dots.plot(ax, panel_color='C1', alpha=0.8)
     
     # ax.set_ylim(-10, 15)
     # ax.set_box_aspect(None, zoom=2)
@@ -95,6 +98,7 @@ def create_radial():
     # ax.set_axis_off()
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-folded.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-folded.png'), dpi=300)
 
     plt.show()
 
@@ -117,8 +121,8 @@ def create_sphere_interactive():
     dots, indexes = marching.create_dots(ls, cs)
     rows, cols = indexes.shape
     quads = QuadrangleArray(dots, rows, cols)
-    origami = RFFQM(quads)
-    plot_interactive(origami)
+    ori = RFFQM(quads)
+    plot_interactive(ori)
 
 
 def create_sphere():
@@ -235,10 +239,10 @@ def create_MARS_Barreto():
 def main():
     # logutils.enable_logger()
     # create_basic_crease()
-    # create_radial()
+    create_radial()
     # create_sphere_interactive()
     # create_sphere()
-    create_MARS_Barreto()
+    # create_MARS_Barreto()
 
 
 if __name__ == '__main__':

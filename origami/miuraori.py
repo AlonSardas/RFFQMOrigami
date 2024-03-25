@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-import numpy.linalg as la
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami.quadranglearray import plot_panels_and_edges_with_wireframe, center_dots

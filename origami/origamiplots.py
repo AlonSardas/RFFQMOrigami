@@ -1,7 +1,6 @@
-from typing import Sequence, Tuple
+from typing import Tuple
 
 import matplotlib
-from matplotlib.lines import Line2D
 import matplotlib.widgets
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,9 +9,9 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import interpolate
 
+from origami.RFFQMOrigami import RFFQM
 from origami.miuraori import SimpleMiuraOri
 from origami.quadranglearray import QuadrangleArray
-from origami.RFFQMOrigami import RFFQM
 from origami.utils import plotutils, linalgutils
 
 

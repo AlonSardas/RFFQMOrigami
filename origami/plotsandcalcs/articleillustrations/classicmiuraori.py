@@ -34,7 +34,7 @@ def plot_placed_horizontally():
     surf.set_alpha(0)
     panels.set_fc('C7')
     panels.set_zorder(-10)
-    origamiplots.draw_creases(ori, 1, ax)
+    origamiplots.draw_creases(ori.dots, 1, ax)
 
     ori.set_gamma(ori.calc_gamma_by_omega(0.4))
     ori.dots.dots[0, :] += 8
@@ -73,6 +73,7 @@ def plot_placed_horizontally():
     # fig.set_facecolor("aliceblue")
     fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.svg"))
     fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.pdf"))
+    fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.png"), dpi=300)
 
     plt.show()
 

@@ -5,7 +5,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.quadranglearray
-from origami import miuraori
+from origami import miuraori, quadranglearray
 from origami.utils import linalgutils
 
 logger = logging.getLogger('origami')
@@ -104,6 +104,9 @@ class ZigzagMiuraOri(object):
 
     def get_omega(self):
         return self._omega
+
+    def get_quads(self) -> quadranglearray.QuadrangleArray:
+        return quadranglearray.QuadrangleArray(self.dots, self.d_rows, self.d_cols)
 
     def plot(self, ax: Axes3D, alpha=1):
         return origami.quadranglearray.plot_panels_and_edges_with_wireframe(self.dots, self.indexes, ax, alpha=alpha)

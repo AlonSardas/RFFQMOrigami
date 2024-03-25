@@ -190,7 +190,7 @@ def center_dots(dots: np.ndarray, indexes):
 
 def is_valid(flat_dots, dots: np.ndarray, indexes: np.ndarray) -> Tuple[bool, str]:
     """
-    check that all panels are actually quadrangle, i.e. on a single plane
+    check that all panels are actually quadrangles, i.e. all 4 vertices are on a single plane
     """
     rows, cols = indexes.shape
     for y in range(rows - 1):

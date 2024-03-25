@@ -9,15 +9,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches as mpatches
 from matplotlib.axes import Axes
+from matplotlib.colors import LightSource
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.mplot3d import Axes3D
+from scipy import interpolate
 
 import origami
 from origami import origamimetric, origamiplots, quadranglearray
 from origami.origamiplots import plot_interactive
+from origami.plotsandcalcs import articleillustrations
 from origami.plotsandcalcs.alternating import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
@@ -122,6 +125,17 @@ def plot_vase():
     # plot_interactive(ori)
 
 
+PANELS_ALPHA = 0.9
+PANELS_COLOR = articleillustrations.PANELS_COLOR
+EDGE_COLOR = 'k'
+EDGE_ALPHA = 0.8
+SMOOTH_SURF_ALPHA = 0.1
+SMOOTH_SURF_COLOR = 'C0'
+SMOOTH_EDGE_COLOR = 'C0'
+SMOOTH_EDGE_ALPHA = 0.6
+light_source = LightSource(azdeg=315 - 90 - 90, altdeg=45)
+
+
 def plot_spherical_cap():
     """
     We reproduce the fig. 4.b from:
@@ -131,29 +145,30 @@ def plot_spherical_cap():
     # kx_func = lambda t: 3.5 * 1 / (80 / 2)
     # ky_func = lambda t: 0.2 * (t - 10) / (rows / 2)
     # ky_func = lambda t: -0.2 * np.tanh((t - rows / 4) * 3)
-    kx = 0.10
-    ky = 0.10
+    kx = -0.10
+    ky = -0.10
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=29, azim=-118,
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-155, azim=-61,
                                  computed_zorder=False)
 
-    smooth_limits = 5.3
-    xs = np.linspace(-smooth_limits, smooth_limits, 50)
-    ys = np.linspace(-smooth_limits, smooth_limits, 50)
+    smooth_limits_x, smooth_limits_y = 6.3, 5.7
+    xs = np.linspace(-smooth_limits_x, smooth_limits_x, 15)
+    ys = np.linspace(-smooth_limits_y, smooth_limits_y, 15)
     xs, ys = np.meshgrid(xs, ys)
     R = 1 / kx
-    sphere_Z_shift = -0.8
-    sphere_zs = np.sqrt(R ** 2 - xs ** 2 - ys ** 2) - R + sphere_Z_shift
-    ax.plot_surface(xs, ys, sphere_zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
+    sphere_Z_shift = +6.3
+    # sphere_Z_shift = 1
+    sphere_zs = -np.sqrt(R ** 2 - xs ** 2 - ys ** 2) + sphere_Z_shift
+    _plot_smooth(ax, xs, ys, sphere_zs)
 
     L0 = 1.0
     C0 = 1
     W0 = 2.4
     theta = 1.1
 
-    F0 = -0.2
-    M0 = -0.5
+    F0 = +0.2
+    M0 = +0.5
     Delta0 = M0 / L0
     delta0 = F0
 
@@ -164,8 +179,10 @@ def plot_spherical_cap():
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
     xs, deltas, ys, Deltas = get_pert_list_by_func(delta_func, Delta_func, Nx, Ny)
-    pert_fig, pert_axes = plt.subplots(2)
-    plot_perturbations_by_list(pert_axes, xs, deltas, ys, Deltas)
+    should_plot_pert = False
+    if should_plot_pert:
+        pert_fig, pert_axes = plt.subplots(2)
+        plot_perturbations_by_list(pert_axes, xs, deltas, ys, Deltas)
 
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
     ori.set_gamma(0)
@@ -176,16 +193,19 @@ def plot_spherical_cap():
 
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
-    geometry = origamimetric.OrigamiGeometry(ori.dots)
-    Ks, Hs = geometry.get_curvatures_by_shape_operator()
-    Hs *= -1
-    expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
-    geo_fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-    # fig.savefig(os.path.join(FIGURES_PATH, 'spherical_cap-curvatures.svg'))
+    should_plot_geometry = False
+    if should_plot_geometry:
+        geometry = origamimetric.OrigamiGeometry(ori.dots)
+        Ks, Hs = geometry.get_curvatures_by_shape_operator()
+        Hs *= -1
+        expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
+        geo_fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+        fig.savefig(os.path.join(FIGURES_PATH, 'spherical_cap-curvatures.svg'))
 
     quads = ori.dots
     quads.dots[2, :] -= np.max(quads.dots[2, :])
-    panels = quads.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k')
+    quads.plot(ax, panel_color=PANELS_COLOR,
+               alpha=PANELS_ALPHA, edge_alpha=EDGE_ALPHA, edge_color='k', lightsource=light_source)
 
     plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
@@ -197,6 +217,7 @@ def plot_spherical_cap():
     new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.05, new_bbox.y0, new_bbox.width, new_bbox.height - 0.5)
     fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.svg'), bbox_inches=new_bbox)
     fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.pdf'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'spherical-cap.png'), bbox_inches=new_bbox, dpi=300)
     plt.show()
     plot_interactive(ori)
 
@@ -206,68 +227,78 @@ def plot_saddle():
     We reproduce the fig. 4.c from:
     https://doi.org/10.1016/j.ijsolstr.2021.111224.
     """
-    L_tot, C_tot = 15, 18
+    L_tot, C_tot = 15, 15
 
-    kappa = 0.08
-    kx = -kappa
-    ky = kappa
+    kappa = 0.1
+    kx = kappa
+    ky = -kappa
 
     # Nx, Ny = cols // 2, rows // 2
-    Nx, Ny = 14, 16
-    W0 = 2.4
+    Nx, Ny = 11, 13
+    W0 = 2.2
     theta = 1.2
 
-    delta0 = 0.2
-    Delta0 = -0.3
+    delta0 = -0.4
+    Delta0 = 0.5
 
     delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, delta0)
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
-    pert_fig, pert_axes = plt.subplots(2)
-    plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
-
-    # fig, ax = plt.subplots()
-    # xs = np.linspace(0, 1, 50)
-    # eps = 0.01
-    # dDelta = 1/(2*eps)*(Delta_func(xs+eps)-Delta_func(xs-eps))
-    # ax.plot(xs, dDelta, '.')
-    # plt.show()
+    should_plot_perts = False
+    if should_plot_perts:
+        pert_fig, pert_axes = plt.subplots(2)
+        plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
 
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
-    geometry = origamimetric.OrigamiGeometry(ori.dots)
-    Ks, Hs = geometry.get_curvatures_by_shape_operator()
-    Hs *= -1
-    expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
-    fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-    fig.savefig(os.path.join(FIGURES_PATH, 'saddle-curvatures.pdf'))
+    should_plot_geometry = False
+    if should_plot_geometry:
+        geometry = origamimetric.OrigamiGeometry(ori.dots)
+        Ks, Hs = geometry.get_curvatures_by_shape_operator()
+        Hs *= -1
+        expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
+        fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+        fig.savefig(os.path.join(FIGURES_PATH, 'saddle-curvatures.pdf'))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=39, azim=-129,
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-144, azim=-65,
                                  computed_zorder=False)
 
-    smooth_limits = 7.9
-    xs = np.linspace(-smooth_limits, smooth_limits, 50)
-    ys = np.linspace(-smooth_limits, smooth_limits, 50)
+    smooth_limits_x, smooth_limits_y = 8.6, 7.2
+    xs = np.linspace(-smooth_limits_x, smooth_limits_x, 10)
+    ys = np.linspace(-smooth_limits_y, smooth_limits_y, 10)
     xs, ys = np.meshgrid(xs, ys)
     R = 1 / np.abs(kx)
-    saddle_Z_shift = -0.64
-    saddle_zs = -np.sqrt(R ** 2 - xs ** 2 + ys ** 2) + R + saddle_Z_shift
-    ax.plot_surface(xs, ys, saddle_zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
+    saddle_Z_shift = -0.74
+    saddle_zs = -np.sqrt(R ** 2 + xs ** 2 - ys ** 2) + R + saddle_Z_shift
+    _plot_smooth(ax, xs, ys, saddle_zs)
 
-    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k')
+    ori.dots.plot(ax, panel_color=PANELS_COLOR, alpha=PANELS_ALPHA,
+                  edge_alpha=EDGE_ALPHA,
+                  edge_color=EDGE_COLOR, lightsource=light_source)
 
     plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
 
     bbox = fig.get_tightbbox()
-    new_bbox = bbox.expanded(0.95, 0.65)
-    # new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.05, new_bbox.y0, new_bbox.width, new_bbox.height - 0.5)
+    new_bbox = bbox.expanded(0.95, 0.60)
+    new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.4, new_bbox.y0, new_bbox.width - 0.4, new_bbox.height)
     fig.savefig(os.path.join(FIGURES_PATH, 'saddle.pdf'), bbox_inches=new_bbox)
     fig.savefig(os.path.join(FIGURES_PATH, 'saddle.svg'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'saddle.png'), bbox_inches=new_bbox, dpi=300)
     plt.show()
     # plot_interactive(ori)
+
+
+def _plot_smooth(ax, xs, ys, zs):
+    surf = ax.plot_surface(xs, ys, zs, color=SMOOTH_SURF_COLOR,
+                           alpha=SMOOTH_EDGE_ALPHA, linewidth=1, rstride=1, cstride=1, zorder=20,
+                           edgecolor=SMOOTH_EDGE_COLOR,
+                           lightsource=light_source)
+    surf.set_edgecolor(surf.get_edgecolor())
+    surf.set_alpha(SMOOTH_SURF_ALPHA)
+    return surf
 
 
 def plot_2D_sinusoid():
@@ -449,6 +480,81 @@ def plot_cap_different_curvatures():
     # bbox = fig_all.get_tightbbox()
     fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.svg'), pad_inches=-0.3)
     fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'))
+    plt.show()
+
+
+def plot_wavy():
+    rows, cols = 14, 18
+    L0 = 8
+    C0 = 8.5
+    chi = 1 / cols * 2
+    xi = 1 / rows * 2
+    L_tot = L0 / xi
+    C_tot = C0 / chi
+
+    kx_func = lambda t: 1 / C_tot * 4.0 * np.tanh(-(t - 0.5) * 3)
+    ky_func = lambda t: 1 / L_tot * 1.2
+
+    delta0 = 0.40
+    Delta0 = 0.7
+
+    W0 = -2.1
+    theta = 1.1
+
+    xs, deltas = curvatures.get_deltas_for_kx(L_tot, C_tot, W0, theta, kx_func, delta0, chi)
+    ys, Deltas = curvatures.get_Deltas_for_ky(L_tot, C_tot, W0, theta, ky_func, Delta0, xi)
+    should_plot_perts = False
+    if should_plot_perts:
+        fig, axes = plt.subplots(2)
+        plot_perturbations_by_list(axes, xs, deltas, ys, Deltas)
+
+    ori = create_perturbed_origami_by_list(
+        theta, L0, C0, deltas, Deltas)
+
+    ori.set_gamma(ori.calc_gamma_by_omega(-W0))
+
+    fig: Figure = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-151, azim=119,
+                                 computed_zorder=True)
+    light_source = LightSource(azdeg=315, altdeg=45)
+    ori.dots.plot(ax, panel_color=PANELS_COLOR, alpha=PANELS_ALPHA,
+                  edge_alpha=EDGE_ALPHA,
+                  edge_color=EDGE_COLOR, lightsource=light_source)
+
+    quads = ori.dots
+    dots, indexes = quads.dots, quads.indexes
+    dots = dots.astype('float64')
+    dots = dots[:, indexes[::2, ::2]]
+    left, right = np.min(dots[0, :, :]), np.max(dots[0, :, :])
+    bottom, top = np.min(dots[1, :, :]), np.max(dots[1, :, :])
+    pad_x, pad_y = 1.5, 1.8
+    left, right = left - pad_x, right + pad_x + 0.1
+    bottom, top = bottom - pad_y, top + pad_y
+    # ax.scatter3D(dots[0, :], dots[1, :], dots[2, :])
+
+    interp = interpolate.SmoothBivariateSpline(
+        dots[0, :, :].flatten(),
+        dots[1, :, :].flatten(),
+        dots[2, :, :].flatten())
+
+    xs = np.linspace(left, right, 24)
+    ys = np.linspace(bottom, top, 24)
+    Xs, Ys = np.meshgrid(xs, ys)
+    Zs = interp(Xs, Ys, grid=False)
+    Zs -= 3.5
+    _plot_smooth(ax, Xs, Ys, Zs)
+
+    plotutils.set_axis_scaled(ax)
+    ax.set_axis_off()
+
+    bbox = fig.get_tightbbox()
+    new_bbox = bbox.expanded(0.95, 0.50)
+    new_bbox = Bbox.from_bounds(new_bbox.x0 + 0.3, new_bbox.y0, new_bbox.width - 0.4, new_bbox.height)
+    fig.savefig(os.path.join(FIGURES_PATH, 'pos-neg.pdf'), bbox_inches=new_bbox)
+    fig.savefig(os.path.join(FIGURES_PATH, 'pos-neg.svg'), bbox_inches=new_bbox)
+
+    # plot_interactive(ori)
+
     plt.show()
 
 
@@ -723,12 +829,13 @@ def plot_cone_like():
 
 def main():
     # plot_vase()
-    # plot_spherical_cap()
-    # plot_saddle()
+    plot_spherical_cap()
+    plot_saddle()
+    # plot_wavy()
     # plot_2D_sinusoid()
     # plot_cap_different_curvatures()
     # plot_cone_like()
-    plot_periodic()
+    # plot_periodic()
 
 
 if __name__ == '__main__':
