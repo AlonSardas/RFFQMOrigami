@@ -72,7 +72,7 @@ theta = 1.2  # the base Miura-Ori angle
 delta0, Delta0 = -0.3, 0.5
 
 Nx, Ny = 12, 10  # number of unit cells to use
-L_tot, C_tot = 15, 15
+L_tot, C_tot = 15, 15  # Roughly the size of the flat pattern
 
 # Find smooth functions for the perturbation according to the desired curvatures
 delta_func = curvatures.get_delta_func_for_kx(L_tot, C_tot, W0, theta, kx, delta0)
@@ -118,7 +118,7 @@ Given an origami pattern, we can calculate its geometrical properties.
 from origami import origamimetric
 
 geometry = origamimetric.OrigamiGeometry(ori.dots)
-# Calculate the metric entries for each cell:
+# Calculate the metric entries for each cell
 geometry.get_metric()
 # Calculate the second fundamental from entries for each cell
 geometry.get_SFF()
