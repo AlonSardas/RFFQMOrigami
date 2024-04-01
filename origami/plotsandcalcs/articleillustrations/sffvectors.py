@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_perturbed_origami_by_list
+from origami.alternatingpert.utils import create_perturbed_origami
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.utils import plotutils
 

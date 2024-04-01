@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from origami import origamiplots
 from origami.RFFQMOrigami import RFFQM
 from origami.plotsandcalcs import articleillustrations
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_MM_from_list, create_F_from_list, \
+from origami.alternatingpert.utils import create_perturbed_origami, create_MM_from_list, create_F_from_list, \
     create_perturbed_origami_by_list
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.utils import plotutils

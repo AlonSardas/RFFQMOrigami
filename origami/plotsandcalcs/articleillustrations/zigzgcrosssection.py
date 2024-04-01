@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami.plotsandcalcs import articleillustrations
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_F_from_list
+from origami.alternatingpert.utils import create_perturbed_origami, create_F_from_list
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import plotutils, linalgutils
 

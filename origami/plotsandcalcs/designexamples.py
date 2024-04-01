@@ -21,10 +21,10 @@ import origami
 from origami import origamimetric, origamiplots, quadranglearray
 from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs import articleillustrations
-from origami.plotsandcalcs.alternating import curvatures
+from origami.alternatingpert import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
-from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, \
+from origami.alternatingpert.curvatures import create_expected_curvatures_func
+from origami.alternatingpert.utils import create_perturbed_origami, \
     plot_perturbations_by_list, create_perturbed_origami_by_list, get_pert_list_by_func, plot_perturbations
 from origami.utils import plotutils, logutils
 from origami.utils.plotutils import imshow_with_colorbar

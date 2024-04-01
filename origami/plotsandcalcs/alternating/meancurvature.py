@@ -6,10 +6,10 @@ import numpy as np
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import curvatures
+from origami.alternatingpert import curvatures
 from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
-from origami.plotsandcalcs.alternating.curvatures import create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_F_from_list, create_MM_from_list
+from origami.alternatingpert.curvatures import create_expected_curvatures_func
+from origami.alternatingpert.utils import create_perturbed_origami, create_F_from_list, create_MM_from_list
 from origami.quadranglearray import plot_flat_quadrangles
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,

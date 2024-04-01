@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.plotsandcalcs
-from origami import quadranglearray
+from origami import quadranglearray, origamiplots, RFFQMOrigami, marchingalgorithm
 from origami.origamiplots import plot_interactive_miuraori
 from origami.utils import plotutils
 from origami.zigzagmiuraori import ZigzagMiuraOri, create_zigzag_dots
@@ -178,7 +178,10 @@ def plot_full_cylinder():
     ax.set_ylabel('Y', labelpad=10)
     ax.set_zlabel('')
     ax.tick_params(axis='y', which='major', pad=10)
-    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat.png"), pad_inches=-0.3)
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat2.png"), pad_inches=-0.3)
+    ori2 = RFFQMOrigami.RFFQM(ori.get_quads())
+    fig, ax = origamiplots.plot_crease_pattern(ori2)
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat.svg"), pad_inches=-0.3)
 
     ori.set_omega(1.85)
 
@@ -191,6 +194,36 @@ def plot_full_cylinder():
 
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, "cylinder-folded.png"), pad_inches=0.3, dpi=300)
+
+    plt.show()
+
+
+def plot_cylinder_small():
+    angle = 0.7 * np.pi
+    ls = np.ones(10)
+    cs = np.ones(10)
+
+    angles_left, angles_bottom = marchingalgorithm.create_miura_angles(ls, cs, angle)
+
+    angles_left[:, 1::2] += 0.3
+    marching = marchingalgorithm.MarchingAlgorithm(angles_left, angles_bottom)
+    quads = quadranglearray.dots_to_quadrangles(*marching.create_dots(ls, cs))
+    ori = RFFQMOrigami.RFFQM(quads)
+
+    fig, ax = origamiplots.plot_crease_pattern(ori)
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-flat2.svg"))
+
+    ori.set_gamma(-1.9)
+
+    fig: Figure = plt.figure()
+    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=27, azim=148)
+    ori.dots.plot(ax, panel_color='C1', alpha=0.9)
+    plotutils.set_3D_labels(ax)
+    plotutils.set_axis_scaled(ax)
+    # ax.set_xlabel('X', labelpad=10)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIGURES_PATH, "cylinder-folded2.png"), pad_inches=0.3, dpi=300)
 
     plt.show()
 
@@ -213,11 +246,11 @@ def plot_spiral():
     plt.show()
 
 
-def plot_flat_configuration(origami):
+def plot_flat_configuration(ori):
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", azim=90, elev=-100)
-    origami.set_omega(0)
-    origami.plot(ax)
+    ori.set_omega(0)
+    ori.plot(ax)
     ax.set_zlim(-1, 1)
     return fig, ax
 
@@ -299,16 +332,16 @@ def plot_unit_cell():
     angles = [0.6 * np.pi, 0.7 * np.pi]
     dots = create_zigzag_dots(angles, cols, ls, dxs)
 
-    origami = ZigzagMiuraOri(dots, rows, cols)
+    ori = ZigzagMiuraOri(dots, rows, cols)
 
-    fig, ax = plot_flat_configuration(origami)
-    edge_points = origami.dots[
+    fig, ax = plot_flat_configuration(ori)
+    edge_points = ori.dots[
                   :,
                   [
-                      origami.indexes[0, 0],
-                      origami.indexes[0, -1],
-                      origami.indexes[-1, 0],
-                      origami.indexes[-1, -1],
+                      ori.indexes[0, 0],
+                      ori.indexes[0, -1],
+                      ori.indexes[-1, 0],
+                      ori.indexes[-1, -1],
                   ],
                   ]
     ax.scatter3D(
@@ -344,7 +377,8 @@ def plot_different_scaling():
 def main():
     # plot()
     # plot_spiral()
-    plot_full_cylinder()
+    # plot_full_cylinder()
+    plot_cylinder_small()
     # plot_simple_example()
     # plot_theta_vs_alpha()
     # plot_unit_cell()

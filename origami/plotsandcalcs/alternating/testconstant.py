@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 import origami.plotsandcalcs
 from origami import origamimetric
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami
+from origami.alternatingpert.utils import create_perturbed_origami
 from origami.quadranglearray import plot_flat_quadrangles
 from origami.utils import fitter
 

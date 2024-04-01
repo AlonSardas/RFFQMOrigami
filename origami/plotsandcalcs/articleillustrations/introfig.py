@@ -5,12 +5,11 @@ import numpy as np
 from matplotlib.colors import LightSource
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-import matplotlib as mpl
 
 from origami import origamiplots, marchingalgorithm, origamimetric, quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.plotsandcalcs import articleillustrations
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, create_perturbed_origami_by_list
+from origami.alternatingpert.utils import create_perturbed_origami, create_perturbed_origami_by_list
 from origami.quadranglearray import dots_to_quadrangles
 from origami.utils import plotutils
 

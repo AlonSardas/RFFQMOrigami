@@ -8,7 +8,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from origami import quadranglearray, origamimetric, origamiplots
-from origami.plotsandcalcs.alternating.utils import get_FF_dFF_dMM_ddMM, create_perturbed_origami, compare_curvatures
+from origami.alternatingpert.utils import create_perturbed_origami
 from origami.utils import plotutils
 
 

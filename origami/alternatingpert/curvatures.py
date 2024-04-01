@@ -7,7 +7,7 @@ import sympy
 from scipy.integrate import solve_ivp
 from sympy import Expr
 
-from origami.plotsandcalcs.alternating.utils import csc, tan, sec, cos, sin
+from origami.alternatingpert.utils import csc, tan, sec, cos, sin
 from origami.utils import sympyutils
 
 # We initialize these values on demand since parsing latex takes long time

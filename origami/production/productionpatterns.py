@@ -9,17 +9,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.plotsandcalcs
 from origami import origamiplots
+from origami.RFFQMOrigami import RFFQM
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
-from origami.plotsandcalcs.alternating import curvatures
-from origami.plotsandcalcs.alternating.utils import create_F_from_list, create_MM_from_list, create_perturbed_origami, \
+from origami.alternatingpert import curvatures
+from origami.alternatingpert.utils import create_perturbed_origami, \
     create_perturbed_origami_by_list, plot_perturbations, plot_perturbations_by_list
 from origami.quadranglearray import QuadrangleArray
-from origami.RFFQMOrigami import RFFQM
 from origami.utils import linalgutils, plotutils
 
 FIGURES_PATH = os.path.join(
@@ -298,7 +297,8 @@ def prepare_patterns_for_printing(quads: QuadrangleArray, name, file_format='ps'
     ax.set_aspect('equal')
 
     fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, f'{name}1.{file_format}'), transparent=True, metadata={'DocumentPaperSizes': None})
+    fig.savefig(os.path.join(FIGURES_PATH, f'{name}1.{file_format}'), transparent=True,
+                metadata={'DocumentPaperSizes': None})
 
     for crease, MV, HV in creases:
         visible = crease.get_visible()

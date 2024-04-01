@@ -16,9 +16,8 @@ from origami.angleperturbation import (create_angles_func_vertical_alternation,
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.origamiplots import plot_interactive
 from origami.plotsandcalcs import articleillustrations
-from origami.plotsandcalcs.alternating.utils import (create_F_from_list, create_MM_from_list,
-                                                     create_perturbed_origami,
-                                                     csc, sin, create_perturbed_origami_by_list)
+from origami.alternatingpert.utils import (create_perturbed_origami,
+                                           csc, sin, create_perturbed_origami_by_list)
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import linalgutils, plotutils
 

@@ -10,9 +10,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from origami import origamimetric
 from origami.RFFQMOrigami import RFFQM
-from origami.plotsandcalcs.alternating import curvatures
-from origami.plotsandcalcs.alternating.curvatures import create_kx_ky_funcs
-from origami.plotsandcalcs.alternating.utils import create_perturbed_origami, cos, tan, csc, \
+from origami.alternatingpert import curvatures
+from origami.alternatingpert.curvatures import create_kx_ky_funcs
+from origami.alternatingpert.utils import create_perturbed_origami, cos, tan, csc, \
     sec, create_perturbed_origami_by_list
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
 from origami.utils import logutils, plotutils

@@ -13,8 +13,8 @@ from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import create_angles_func_vertical_alternation, set_perturbations_by_func
 from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
-from origami.plotsandcalcs.alternating import curvatures
-from origami.plotsandcalcs.alternating.utils import sin, cos, tan, csc, sec, compare_curvatures, get_FF_dFF_dMM_ddMM, \
+from origami.alternatingpert import curvatures
+from origami.alternatingpert.utils import sin, cos, tan, csc, sec, compare_curvatures, get_FF_dFF_dMM_ddMM, \
     create_perturbed_origami, create_F_from_list
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils, zigzagutils

@@ -21,12 +21,12 @@ from scipy.optimize import fsolve
 import origami
 from origami import origamimetric
 from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs.alternating import curvatures
-from origami.plotsandcalcs.alternating.curvatures import create_kx_ky_funcs, create_expected_K_func, \
+from origami.alternatingpert import curvatures
+from origami.alternatingpert.curvatures import create_kx_ky_funcs, create_expected_K_func, \
     create_expected_curvatures_func
-from origami.plotsandcalcs.alternating.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \
+from origami.alternatingpert.utils import compare_curvatures as compare_G_curvatures, create_F_from_list, \
     create_MM_from_list
-from origami.plotsandcalcs.alternating.utils import csc, sec, get_FF_dFF_dMM_ddMM, \
+from origami.alternatingpert.utils import csc, sec, get_FF_dFF_dMM_ddMM, \
     create_perturbed_origami, tan, cos
 from origami.utils.plotutils import imshow_with_colorbar
 
