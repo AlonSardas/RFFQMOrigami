@@ -9,10 +9,12 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import interpolate
 
+from origami import quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.miuraori import SimpleMiuraOri
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import plotutils, linalgutils
+from origami.zigzagmiuraori import ZigzagMiuraOri
 
 
 def add_slider_miuraori(ax, ori: SimpleMiuraOri, should_plot_normals=False):
@@ -53,7 +55,7 @@ def add_slider_miuraori(ax, ori: SimpleMiuraOri, should_plot_normals=False):
     return omega_slider
 
 
-def plot_interactive_miuraori(ori: SimpleMiuraOri):
+def plot_interactive_miuraori(ori: SimpleMiuraOri | ZigzagMiuraOri):
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d')
     ori.plot(ax)
@@ -118,7 +120,7 @@ def plot_interactive(ori: RFFQM):
     plt.show()
 
 
-def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0) -> Tuple[Figure, Axes]:
+def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0, background_color=None) -> Tuple[Figure, Axes]:
     """
     Plot the crease lines on a flat 2D axes.
 
@@ -145,6 +147,8 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0) -> Tuple[Fi
         quads.dots = rot @ quads.dots
 
     draw_creases(quads, initial_MVA, ax)
+    if background_color is not None:
+        quadranglearray.plot_2D_polygon(quads, ax, background_color)
 
     ax.set_aspect('equal')
     ax.set_axis_off()

@@ -1,7 +1,8 @@
 import fractions
+from typing import Optional
 
 import numpy as np
-from matplotlib import patches as mpatches
+from matplotlib import patches as mpatches, pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
@@ -33,10 +34,12 @@ def set_pi_ticks(ax, axis, pi_range=(0, 1), divisions=4):
         ax.set_yticklabels(labels)
 
 
-def set_3D_labels(ax: Axes3D):
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
+def set_3D_labels(ax: Axes3D, x_pad: Optional[float] = None,
+                  y_pad: Optional[float] = None,
+                  z_pad: Optional[float] = None):
+    ax.set_xlabel('X', labelpad=x_pad)
+    ax.set_ylabel('Y', labelpad=y_pad)
+    ax.set_zlabel('Z', labelpad=z_pad)
 
 
 def set_labels_off(ax: Axes3D):
@@ -46,10 +49,12 @@ def set_labels_off(ax: Axes3D):
 
 
 def remove_tick_labels(ax: Axes | Axes3D):
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
+    # I tried to use ax.set_xticklabels([]) but due to some bug, it made
+    # ax.get_tightbbox() return a huge bbox
+    ax.xaxis.set_major_formatter(plt.NullFormatter())
+    ax.yaxis.set_major_formatter(plt.NullFormatter())
     if isinstance(ax, Axes3D):
-        ax.set_zticklabels([])
+        ax.zaxis.set_major_formatter(plt.NullFormatter())
 
 
 def set_axis_scaled(ax: Axes3D):

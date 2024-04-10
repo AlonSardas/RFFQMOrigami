@@ -11,10 +11,11 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.plotsandcalcs
-from origami import angleperturbation, origamimetric
+from origami import angleperturbation, origamimetric, origamiplots
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import set_perturbations_by_func, create_angles_func_vertical_alternation, AnglesFuncType
 from origami.origamiplots import plot_interactive
@@ -122,32 +123,28 @@ def plot_pattern_with_G():
     quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
     ori = RFFQM(quads)
 
-    quads = ori.set_gamma(0)
-    fig, ax = plot_flat_quadrangles(quads)
-    ax.set_axis_off()
-    ax.set_aspect('equal')
-    # ax.set_box_aspect(None, zoom=2)
-    ax.view_init(azim=90)
-    ax.dist = 6
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'alternating-with-G-flat.svg'))
+    fig, ax = origamiplots.plot_crease_pattern(ori, rotate_angle=-G(0), background_color='0.9')
+    fig.savefig(os.path.join(FIGURES_PATH, 'alternating-with-G-flat.pdf'))
 
     fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-159, azim=103)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=20, azim=-123)
 
-    ori.set_gamma(2.8)
-    ori.dots.plot_with_wireframe(ax, alpha=0.4)
+    ori.set_gamma(2.3)
+    light_source = LightSource(azdeg=315 - 45, altdeg=45)
+    ori.dots.plot(ax, panel_color='C1', alpha=1, lightsource=light_source)
 
-    ax.dist = 8.5
     ax.set_aspect('equal')
-    # ax.set(xticks=[], yticks=[], zticks=[])
-    # ax.set(zticks=[-3, 0, 3])
-    plotutils.set_labels_off(ax)
-    # ax.set_axis_off()
     fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'alternating-with-G-folded.svg'))
+    # ax.set_xticklabels([])
+    # ax.get_yaxis().set_visible(False)
+    plotutils.remove_tick_labels(ax)
+    print(fig.get_tightbbox())
+    # fig.savefig(os.path.join(FIGURES_PATH, 'alternating-with-G-folded.pdf'))
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, 'alternating-with-G-folded.pdf'),
+                               1, 0.75, pad_x=-0.1, translate_x=0.1)
 
-    plot_interactive(ori)
+    plt.show()
+    # plot_interactive(ori)
 
 
 def plot_pattern_with_F1():
@@ -244,9 +241,9 @@ def create_angles_func_alternating_with_G(F1, F2, G) -> AnglesFuncType:
 def main():
     # test_continuous_perturbations()
     # test_continuous_perturbations_with_G()
-    # plot_pattern_with_G()
+    plot_pattern_with_G()
     # plot_sphere_like()
-    plot_pattern_with_F1()
+    # plot_pattern_with_F1()
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami import origamiplots
+from origami import origamiplots, quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.plotsandcalcs.articleillustrations import FIGURES_PATH
@@ -40,27 +40,28 @@ def plot_placed_horizontally():
     ori.dots.dots[0, :] += 8
     # ori.dots.dots[2, :] -= 2
     panel_color = 'C1'
-    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=0.4)
+    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=1)
     # surf.set_alpha(0.3)
 
     ori.set_gamma(ori.calc_gamma_by_omega(1.5))
     ori.dots.dots[0, :] += 15
     # ori.dots.dots[2, :] -= 4
-    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=0.4)
+    ori.dots.plot(ax, panel_color, alpha=1.0, edge_alpha=1)
     # wire.set_alpha(0.2)
 
-    ori.set_gamma(ori.calc_gamma_by_omega((np.pi - 0.1)))
+    ori.set_gamma(ori.calc_gamma_by_omega((np.pi - 0.12)))
     ori.dots.dots[0, :] += 19
     # ori.dots.dots[2, :] -= 6
-    ori.dots.plot(ax, panel_color, alpha=0.9, edge_alpha=0.3)
+    # ori.dots.plot(ax, panel_color, alpha=1, edge_alpha=1)
+    ax.computed_zorder=False
+    quadranglearray.plot_panels_manual_zorder(ori.dots, ax, panel_color, edge_color='g', z_shift=-0.01, edge_width=1)
+    # ori.dots.plot(ax, panel_color, alpha=1, edge_alpha=1)
     # surf.set_alpha(0.1)
 
     plotutils.set_labels_off(ax)
     ax.set_aspect("equal")
     ax.set(zticks=[-0.5, 0, 0.5])
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_zticklabels([])
+    plotutils.remove_tick_labels(ax)
 
     # ax.axis('off')
     # ax.grid(True)
@@ -71,9 +72,9 @@ def plot_placed_horizontally():
     # fig.tight_layout()
     mpl.rcParams["savefig.bbox"] = "standard"
     # fig.set_facecolor("aliceblue")
-    fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.svg"))
-    fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.pdf"))
-    fig.savefig(os.path.join(FIGURES_PATH, "classic-miura-ori.png"), dpi=300)
+    fig.savefig(os.path.join(FIGURES_PATH, "classical-miura-ori.svg"))
+    fig.savefig(os.path.join(FIGURES_PATH, "classical-miura-ori.pdf"))
+    fig.savefig(os.path.join(FIGURES_PATH, "classical-miura-ori.png"), dpi=300)
 
     plt.show()
 

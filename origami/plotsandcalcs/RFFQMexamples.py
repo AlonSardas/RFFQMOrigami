@@ -7,12 +7,12 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import origami
 import origami.plotsandcalcs
-from origami import origamimetric, origamiplots
+from origami import origamimetric, origamiplots, quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import create_miura_angles, MarchingAlgorithm
 from origami.quadranglearray import QuadrangleArray, plot_flat_quadrangles
-from origami.utils import linalgutils, zigzagutils
+from origami.utils import linalgutils, zigzagutils, plotutils
 
 FIGURES_PATH = os.path.join(origami.plotsandcalcs.BASE_PATH,
                             'RFFQM', 'Compatibility', 'Figures')
@@ -74,10 +74,12 @@ def create_radial():
     # ax.set_box_aspect(None, zoom=1.7)
     ax.dist = 5
     fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat.svg'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat2.svg'))
 
     fig, ax = origamiplots.plot_crease_pattern(ori)
-    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat2.svg'))
+    quadranglearray.plot_2D_polygon(ori.dots, ax)
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat.pdf'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-flat.svg'))
 
     fig = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', elev=45, azim=149)
@@ -92,13 +94,15 @@ def create_radial():
     ax.set_aspect('equal')
     # ax.set(xticks=[], yticks=[], zticks=[])
     ax.set(zticks=[-3, 0, 3])
-    ax.set_xlabel('')
-    ax.set_ylabel('')
-    ax.set_zlabel('')
+    plotutils.set_labels_off(ax)
+    plotutils.remove_tick_labels(ax)
     # ax.set_axis_off()
     fig.tight_layout()
     fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-folded.svg'))
     fig.savefig(os.path.join(FIGURES_PATH, 'radial-example-folded.png'), dpi=300)
+    plotutils.save_fig_cropped(fig,
+                               os.path.join(FIGURES_PATH, 'radial-example-folded.pdf'),
+                               1, 0.85)
 
     plt.show()
 
@@ -198,9 +202,12 @@ def create_sphere():
     ax.set_zlim(-lim, lim)
     ax.set_aspect('equal')
     # plotutils.set_axis_scaled(ax)
+    plotutils.set_3D_labels(ax)
+    plotutils.remove_tick_labels(ax)
 
     fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.svg'))
     fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'sphere-radial.pdf'))
 
     plt.show()
 
@@ -239,9 +246,9 @@ def create_MARS_Barreto():
 def main():
     # logutils.enable_logger()
     # create_basic_crease()
-    create_radial()
+    # create_radial()
     # create_sphere_interactive()
-    # create_sphere()
+    create_sphere()
     # create_MARS_Barreto()
 
 

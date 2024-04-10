@@ -7,8 +7,9 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from origami import miuraori
-from origami.utils.zigzagutils import follow_curve, plot_zigzag
+from origami.quadranglearray import QuadrangleArray
 from origami.utils import plotutils, sympyutils
+from origami.utils.zigzagutils import follow_curve, plot_zigzag
 
 FIGURES_PATH = '../../../../RFFQM/Figures'
 
@@ -121,40 +122,42 @@ def plot_smooth_surface():
 
 
 def plot_discrete():
-    origami = DiscreteOrigami(0.15, 0.4, beta=0.8 * np.pi / 2, omega=0.6 * np.pi)
-    print(f'gamma={origami.get_gamma():.2f}')
-    print(f'Theta={origami.YZ_zigzag_angle:.2f}')
-    print(f'phi={origami.XY_zigzag_angle:.2f}')
-    print(f'ls={origami.ly}')
-    print(f'cs={origami.lx}')
+    discrete_ori = DiscreteOrigami(0.15, 0.4, beta=0.8 * np.pi / 2, omega=0.6 * np.pi)
+    print(f'gamma={discrete_ori.get_gamma():.2f}')
+    print(f'Theta={discrete_ori.YZ_zigzag_angle:.2f}')
+    print(f'phi={discrete_ori.XY_zigzag_angle:.2f}')
+    print(f'ls={discrete_ori.ly}')
+    print(f'cs={discrete_ori.lx}')
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
     fig: Figure = fig
     ax: Axes = axes[0]
-    origami.plot_YZ_zigzag(ax)
+    discrete_ori.plot_YZ_zigzag(ax)
     ax.set_title('YZ zigzag')
 
     ax: Axes = axes[1]
-    origami.plot_XY_zigzag(ax)
+    discrete_ori.plot_XY_zigzag(ax)
     ax.set_title('XY zigzag')
 
     fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'zigzag_approximation.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'parallelogram-example-zigzags.pdf'))
 
-    plt.show()
-    return
+    # plt.show()
+    # return
 
     fig = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d')
-    origami.origami.plot(ax, alpha=0.5)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=30, azim=-137)
 
-    ax.set_xlim(-2, 2)
-    ax.set_ylim(-2, 2)
-    ax.set_zlim(-1, 1)
-    plotutils.set_3D_labels(ax)
-
-    fig.savefig(os.path.join(FIGURES_PATH, 'folded-origami.png'))
-
+    quads = QuadrangleArray(discrete_ori.origami.dots, discrete_ori.origami.rows + 1, discrete_ori.origami.columns + 1)
+    quads.plot(ax, 'C1', alpha=0.6, edge_width=0.6)
+    plotutils.set_axis_scaled(ax)
+    plotutils.set_3D_labels(ax, x_pad=12, y_pad=12)
+    ax.set_yticks([-1.5, 0, 1.5])
+    ax.set_zticks([-0.3, 0, 0.3])
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, 'parallelogram-example-folded.pdf'),
+                               1.15, 0.7, translate_x=-0.3)
+    # plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, 'folded-origami.png'),
+    #                            1.15, 0.7, translate_x=-0.3)
     plt.show()
 
 

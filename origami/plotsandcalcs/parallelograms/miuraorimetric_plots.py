@@ -71,14 +71,14 @@ def plot_FFF_unit():
     set_3D_labels(ax)
 
     edge_points = ori.dots[
-        :,
-        [
-            ori.indexes[0, 0],
-            ori.indexes[0, -1],
-            ori.indexes[-1, 0],
-            ori.indexes[-1, -1],
-        ],
-    ]
+                  :,
+                  [
+                      ori.indexes[0, 0],
+                      ori.indexes[0, -1],
+                      ori.indexes[-1, 0],
+                      ori.indexes[-1, -1],
+                  ],
+                  ]
     ax.scatter3D(
         edge_points[0, :], edge_points[1, :], edge_points[2, :], color="r", s=220
     )
@@ -95,7 +95,7 @@ def plot_unperturbed_unit_cell():
     ax: Axes3D = fig.add_subplot(111, projection="3d", elev=25, azim=-133)
 
     # ori.set_omega(-1.2)
-    ori.set_omega(-1.2)
+    ori.set_omega(1.2)
     _, wire = ori.plot(ax, alpha=0.4)
     wire.remove()
     # wire.set_color("r")
@@ -119,8 +119,8 @@ def plot_unperturbed_unit_cell():
     ]
 
     creases_with_color = itertools.chain(
-        itertools.zip_longest([], mountain_creases, fillvalue="r"),
         itertools.zip_longest([], valley_creases, fillvalue="b"),
+        itertools.zip_longest([], mountain_creases, fillvalue="r"),
     )
 
     for color, crease in creases_with_color:
@@ -139,46 +139,47 @@ def plot_unperturbed_unit_cell():
     set_3D_labels(ax)
 
     edge_points = ori.dots[
-        :,
-        [
-            ori.indexes[0, 0],
-            ori.indexes[0, -1],
-            ori.indexes[-1, 0],
-            ori.indexes[-1, -1],
-        ],
-    ]
+                  :,
+                  [
+                      ori.indexes[0, 0],
+                      ori.indexes[0, -1],
+                      ori.indexes[-1, 0],
+                      ori.indexes[-1, -1],
+                  ],
+                  ]
     sc = ax.plot3D(
         edge_points[0, :], edge_points[1, :], edge_points[2, :], "g.", markersize=25, alpha=1.0
     )[0]
     sc.set_zorder(15)
 
     dot = ori.dots[:, ori.indexes[0, 0]]
-    ax.text(dot[0] - 0.25, dot[1]-0.15, dot[2] - 0.15, "E", fontsize=30)
+    ax.text(dot[0], dot[1], dot[2] - 0.3, "A", fontsize=30,
+            va='center', ha='center')
     dot = ori.dots[:, ori.indexes[-1, 0]]
-    ax.text(dot[0] + 0.1, dot[1]-0.15, dot[2]-0.1, "G", fontsize=30)
+    ax.text(dot[0] - 0.1, dot[1] + 0.2, dot[2] - 0.1, "J", fontsize=30)
     dot = ori.dots[:, ori.indexes[0, -1]]
-    ax.text(dot[0] - 0.2, dot[1], dot[2] - 0.2, "A", fontsize=30)
+    ax.text(dot[0], dot[1] - 0.05, dot[2] - 0.3, "E", fontsize=30,
+            va='center', ha='center')
     dot = ori.dots[:, ori.indexes[-1, -1]]
-    ax.text(dot[0], dot[1]+0.3, dot[2] + 0.1, "J", fontsize=30)
+    ax.text(dot[0], dot[1] + 0.3, dot[2] + 0.07, "G", fontsize=30,
+            va='center', ha='center')
 
-    A_dot = ori.dots[:, ori.indexes[0, -1]]
-    J_dot = ori.dots[:, ori.indexes[-1, -1]]
+    A_dot = ori.dots[:, ori.indexes[0, 0]]
+    J_dot = ori.dots[:, ori.indexes[-1, 0]]
     AJ_arrow = plotutils.Arrow3D((A_dot[0], J_dot[0]),
                                  (A_dot[1] + 0.1, J_dot[1] - 0.1),
                                  (A_dot[2], J_dot[2]),
                                  arrowstyle='->,head_width=.25', mutation_scale=30, lw=2.5)
     ax.add_patch(AJ_arrow)
 
-    E_dot = ori.dots[:, ori.indexes[0, 0]]
-    AE_arrow = plotutils.Arrow3D((A_dot[0]+0.1, E_dot[0]-0.1), 
+    E_dot = ori.dots[:, ori.indexes[0, -1]]
+    AE_arrow = plotutils.Arrow3D((A_dot[0] + 0.1, E_dot[0] - 0.1),
                                  (A_dot[1], E_dot[1]),
-                                 (A_dot[2], E_dot[2]), 
+                                 (A_dot[2], E_dot[2]),
                                  arrowstyle='->,head_width=.25', mutation_scale=30, lw=2.5)
     ax.add_patch(AE_arrow)
 
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_zticklabels([])
+    plotutils.remove_tick_labels(ax)
 
     # fig.tight_layout()
     # mpl.rcParams["savefig.bbox"] = "standard"
@@ -264,28 +265,31 @@ def plot_gamma_vs_activation_angle():
     plt.show()
 
 
-def plot_phi_vs_activation_angle():
+def plot_theta_vs_activation_angle():
     matplotlib.rc("font", size=22)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(layout="constrained", figsize=(5, 4))
     ax: matplotlib.axes.Axes = ax
     xs = np.linspace(0, np.pi, 200)
     ys = 1 / 2 * np.arccos(-1 / 2 * np.cos(xs) + 1 / 2)
 
     ax.plot(xs, ys)
     ax.set_xlabel(r"$ \omega $")
-    ax.set_ylabel(r"$ \phi\left(\omega;\beta=\pi/4\right) $")
+    ax.set_ylabel(r"$ \theta\left(\omega;\vartheta=\pi/4\right) $")
     set_pi_ticks(ax, "x")
     ax.set_yticks([0, np.pi / 8, np.pi / 4])
     ax.set_yticklabels(["0", r"$\frac{1}{8}\pi$", r"$\frac{1}{4}\pi$"])
 
-    fig.savefig(os.path.join(FIGURES_PATH, "phi_vs_activation_angle.png"))
+    fig.savefig(os.path.join(FIGURES_PATH, "theta_vs_activation_angle.png"))
+    fig.savefig(os.path.join(FIGURES_PATH, "theta_vs_activation_angle.pdf"))
 
     plt.show()
 
 
-def plot_theta_vs_activation_angle():
-    fig, ax = plt.subplots()
+def plot_phi_vs_activation_angle():
+    matplotlib.rc("font", size=22)
+
+    fig, ax = plt.subplots(layout="constrained", figsize=(5, 4))
     ax: matplotlib.axes.Axes = ax
     xs = np.linspace(0, np.pi, 200)
 
@@ -295,11 +299,12 @@ def plot_theta_vs_activation_angle():
 
     ax.plot(xs, ys)
     ax.set_xlabel(r"$ \omega $")
-    ax.set_ylabel(r"$ \theta\left(\omega;\beta=\pi/4\right) $")
+    ax.set_ylabel(r"$ \phi\left(\omega;\vartheta=\pi/4\right) $")
     set_pi_ticks(ax, "x")
     set_pi_ticks(ax, "y", pi_range=(0, fractions.Fraction(1, 2)), divisions=4)
 
-    # fig.savefig(os.path.join(FIGURES_PATH, 'theta_vs_activation_angle.png'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'phi_vs_activation_angle.pdf'))
+    fig.savefig(os.path.join(FIGURES_PATH, 'phi_vs_activation_angle.png'))
 
     plt.show()
 

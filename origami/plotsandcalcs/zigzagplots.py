@@ -138,29 +138,32 @@ def plot():
 
 def plot_simple_example():
     dots, rows, cols = create_basic_crease2()
-    origami = ZigzagMiuraOri(dots, rows, cols)
+    ori = ZigzagMiuraOri(dots, rows, cols)
 
-    fig, ax = plot_flat_configuration(origami)
-    ax.set_aspect("equal")
-    ax.set_axis_off()
-    fig.savefig(os.path.join(FIGURES_PATH, "simple-example-flat.pdf"), pad_inches=-1)
+    ori2 = RFFQMOrigami.RFFQM(ori.get_quads())
+    quads = ori2.dots
+    fig, ax = origamiplots.plot_crease_pattern(ori2)
+    quadranglearray.plot_2D_polygon(quads, ax)
+    fig.savefig(os.path.join(FIGURES_PATH, "simple-example-flat.pdf"))
+    # return
 
-    origami.set_omega(0.5)
+    ori2.set_gamma(ori2.calc_gamma_by_omega(-0.5))
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection="3d", azim=167, elev=47)
-    origami.plot(ax, alpha=0.8)
+    ori2.dots.plot(ax, alpha=1, edge_width=2.5)
     ax.set_aspect("equal")
     ax.set_zticks([-0.5, 0, 0.5])
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_zticklabels([])
-    plotutils.set_labels_off(ax)
+    plotutils.remove_tick_labels(ax)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
     # ax.set_zlim(-2, 2)
 
-    fig.savefig(
-        os.path.join(FIGURES_PATH, "simple-example-folded.pdf"), pad_inches=-0.2
-    )
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, "simple-example-folded.pdf"),
+                               1, 0.78)
+    # fig.savefig(
+    #     os.path.join(FIGURES_PATH, "simple-example-folded.pdf"), pad_inches=-0.2
+    # )
 
     plt.show()
 
@@ -290,8 +293,6 @@ def plot_theta_vs_alpha_2_subplots():
 
 
 def plot_theta_vs_alpha():
-    # alpha and beta are kind of the same, beta=pi-alpha.
-
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     xs = np.linspace(0, np.pi, 400)
 
@@ -310,8 +311,8 @@ def plot_theta_vs_alpha():
     plotutils.set_pi_ticks(ax, "x")
     plotutils.set_pi_ticks(ax, "y", (0, Fraction(1, 2)))
 
-    ax.set_xlabel(r"$ \beta $")
-    ax.set_ylabel(r"$ \theta $ vs $\beta$")
+    ax.set_xlabel(r"$ \vartheta $")
+    ax.set_ylabel(r"$ \phi $")
 
     plot_for_omega(omega=0.3)
     plot_for_omega(omega=1)
@@ -319,7 +320,7 @@ def plot_theta_vs_alpha():
 
     ax.legend()
 
-    fig.savefig(os.path.join(FIGURES_PATH, "theta_vs_beta.pdf"))
+    fig.savefig(os.path.join(FIGURES_PATH, "phi_vs_angle.pdf"))
 
     plt.show()
 
@@ -378,8 +379,8 @@ def main():
     # plot()
     # plot_spiral()
     # plot_full_cylinder()
-    plot_cylinder_small()
-    # plot_simple_example()
+    # plot_cylinder_small()
+    plot_simple_example()
     # plot_theta_vs_alpha()
     # plot_unit_cell()
     # plot_different_scaling()

@@ -19,13 +19,13 @@ from scipy import interpolate
 
 import origami
 from origami import origamimetric, origamiplots, quadranglearray
-from origami.origamiplots import plot_interactive
-from origami.plotsandcalcs import articleillustrations
 from origami.alternatingpert import curvatures
-from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.alternatingpert.curvatures import create_expected_curvatures_func
 from origami.alternatingpert.utils import create_perturbed_origami, \
     plot_perturbations_by_list, create_perturbed_origami_by_list, get_pert_list_by_func, plot_perturbations
+from origami.origamiplots import plot_interactive
+from origami.plotsandcalcs import articleillustrations
+from origami.plotsandcalcs.alternating.betterapprox import compare_curvatures
 from origami.utils import plotutils, logutils
 from origami.utils.plotutils import imshow_with_colorbar
 
@@ -62,12 +62,14 @@ def plot_vase():
     k_extra_factor = 1
     ky_func = lambda t: k_extra_factor * ddf_dy2(t) / (1 + df_dy(t) ** 2) ** (3 / 2)
 
-    fig, ax = plt.subplots()
-    ys = np.linspace(0, 1)
-    ax.plot(ys, ky_func(ys))
-    ax.plot(ys, np.cos(ys * np.pi) * 0.2, '--')
-    plt.show()
-    return
+    should_plot_ky = False
+    if should_plot_ky:
+        fig, ax = plt.subplots()
+        ys = np.linspace(0, 1)
+        ax.plot(ys, ky_func(ys))
+        ax.plot(ys, np.cos(ys * np.pi) * 0.2, '--')
+        plt.show()
+    # return
 
     print(ky_func(0.2), ky_func(0.5), ky_func(1))
     # ky_func = lambda t: +0.7 * (t - 0.5)
@@ -76,19 +78,21 @@ def plot_vase():
     Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky_func, Delta0)
 
     xs, deltas, ys, Deltas = get_pert_list_by_func(delta_func, Delta_func, Nx, Ny)
-    fig, axes = plt.subplots(2)
-    plot_perturbations_by_list(axes, xs, deltas, ys, Deltas)
+    # fig, axes = plt.subplots(2)
+    # plot_perturbations_by_list(axes, xs, deltas, ys, Deltas)
 
     ori = create_perturbed_origami_by_list(theta, L0, C0, deltas, Deltas)
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
-    geometry = origamimetric.OrigamiGeometry(ori.dots)
-    Ks, Hs = geometry.get_curvatures_by_shape_operator()
-    expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
-    fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
-    fig.tight_layout()
-    # fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.svg'))
-    # fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.pdf'))
+    should_plot_geometry = False
+    if should_plot_geometry:
+        geometry = origamimetric.OrigamiGeometry(ori.dots)
+        Ks, Hs = geometry.get_curvatures_by_shape_operator()
+        expected_K, expected_H = create_expected_curvatures_func(L_tot, C_tot, W0, theta, delta_func, Delta_func)
+        fig, _ = compare_curvatures(Ks, Hs, expected_K, expected_H)
+        fig.tight_layout()
+        # fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.svg'))
+        # fig.savefig(os.path.join(FIGURES_PATH, 'vase-curvatures.pdf'))
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', elev=39, azim=-140,
@@ -110,7 +114,9 @@ def plot_vase():
     zs += 0.3 * ys
     ax.plot_surface(xs, ys, zs, linewidth=0, rstride=1, cstride=1, zorder=-20)
 
-    ori.dots.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k', panel_color='C1')
+    # ori.dots.plot(ax, alpha=0.6, edge_alpha=0.8, edge_color='k', panel_color='C1')
+    # ori.dots.plot(ax, alpha=1, edge_alpha=1, edge_color='k', panel_color='C1')
+    quadranglearray.plot_panels_manual_zorder(ori.dots, ax, alpha=1, edge_alpha=1, edge_color='k', panel_color='C1')
 
     plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
@@ -398,7 +404,7 @@ def plot_cap_different_curvatures():
     kxs = [np.sqrt(K) * K_factor, np.sqrt(K) / K_factor]
 
     fig_all: Figure = plt.figure()
-    ax_all: Axes3D = fig_all.add_subplot(111, projection='3d', elev=25, azim=-130)
+    ax_all: Axes3D = fig_all.add_subplot(111, projection='3d', elev=25, azim=-130, computed_zorder=True)
 
     pert_fig, pert_axes = plt.subplots(2)
 
@@ -423,11 +429,17 @@ def plot_cap_different_curvatures():
         ori = create_perturbed_origami(theta, Nx, Ny, L_tot, C_tot, delta_func, Delta_func)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
 
+        # np.savetxt(f'Pattern{i+1}.txt', ori.dots.dots)
+        # np.savetxt(f'Pattern{i+1}-shape.txt', (ori.dots.rows, ori.dots.cols))
+
         # r, c = indexes.shape
         z_shift = i * 2.1
         quads = ori.dots
         quads.dots[2, :] += z_shift
-        quads.plot(ax_all, edge_color='k', edge_width=1, alpha=0.7)
+        # quads.plot(ax_all, edge_color='k', edge_width=1, alpha=0.9)
+        ax_all.computed_zorder = False
+        quadranglearray.plot_panels_manual_zorder(quads, ax_all, panel_color=f'C{i}', edge_color='k', edge_width=1,
+                                                  alpha=0.9)
         # ax_all.plot_surface(
         #     dots[0, :].reshape((r, c)),
         #     dots[1, :].reshape((r, c)),
@@ -445,7 +457,7 @@ def plot_cap_different_curvatures():
         l1.set_zorder(30)
         l2.set_zorder(30)
 
-        should_plot_geometry = True
+        should_plot_geometry = False
         if should_plot_geometry:
             geometry = origamimetric.OrigamiGeometry(ori.dots)
             Ks, Hs = geometry.get_curvatures_by_shape_operator()
@@ -514,12 +526,23 @@ def plot_wavy():
     ori.set_gamma(ori.calc_gamma_by_omega(-W0))
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-151, azim=119,
-                                 computed_zorder=True)
     light_source = LightSource(azdeg=315, altdeg=45)
-    ori.dots.plot(ax, panel_color=PANELS_COLOR, alpha=PANELS_ALPHA,
-                  edge_alpha=EDGE_ALPHA,
-                  edge_color=EDGE_COLOR, lightsource=light_source)
+    plot_option = 1
+    if plot_option == 1:
+        ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-151, azim=119,
+                                     computed_zorder=True)
+        ori.dots.plot(ax, panel_color=PANELS_COLOR, alpha=PANELS_ALPHA,
+                      edge_alpha=EDGE_ALPHA,
+                      edge_color=EDGE_COLOR, lightsource=light_source)
+
+    elif plot_option == 2:
+        ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-162, azim=130,
+                                     computed_zorder=False)
+        quadranglearray.plot_panels_manual_zorder(
+            ori.dots, ax, panel_color=PANELS_COLOR, alpha=PANELS_ALPHA,
+            edge_alpha=EDGE_ALPHA,
+            edge_color=EDGE_COLOR, lightsource=light_source,
+            z_shift=-0.01)
 
     quads = ori.dots
     dots, indexes = quads.dots, quads.indexes
@@ -828,9 +851,9 @@ def plot_cone_like():
 
 
 def main():
-    # plot_vase()
-    plot_spherical_cap()
-    plot_saddle()
+    plot_vase()
+    # plot_spherical_cap()
+    # plot_saddle()
     # plot_wavy()
     # plot_2D_sinusoid()
     # plot_cap_different_curvatures()

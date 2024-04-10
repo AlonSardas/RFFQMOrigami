@@ -8,8 +8,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from origami import origamiplots, marchingalgorithm, origamimetric, quadranglearray
 from origami.RFFQMOrigami import RFFQM
-from origami.plotsandcalcs import articleillustrations
 from origami.alternatingpert.utils import create_perturbed_origami, create_perturbed_origami_by_list
+from origami.plotsandcalcs import articleillustrations
 from origami.quadranglearray import dots_to_quadrangles
 from origami.utils import plotutils
 
@@ -39,8 +39,8 @@ def plot_unperturbed_Miura_Ori():
     fig: Figure = plt.figure(layout='compressed')
     ax: Axes3D = fig.add_subplot(111, projection="3d",
                                  elev=22, azim=-119)
-    panels = ori.dots.plot(ax, panel_color=articleillustrations.PANELS_COLOR,
-                           edge_color=EDGE_COLOR, edge_alpha=EDGE_ALPHA, edge_width=EDGE_WIDTH)
+    ori.dots.plot(ax, panel_color=articleillustrations.PANELS_COLOR,
+                  edge_color=EDGE_COLOR, edge_alpha=EDGE_ALPHA, edge_width=EDGE_WIDTH)
     plotutils.set_axis_scaled(ax)
     ax.set_axis_off()
     plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, 'unperturbed-Miura-Ori-folded.png'),

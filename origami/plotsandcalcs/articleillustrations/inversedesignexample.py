@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 from mpl_toolkits.mplot3d import Axes3D
 
-from origami import origamimetric
+from origami import origamimetric, quadranglearray
 from origami.RFFQMOrigami import RFFQM
 from origami.alternatingpert import curvatures
 from origami.alternatingpert.curvatures import create_kx_ky_funcs
@@ -173,9 +173,25 @@ def plot_folded_pattern(ori: RFFQM):
     mpl.rcParams['font.size'] = 20
 
     fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=20, azim=-133, computed_zorder=True)
+    ax: Axes3D = fig.add_subplot(111, projection='3d', elev=20, azim=-133)
     # panels = ori.dots.plot(ax, alpha=0.05, edge_alpha=0.35, edge_width=0.5)
-    panels = ori.dots.plot(ax, alpha=0.8, edge_alpha=0.9, edge_width=1.0, panel_color='C1', edge_color='k')
+
+    # This is a hacky patch due to incorrect projection that matplotlib does
+    quads = ori.dots
+    # most_panels = quadranglearray.QuadrangleArray(quads.dots[:, quads.indexes[:, 1:].flat], quads.rows, quads.cols - 1)
+    # most_panels.plot(ax, alpha=1, edge_alpha=0.9, edge_width=1.0, panel_color='C1', edge_color='k')
+    # panels_left = quadranglearray.QuadrangleArray(quads.dots[:, quads.indexes[:, :2].flat], quads.rows, 2)
+    # panels = panels_left.plot(ax, alpha=1, edge_alpha=0.9, edge_width=1.0, panel_color='C1', edge_color='k')
+    # panels.set_zsort('min')
+
+    ax.computed_zorder = False
+    quadranglearray.plot_panels_manual_zorder(quads, ax, alpha=1, edge_alpha=1, edge_width=1.0,
+                                              z0=10, panel_color='C1', edge_color='k')
+
+    # panels = ori.dots.plot(ax, alpha=1, edge_alpha=0.9, edge_width=1.0, panel_color='C1', edge_color='k')
+    # panels.set_zorder([1, 2, 3, 4, 5])
+    # panels.set_zorder([20, 19, 18, 17, 16, 15, 14])
+    # panels.set_zsort('average')
     # panels.set_facecolor(np.random.random((3, 32, 32)))
 
     # dots_color = 'g'
@@ -186,13 +202,17 @@ def plot_folded_pattern(ori: RFFQM):
     surface_dots = ori.dots.dots[:, indexes[0::2, 0::2]]
     surface_dots = surface_dots.astype('float64')
     Z_SHIFT = - 0.25
-    ax.plot3D(surface_dots[0, :].flatten(), surface_dots[1, :].flatten(), surface_dots[2, :].flatten() + Z_SHIFT,
+    # Again, patches to make z_order correct - for the specific POV
+    ax.plot3D(np.flip(surface_dots[0, :].flatten()),
+              np.flip(surface_dots[1, :].flatten()),
+              np.flip(surface_dots[2, :].flatten()) + Z_SHIFT,
               'o',
               color=dots_color, markeredgecolor='k', markersize=5.0)
 
     def draw_projection_line(i, j):
         dot = dots[:, indexes[i, j]]
         ax.plot([dot[0]] * 2, [dot[1]] * 2, [dot[2], dot[2] + Z_SHIFT], '--r', linewidth=3)
+
     draw_projection_line(0, 0)
     draw_projection_line(-1, 0)
     draw_projection_line(0, -1)
@@ -207,11 +227,6 @@ def plot_folded_pattern(ori: RFFQM):
     ax.set_xticks([-0.2, 0, 0.2])
     ax.set_yticks([-0.2, 0, 0.2])
 
-    # ax.set_position(top=1.0, bottom=0.0, left=0.0, right=1.0)
-    # ax.set_position([0, 0, 1, 1])
-    # mpl.rcParams["savefig.bbox"] = "standard"
-    # bbox = fig.get_tightbbox()
-    # bbox.padded(-0.4, -0.4)
     fig.savefig(os.path.join(FIGURES_PATH, 'inverse-design-example.pdf'),
                 bbox_inches=Bbox.from_extents(2.4, 1.2, 10, 7)
                 )
@@ -257,16 +272,10 @@ def plot_results_1(ori: RFFQM, Ks: np.ndarray, expected_Ks: np.ndarray):
     ax.scatter3D(surface_dots[0, :], surface_dots[1, :], surface_dots[2, :], color=dots_color, zorder=5, s=6)
 
     plotutils.set_axis_scaled(ax)
-    ax.set_xlabel('X', labelpad=30)
-    ax.set_ylabel('Y', labelpad=30)
+    plotutils.set_3D_labels(ax, x_pad=30, y_pad=30)
     ax.set_zlabel('')
     ax.set_zticklabels([])
 
-    # ax.set_position(top=1.0, bottom=0.0, left=0.0, right=1.0)
-    # ax.set_position([0, 0, 1, 1])
-    # mpl.rcParams["savefig.bbox"] = "standard"
-    # bbox = fig.get_tightbbox()
-    # bbox.padded(-0.4, -0.4)
     fig.savefig(os.path.join(FIGURES_PATH, 'inverse-design-example.pdf'),
                 bbox_inches=Bbox.from_extents(2.4, 1.2, 10, 7)
                 )
