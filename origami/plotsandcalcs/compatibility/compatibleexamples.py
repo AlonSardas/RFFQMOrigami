@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.axes import Axes
 
 import origami.plotsandcalcs
-from origami import RFFQMOrigami
+from origami import RFFQMOrigami, origamiplots
 from origami.angleperturbation import set_perturbations_by_func_v1
 from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
@@ -159,17 +159,8 @@ def plot_parallel_G_const():
     quads = dots_to_quadrangles(*marching.create_dots(ls, cs))
     ori = RFFQMOrigami.RFFQM(quads)
 
-    quads = ori.set_gamma(0)
-    fig, ax = plot_flat_quadrangles(quads)
-    ax.set_axis_off()
-    ax.set_aspect('equal')
-    # ax.set_box_aspect(None, zoom=2)
-    ax.view_init(azim=-40)
-    ax.dist = 5
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, 'parallel-G-const-flat.svg'))
-
-    plot_interactive(ori)
+    fig, ax = origamiplots.plot_crease_pattern(ori, background_color='0.9')
+    fig.savefig(os.path.join(FIGURES_PATH, 'parallel-G-const-flat.pdf'))
 
     # fig = plt.figure()
     # ax: Axes3D = fig.add_subplot(111, projection='3d', elev=-159, azim=103)
@@ -194,7 +185,7 @@ def main():
     # plot_same_perturbed_angles()
     # plot_all_bottom_perturbed()
     # single_angle_perturbation()
-    plot_parallel_G_const()
+    # plot_parallel_G_const()
 
     plt.show()
 

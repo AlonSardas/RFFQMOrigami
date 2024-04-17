@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import origami.plotsandcalcs
 from origami import zigzagmiuraori
 from origami.plotsandcalcs import zigzagplots
-from origami.utils import linalgutils
+from origami.utils import linalgutils, plotutils
 
 FIGURES_PATH = os.path.join(
     origami.plotsandcalcs.BASE_PATH, "RFFQM", "Figures", "zigzag-origami"
@@ -108,9 +108,9 @@ def build_origami():
     rows = num_of_dots
     cols = 3
     dots = zigzagmiuraori.create_zigzag_dots(origami_angles, cols, ls, 0.02)
-    origami = zigzagmiuraori.ZigzagMiuraOri(dots, rows, cols)
-    zigzagplots.plot_flat_configuration(origami)
-    valid, reason = origami.is_valid()
+    ori = zigzagmiuraori.ZigzagMiuraOri(dots, rows, cols)
+    zigzagplots.plot_flat_configuration(ori)
+    valid, reason = ori.is_valid()
     if not valid:
         # raise RuntimeError(f'Not a valid folded configuration. Reason: {reason}')
         print(f"Not a valid folded configuration. Reason: {reason}")
@@ -118,8 +118,8 @@ def build_origami():
         print("The origami is valid")
     # plt.show()
 
-    origami.set_omega(omega)
-    valid, reason = origami.is_valid()
+    ori.set_omega(omega)
+    valid, reason = ori.is_valid()
     if not valid:
         raise RuntimeError(
             f'Not a valid folded configuration. Reason: {reason}')
@@ -128,20 +128,23 @@ def build_origami():
         print("The origami is valid")
     # zigzagplots.plot_interactive(origami)
 
-    fig: Figure = plt.figure()
-    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=-179, azim=-175)
-    surf, wire = origami.plot(ax, alpha=0.8)
-    wire.set_alpha(0.4)
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.set_zlabel("")
+    fig: Figure = plt.figure(layout='constrained')
+    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=2, azim=173)
+    quads = ori.get_quads()
+    quads.plot(ax, edge_width=2)
     # ax.set_zlim(-2, 2)
 
     # ax.set_xlim(-0.0003, 0.0003)
-    # ax.set_xticks([-0.00025, 0.00025])
-    ax.tick_params(axis='x', which='major', pad=25)
-    fig.tight_layout()
+    ax.set_xticks([-0.00025, 0.00025])
+    ax.set_yticks([-5, 0, 5])
+    ax.tick_params(axis='x', which='major', pad=28, labelrotation=25)
+    # ax.xaxis.get_ticklabels().set_va("bottom")
 
+    for tick in ax.xaxis.get_majorticklabels():
+        tick.set_verticalalignment("bottom")
+
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, 'origami-cat.pdf'),
+                               1.17, 0.75, translate_x=-0.1, translate_y=-0.1)
     # fig.savefig(os.path.join(FIGURES_PATH, 'origami-cat.png'))
 
     plt.show()

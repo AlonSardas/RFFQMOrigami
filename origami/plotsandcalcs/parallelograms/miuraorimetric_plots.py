@@ -196,27 +196,24 @@ def plot_zigzag_with_patterns():
     ori = SimpleMiuraOri([3, 3], [1, 2, 1, 3, 2, 1, 2, 0.9], angle=0.4)
     fig = plt.figure()
 
-    ax: Axes3D = fig.add_subplot(111, projection="3d", azim=55, elev=35)
+    ax: Axes3D = fig.add_subplot(111, projection="3d", elev=34, azim=-133, computed_zorder=False)
 
-    ori.set_omega(-1.7)
-    ori.plot(ax, alpha=0.3)
+    ori.set_omega(1.7)
+    ori.plot(ax, alpha=0.4)
 
     edge_points = ori.dots[:, ori.indexes[:, 0]]
     ax.scatter3D(
-        edge_points[0, :], edge_points[1, :], edge_points[2, :], color="r", s=120
+        edge_points[0, :], edge_points[1, :], edge_points[2, :], color="r", s=120, zorder=10
     )
 
-    # plotutils.set_axis_scaled(ax)
-    # lim = 2.5
-    # ax.set_xlim(-lim, lim)
-    # ax.set_ylim(-lim, lim)
-    # ax.set_zlim(-lim, lim)
-    ax.set_aspect("equal")
-    set_3D_labels(ax)
+    plotutils.set_axis_scaled(ax)
+    set_3D_labels(ax, y_pad=20)
     ax.set_xticks([-2, -1, 0, 1, 2])
+    ax.set_zticks([-1, 0, 1, 2])
 
-    fig.savefig(os.path.join(FIGURES_PATH, "YZ-zigzag-pattern.svg"))
-    fig.savefig(os.path.join(FIGURES_PATH, "YZ-zigzag-pattern.pdf"))
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, "YZ-zigzag-pattern.pdf"),
+                               1.04, 0.9, translate_x=-0.07, translate_y=-0.35)
+    # fig.savefig(os.path.join(FIGURES_PATH, "YZ-zigzag-pattern.pdf"))
     # plt.show()
 
     ori = SimpleMiuraOri([1, 2, 1.5, 2, 3, 1], [2, 2], angle=0.6)
@@ -224,7 +221,7 @@ def plot_zigzag_with_patterns():
 
     ax: Axes3D = fig.add_subplot(111, projection="3d", azim=-120, elev=37)
 
-    ori.set_omega(-1.2)
+    ori.set_omega(1.2)
     ori.plot(ax, alpha=0.4)
 
     edge_points = ori.dots[:, ori.indexes[0, :]]
@@ -233,15 +230,15 @@ def plot_zigzag_with_patterns():
     )
 
     plotutils.set_axis_scaled(ax)
-    set_3D_labels(ax)
-    ax.set_xlabel("X", labelpad=20)
+    set_3D_labels(ax, x_pad=20)
     ax.set_zticks([-0.4, 0, 0.4])
 
     # fig.tight_layout(rect=(0.2,0,0.9,1))
     # fig.tight_layout()
 
     # fig.savefig(os.path.join(FIGURES_PATH, "XY-zigzag-pattern.svg"), pad_inches=0.2)
-    fig.savefig(os.path.join(FIGURES_PATH, "XY-zigzag-pattern.pdf"), pad_inches=0.2)
+    plotutils.save_fig_cropped(fig, os.path.join(FIGURES_PATH, "XY-zigzag-pattern.pdf"),
+                               1.15, 0.75, translate_x=-0.2, translate_y=-0.1)
 
     plt.show()
 
@@ -315,5 +312,5 @@ if __name__ == "__main__":
     # plot_theta_vs_activation_angle()
     # plot_FFF_unit()
     # plot_parallelograms_example()
-    plot_unperturbed_unit_cell()
-    # plot_zigzag_with_patterns()
+    # plot_unperturbed_unit_cell()
+    plot_zigzag_with_patterns()

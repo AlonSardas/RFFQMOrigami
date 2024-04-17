@@ -12,10 +12,11 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 import origami.plotsandcalcs
+from origami import origamiplots
 from origami.RFFQMOrigami import RFFQM
 from origami.angleperturbation import set_perturbations_by_func_v1, set_perturbations_by_func, _create_func_v1
-from origami.origamiplots import plot_interactive
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles, IncompatibleError
+from origami.origamiplots import plot_interactive
 from origami.quadranglearray import dots_to_quadrangles, plot_flat_quadrangles
 from origami.utils import plotutils
 
@@ -50,7 +51,7 @@ def test_continuous_perturbations():
 
 
 def plot_F_periodic():
-    F = lambda x: 0.02* (np.cos(2*np.pi * x / 40))
+    F = lambda x: 0.02 * (np.cos(2 * np.pi * x / 40))
     G = lambda y: 0
     C = 0.0
 
@@ -70,17 +71,10 @@ def plot_F_periodic():
     fig, _ = plot_flat_quadrangles(quads)
     ori = RFFQM(quads)
 
-    quads = ori.set_gamma(0)
-    fig, ax = plot_flat_quadrangles(quads)
-    ax.set_axis_off()
-    ax.set_aspect('equal')
-    # ax.set_box_aspect(None, zoom=2)
-    # ax.view_init(azim=-40)
-    ax.dist = 5.5
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIGURES_PATH, '../parallel-F-periodic-flat.svg'))
+    fig, ax = origamiplots.plot_crease_pattern(ori, background_color='0.9')
+    fig.savefig(os.path.join(FIGURES_PATH, '../parallel-F-periodic-flat.pdf'))
 
-    plot_interactive(ori)
+    # plot_interactive(ori)
 
 
 def test_continuous_perturbations_2steps():

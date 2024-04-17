@@ -424,7 +424,7 @@ def plot_cap_different_curvatures():
 
         Delta_func = curvatures.get_Delta_func_for_ky(L_tot, C_tot, W0, theta, ky, Delta0)
 
-        plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
+        # plot_perturbations(pert_axes, delta_func, Delta_func, Nx, Ny)
 
         ori = create_perturbed_origami(theta, Nx, Ny, L_tot, C_tot, delta_func, Delta_func)
         ori.set_gamma(ori.calc_gamma_by_omega(W0))
@@ -490,8 +490,8 @@ def plot_cap_different_curvatures():
 
     # fig_all.tight_layout()
     # bbox = fig_all.get_tightbbox()
-    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.svg'), pad_inches=-0.3)
-    fig_all.savefig(os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'))
+    plotutils.save_fig_cropped(fig_all, os.path.join(FIGURES_PATH, 'cap-different-principal-curvatures.pdf'),
+                               0.95, 0.85, translate_x=0.1, translate_y=-0.1)
     plt.show()
 
 
@@ -851,12 +851,12 @@ def plot_cone_like():
 
 
 def main():
-    plot_vase()
+    # plot_vase()
     # plot_spherical_cap()
     # plot_saddle()
     # plot_wavy()
     # plot_2D_sinusoid()
-    # plot_cap_different_curvatures()
+    plot_cap_different_curvatures()
     # plot_cone_like()
     # plot_periodic()
 
