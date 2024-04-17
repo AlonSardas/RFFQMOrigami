@@ -20,7 +20,7 @@ python setup.py
 ### Creating patterns by providing boundary data
 The most common usage is to create an RFFQM crease pattern 
 by dictating the boundary input data and solving the marching algorithm.
-Then the pattern can be rigidly folded.
+Then, the pattern can be rigidly folded.
 
 ```python
 import numpy as np
@@ -112,8 +112,8 @@ Given RFFQM origami object we can plot it
    origamiplots.plot_interactive(ori)
    ```
 
-### Calculating the discrete differential properties
-Given an origami pattern, we can calculate its geometrical properties.
+### Calculating the discrete geometric properties
+Given an origami pattern, we can calculate its geometric properties.
 ```python
 from origami import origamimetric
 
