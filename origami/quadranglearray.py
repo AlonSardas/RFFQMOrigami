@@ -111,14 +111,14 @@ def plot_panels(dots: np.ndarray, indexes: np.ndarray,
 
 
 def plot_panels_manual_zorder(quads: QuadrangleArray,
-                              ax: Axes3D, panel_color=None, edge_color=None,
+                              ax: Axes3D, panel_color='C0', edge_color='k',
                               alpha=1.0, edge_alpha=1.0, edge_width=1.5,
                               lightsource=None,
                               z0=0.0, z_shift=0.01,
                               reverse_x_dir=False):
     # This function is a last attempt to overcome the wrong zordering
     # of matplotlib 3d plots.
-    # It is still a bad solution, since it will work fine only for limited view point.
+    # It is still a bad solution, since it will work only for limited view point.
     # In hindsight, it might be better to migrate the plots to plotly
     # (or mayavi, but it seemed less convenient).
     if ax.computed_zorder:
@@ -135,11 +135,10 @@ def plot_panels_manual_zorder(quads: QuadrangleArray,
     zs = dots[2, :].reshape((rows, cols))
 
     z = z0
-    # for j in range(cols - 2, -1, -1):
+    panels = []
     for j in range(0, cols):
         if reverse_x_dir:
             j = cols - 1 - j
-        # for i in range((rows - 1), -1, -1):
         for i in range(0, rows, 1):
             if j % 2 == 0:
                 i = rows - 1 - i
@@ -164,6 +163,9 @@ def plot_panels_manual_zorder(quads: QuadrangleArray,
             surf.set_alpha(edge_alpha)
             surf.set_edgecolor(surf.get_edgecolor())
             surf.set_alpha(alpha)
+            panels.append(surf)
+
+    return panels
 
 
 def plot_panels_and_edges_with_wireframe(dots: np.ndarray, indexes: np.ndarray, ax: Axes3D, color=None, alpha=1.0,

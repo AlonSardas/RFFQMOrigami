@@ -624,8 +624,8 @@ def plot_periodic():
     # Ny = Ny // 4
     ori = create_perturbed_origami(theta, Ny, Nx, L_tot, C_tot, delta_func, Delta_func)
 
-    plot_flat(ori, shifted_delta_func(0))
-    return
+    # plot_flat(ori, shifted_delta_func(0))
+    # return
 
     ori.set_gamma(ori.calc_gamma_by_omega(W0))
     geometry = origamimetric.OrigamiGeometry(ori.dots)
@@ -699,7 +699,10 @@ def plot_periodic():
 
     fig: Figure = plt.figure()
     ax: Axes3D = fig.add_subplot(111, projection='3d', elev=27, azim=-124)
-    ori.dots.plot(ax, alpha=1.0, edge_alpha=0.5, edge_width=0.2, edge_color='k')
+
+    # ori.dots.plot(ax, alpha=1.0, edge_alpha=0.5, edge_width=0.2, edge_color='k')
+    ax.computed_zorder = False
+    quadranglearray.plot_panels_manual_zorder(ori.dots, ax, alpha=1.0, edge_alpha=0.5, edge_width=0.2, edge_color='k')
 
     plotutils.set_axis_scaled(ax)
     # plotutils.set_3D_labels(ax)
@@ -856,9 +859,9 @@ def main():
     # plot_saddle()
     # plot_wavy()
     # plot_2D_sinusoid()
-    plot_cap_different_curvatures()
+    # plot_cap_different_curvatures()
     # plot_cone_like()
-    # plot_periodic()
+    plot_periodic()
 
 
 if __name__ == '__main__':

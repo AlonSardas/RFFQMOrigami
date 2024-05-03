@@ -107,11 +107,11 @@ def plot_unit_cell():
         i0, j0 = ind0
 
         i, j = (i0 - A_ind[0], j0 - A_ind[1])
-        ij_text = f'{i // 2}{j // 2}'
+        ij_text = f'{i // 2},\!{j // 2}'
         sub_indexes = (i % 2, j % 2)
         letter_dict = {(0, 0): 'A', (1, 0): 'B', (0, 1): 'C', (1, 1): 'D'}
         letter = letter_dict[sub_indexes]
-        template = r'$ ' + base_angle + r'+\eta^{%s,' + letter + '}_{' + ij_text + '}$'
+        template = r'$ ' + base_angle + r'+\eta^{%s,\!' + letter + '}_{' + ij_text + '}$'
 
         eta_R_txt = template % 'R'
         eta_L_txt = template % 'L'
@@ -119,7 +119,7 @@ def plot_unit_cell():
         pad_x = 0.02
         if base_angle == r'\vartheta':
             color = articleillustrations.ANGLE_COLOR1
-            pad_y = 0.24
+            pad_y = 0.26
             arc_size = 0.3
         else:
             color = articleillustrations.ANGLE_COLOR2
@@ -142,14 +142,14 @@ def plot_unit_cell():
     p1 = dots[:2, indexes[D_ind]]
     middle = (p0 + p1) / 2
     plotutils.draw_elliptic_arrow(ax, (middle[0], middle[1] + 0.08), 0.2, 0.13, 0, 40, -240)
-    ax.text(middle[0] + 0.1, middle[1], r'$\omega_{00}$')
+    ax.text(middle[0] + 0.1, middle[1], r'$\omega_{0,\!0}$')
 
     p0 = dots[:2, indexes[B_ind]]
     p1 = dots[:2, indexes[D_ind]]
     middle = 0.65 * p1 + 0.35 * p0
     plotutils.draw_elliptic_arrow(ax, middle, 0.13, 0.2, 0, -120, 130)
     # plotutils.draw_elliptic_arrow(ax, middle, 0.13, 0.2, 0, 100, -20)
-    ax.text(middle[0] - 0.1, middle[1] + 0.17, r'$\gamma_{00}$')
+    ax.text(middle[0] - 0.1, middle[1] + 0.17, r'$\gamma_{0,\!0}$')
 
     def _draw_length(ind0, ind1, name, shift_x, shift_y):
         p0 = dots[:2, indexes[ind0]]
@@ -157,14 +157,14 @@ def plot_unit_cell():
         middle = (p0 + p1) / 2
         ax.text(middle[0] + shift_x, middle[1] + shift_y, name)
 
-    _draw_length(A_ind, C_ind, '$ c_{00}^L $', shift_x=0.05, shift_y=-0.1)
-    _draw_length(C_ind, E_ind, '$ c_{00}^R $', shift_x=-0.05, shift_y=-0.23)
-    _draw_length(A_ind, B_ind, r'$ \ell_{00}^A $', shift_x=-0.25, shift_y=0.05)
-    _draw_length(B_ind, J_ind, r'$ \ell_{00}^B $', shift_x=-0.33, shift_y=0.09)
-    _draw_length(E_ind, F_ind, r'$ \ell_{01}^A $', shift_x=0.02, shift_y=0.01)
-    _draw_length(F_ind, G_ind, r'$ \ell_{01}^B $', shift_x=0.02, shift_y=0.01)
-    _draw_length(J_ind, H_ind, r'$ c_{10}^L $', shift_x=-0.15, shift_y=-0.2)
-    _draw_length(H_ind, G_ind, r'$ c_{10}^R $', shift_x=0.07, shift_y=-0.28)
+    _draw_length(A_ind, C_ind, '$ c_{0,\!0}^L $', shift_x=0.05, shift_y=-0.1)
+    _draw_length(C_ind, E_ind, '$ c_{0,\!0}^R $', shift_x=-0.05, shift_y=-0.23)
+    _draw_length(A_ind, B_ind, r'$ \ell_{0,\!0}^A $', shift_x=-0.25, shift_y=0.05)
+    _draw_length(B_ind, J_ind, r'$ \ell_{0,\!0}^B $', shift_x=-0.33, shift_y=0.09)
+    _draw_length(E_ind, F_ind, r'$ \ell_{0,\!1}^A $', shift_x=0.02, shift_y=0.01)
+    _draw_length(F_ind, G_ind, r'$ \ell_{0,\!1}^B $', shift_x=0.02, shift_y=0.01)
+    _draw_length(J_ind, H_ind, r'$ c_{1,\!0}^L $', shift_x=-0.15, shift_y=-0.2)
+    _draw_length(H_ind, G_ind, r'$ c_{1,\!0}^R $', shift_x=0.07, shift_y=-0.28)
 
     # _draw_panel_type(ax, 2.1, 5.5, 1)
     # _draw_panel_type(ax, 3.15, 5.5, 2)
