@@ -12,12 +12,13 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.plotsandcalcs
-from origami import origamiplots
+from origami import origamiplots, zigzagmiuraori
 from origami.RFFQMOrigami import RFFQM
 from origami.marchingalgorithm import MarchingAlgorithm, create_miura_angles
 from origami.alternatingpert import curvatures
 from origami.alternatingpert.utils import create_perturbed_origami, \
     create_perturbed_origami_by_list, plot_perturbations, plot_perturbations_by_list
+from origami.plotsandcalcs import zigzagfollowcurve
 from origami.quadranglearray import QuadrangleArray
 from origami.utils import linalgutils, plotutils
 
@@ -259,6 +260,40 @@ def draw_saddle():
     origamiplots.plot_interactive(ori)
 
 
+def draw_test_HM():
+    # xs = np.array([-0.3, -1.51, -2.77, -3.41, -3.79, -3.4, -2.58, -1.81, -1.19,
+    #        -0.48])
+    # ys = np.array([-6.57, -5.36, -3.62, -1.48, 0.71, 2.72, 4.14, 4.14, 3.19,
+    #        1.82])
+
+    cols = 3
+    C0 = 1.5
+
+    # xs = np.array([-1.77, -4.95, -5.33, -3.95, -1.99])
+    # xs -= xs[0]
+    # xs[-1] = 0
+    # ys = np.array([-5.78, -1.88, 3.75, 6.04, 4.27])
+    # xs = np.concatenate([xs, -xs[-2::-1]])
+    # ys = np.concatenate([ys, ys[-2::-1]])
+
+    # xs = np.array([-0.61, -3.26, -5.24, -4.22, -2.73, -0.8])
+    # ys = np.array([-4.76, -3.33, -0.28, 2.59, 2.53, 1.02])
+    # xs[-1] -= xs.max()
+    # xs = np.concatenate([xs, -xs[-1::-1]])
+    # ys = np.concatenate([ys, ys[-1::-1]])
+    # ls, angles = zigzagfollowcurve.get_angles_lengths_by_dots(xs, ys)
+    # angles[0] = angles[-1] = np.pi / 2 - 0.01
+
+    ls = np.array([6.25, 1.5, 3, 3.0, 5, 5.5])
+    angles = np.array([1.4, 0.85*np.pi, 0.33*np.pi, 0.25*np.pi,
+                      0.33*np.pi, 0.85*np.pi, 1.4])
+    quads = zigzagfollowcurve.create_zigzag_quads(angles, cols, ls, C0)
+    ori = RFFQM(quads)
+    ori.dots.assert_valid()
+    ori.set_gamma(3.1)
+    origamiplots.plot_interactive(ori)
+
+
 def prepare_patterns_for_printing(quads: QuadrangleArray, name, file_format='ps'):
     """
     Creates 2 images that are used to dictate the mountain and valley creases of the pattern.
@@ -338,8 +373,9 @@ def main():
     # draw_miura_ori()
     # draw_wavy_pattern()
     # draw_MARS_pattern()
-    draw_spherical_cap_small()
+    # draw_spherical_cap_small()
     # draw_saddle()
+    draw_test_HM()
 
 
 if __name__ == '__main__':

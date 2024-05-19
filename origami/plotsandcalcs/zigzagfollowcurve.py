@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +8,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 import origami.plotsandcalcs
-from origami import zigzagmiuraori
+from origami import zigzagmiuraori, quadranglearray
 from origami.plotsandcalcs import zigzagplots
 from origami.utils import linalgutils, plotutils
 
@@ -20,9 +21,10 @@ def record_points():
     x_pts = []
     y_pts = []
 
-    fig, ax = pyplot.subplots()
+    fig, ax = plt.subplots()
     ax.set_xlim(-10, 10)
     ax.set_ylim(-10, 10)
+    plotutils.set_axis_scaled(ax)
 
     (line,) = ax.plot(x_pts, y_pts, marker="o")
 
@@ -150,9 +152,52 @@ def build_origami():
     plt.show()
 
 
+def get_angles_lengths_by_dots(xs, ys) -> Tuple[np.ndarray, np.ndarray]:
+    num_of_dots = len(xs)
+    ls = np.zeros(num_of_dots - 1)
+    for i in range(num_of_dots - 1):
+        ls[i] = np.sqrt((xs[i + 1] - xs[i]) ** 2 + (ys[i + 1] - ys[i]) ** 2)
+
+    angles = np.zeros(num_of_dots - 2)
+    angles_signs = np.zeros(num_of_dots - 2)
+    origami_angles = np.zeros(num_of_dots)
+    for i in range(num_of_dots - 2):
+        x0 = np.array([xs[i + 1], ys[i + 1]])
+        x1 = np.array([xs[i], ys[i]])
+        x2 = np.array([xs[i + 2], ys[i + 2]])
+        v1 = x1 - x0
+        v2 = x2 - x0
+        angles[i] = linalgutils.calc_angle(v1, v2)
+        angles_signs[i] = np.sign(np.cross(v1, v2))
+
+    # We will use omega close to pi, so theta vs omega is approximately linear
+    omega = 3.1
+    omega_sign = 1
+    for i in range(num_of_dots - 2):
+        angle = angles[i]
+        sign = angles_signs[i] * omega_sign
+        if sign == 1:
+            alpha = np.pi / 2 - angle / 2
+        elif sign == -1:
+            alpha = np.pi / 2 + angle / 2
+        else:
+            raise RuntimeError(f"Unexpected value for sign: {sign}")
+        origami_angles[i + 1] = alpha
+        omega_sign *= -1
+
+    return ls, origami_angles
+
+
+def create_zigzag_quads(angles, cols, ls, C0):
+    # ls += C0 / np.tan(angles[:-1])
+    dots = zigzagmiuraori.create_zigzag_dots(angles, cols, ls, C0)
+    quads = quadranglearray.QuadrangleArray(dots, len(ls) + 1, cols)
+    return quads
+
+
 def main():
-    # record_points()
-    build_origami()
+    record_points()
+    # build_origami()
 
 
 if __name__ == "__main__":
