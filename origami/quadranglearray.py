@@ -84,7 +84,7 @@ def plot_panels(dots: np.ndarray, indexes: np.ndarray,
                 alpha=1.0, edge_alpha=1.0, edge_width=1.5,
                 lightsource=None) -> Poly3DCollection:
     # It seems that plotting with float128 is not supported by matplotlib
-    if dots.dtype == np.float128:
+    if hasattr(np, 'float128') and dots.dtype == np.float128:
         dots = np.array(dots, np.float64)
 
     rows, cols = indexes.shape
@@ -126,7 +126,7 @@ def plot_panels_manual_zorder(quads: QuadrangleArray,
                            "computed_zorder is set to False")
 
     dots, indexes = quads.dots, quads.indexes
-    if dots.dtype == np.float128:
+    if hasattr(np, 'float128') and dots.dtype == np.float128:
         dots = np.array(dots, np.float64)
 
     rows, cols = indexes.shape

@@ -8,10 +8,6 @@ from origami import plotsandcalcs, quadranglearray, origamiplots
 from origami.alternatingpert.utils import create_perturbed_origami
 from origami.utils import plotutils
 
-FILES_PATH = os.path.join(
-    plotsandcalcs.BASE_PATH,
-    'MasterPresentation')
-
 PANELS_COLOR = 'C1'
 EDGE_COLOR = 'g'
 EDGE_ALPHA = 1.0

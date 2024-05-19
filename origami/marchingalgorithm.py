@@ -40,8 +40,8 @@ class MarchingAlgorithm(object):
         self._assert_valid_input_angles(angles_left, angles_bottom)
 
         rows, cols = angles_left.shape[1], angles_bottom.shape[1] + 1
-        alphas = np.zeros((rows, cols), dtype=np.float128)
-        betas = np.zeros((rows, cols), dtype=np.float128)
+        alphas = np.zeros((rows, cols), dtype=np.float64)
+        betas = np.zeros((rows, cols), dtype=np.float64)
 
         if sigmas is None:
             sigmas = np.ones(alphas.shape) * -1
@@ -135,7 +135,7 @@ class MarchingAlgorithm(object):
         :return: (Dots, Indexes)
         """
         rows, cols = self.rows, self.cols
-        dots = np.zeros((2, rows * cols), dtype=np.float128)
+        dots = np.zeros((2, rows * cols), dtype=np.float64)
         indexes = np.arange(rows * cols).reshape((rows, cols))
 
         if hasattr(ls_left, '__len__'):
@@ -251,8 +251,10 @@ def create_miura_angles(ls, cs, angle: float) -> Tuple[np.ndarray, np.ndarray]:
         they represent the left angles and the bottom angles.
         Note that the vertex at the L-shape
     """
-    angles_left = np.ones((2, len(ls) + 1), dtype=np.float128) * angle
-    angles_bottom = np.ones((2, len(cs)), dtype=np.float128) * angle
+    # I tried working with np.float128 to improve precision, but it doesn't seem
+    # to have much effect and it is not always supported on PC
+    angles_left = np.ones((2, len(ls) + 1), dtype=np.float64) * angle
+    angles_bottom = np.ones((2, len(cs)), dtype=np.float64) * angle
     angles_bottom[:, ::2] = np.pi - angle
 
     return angles_left, angles_bottom

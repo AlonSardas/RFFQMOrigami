@@ -129,6 +129,8 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0, background_
         initial_MVA (int, optional): The first mountain-valley assignment (MVA) to use
             1,-1 flip between them. 0 to ignore the MVA
         rotate_angle (float): Angle to rotate the entire pattern before plotting
+        background_color: Should add background color. See matplotlib documentation for
+            available color parameters
 
     Returns:
         Tuple[Figure, Axes]: The figure and axes created
@@ -148,6 +150,8 @@ def plot_crease_pattern(ori: RFFQM, initial_MVA=1, rotate_angle=0.0, background_
 
     draw_creases(quads, initial_MVA, ax)
     if background_color is not None:
+        if background_color is True:
+            background_color = '0.9'
         quadranglearray.plot_2D_polygon(quads, ax, background_color)
 
     ax.set_aspect('equal')
